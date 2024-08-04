@@ -1,6 +1,6 @@
 import { IsString, Length } from "class-validator";
 
-export class PostCreateModel {
+export class PostUpdateModel {
   @IsString()
   @Length(1, 30)
   title: string;
@@ -12,8 +12,4 @@ export class PostCreateModel {
   @IsString()
   @Length(1, 1000)
   content: string;
-
-  @IsString()
-  blogId: string;
-
 }

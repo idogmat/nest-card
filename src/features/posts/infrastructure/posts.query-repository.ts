@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, isValidObjectId } from 'mongoose';
 import { Post, PostModelType } from '../domain/post.entity';
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
 
 @Injectable()
 export class PostsQueryRepository {
-  constructor(@InjectModel(Post.name) private postModel: PostModelType) {}
-  
-  async getById(id: string): Promise<PostOutputModel | null> {
-    const blog = await this.postModel.findOne({ _id: id });
+  constructor(@InjectModel(Post.name) private postModel: PostModelType) { }
 
+  async getById(id: string): Promise<PostOutputModel | null> {
+
+    if (!isValidObjectId(id)) return null;
+    const blog = await this.postModel.findOne({ _id: id });
     if (blog === null) {
       return null;
     }
@@ -20,7 +21,7 @@ export class PostsQueryRepository {
   }
 
   async getAll(
-    pagination: PaginationWithSearchBlogNameTerm,
+    pagination: PaginationWithSearchBlogNameTerm, id?: string
   ): Promise<PaginationOutput<PostOutputModel>> {
     const filters: FilterQuery<Post>[] = [];
 
@@ -34,6 +35,10 @@ export class PostsQueryRepository {
 
     if (filters.length > 0) {
       filter.$or = filters;
+    }
+
+    if (id) {
+      filter.blogId = id;
     }
 
     return await this.__getResult(filter, pagination);

@@ -7,7 +7,7 @@ export class BlogsRepository {
   constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) { }
 
   async create(newBlog: Blog): Promise<string> {
-    const model = await new this.BlogModel(newBlog);
+    const model = await new this.BlogModel({ ...newBlog, createdAt: new Date().getTime() });
     await model.save();
     return model._id.toString();
   }

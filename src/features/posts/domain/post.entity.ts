@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { Like } from 'src/base/models/like-info.base';
+import { Like, LikeSchema } from 'src/base/models/like-info.base';
 
 @Schema()
 export class Post {
@@ -13,7 +13,7 @@ export class Post {
   @Prop({ type: String, required: true })
   shortDescription: string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, required: true })
   blogName: string;
 
   @Prop({ type: String, required: true })
@@ -22,7 +22,7 @@ export class Post {
   @Prop({ type: Date, default: new Date() })
   createdAt: Date;
 
-  @Prop({ type: Like, default: {} })
+  @Prop({ type: Like, default: {}, schema: LikeSchema })
   extendedLikesInfo: Like;
 
 }

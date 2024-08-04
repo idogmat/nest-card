@@ -11,6 +11,7 @@ export class PostsService {
 
   async create(
     blogId: string,
+    blogName: string,
     content: string,
     shortDescription: string,
     title: string
@@ -18,6 +19,7 @@ export class PostsService {
 
     const newPost: any = {
       blogId,
+      blogName,
       content,
       shortDescription,
       title
@@ -26,6 +28,15 @@ export class PostsService {
     const createdPostId: string = await this.postsRepository.create(newPost);
 
     return createdPostId;
+  }
+
+  async update(
+    id,
+    updateModel
+  ): Promise<boolean> {
+
+    await this.postsRepository.update(id, updateModel);
+    return true;
   }
 
   async delete(id: string): Promise<boolean> {

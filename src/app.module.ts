@@ -18,6 +18,9 @@ import { PostsRepository } from './features/posts/infrastructure/posts.repositor
 import { PostsQueryRepository } from './features/posts/infrastructure/posts.query-repository';
 import { PostsService } from './features/posts/application/posts.service';
 import { PostsController } from './features/posts/api/posts.controlle';
+import { CommentsController } from './features/comments/api/comments.controller';
+import { Comment, CommentSchema } from './features/comments/domain/comment.entity';
+import { CommentsQueryRepository } from './features/comments/infrastructure/comments.query-repository';
 
 const usersProviders: Provider[] = [
   UsersRepository,
@@ -34,6 +37,11 @@ const postsProviders: Provider[] = [
   PostsService,
   PostsQueryRepository,
 ];
+// const commentsProviders: Provider[] = [
+// CommentsRepository,
+// CommentsService,
+// CommentsQueryRepository,
+// ];
 @Module({
   // Регистрация модулей
   imports: [
@@ -41,14 +49,18 @@ const postsProviders: Provider[] = [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Blog.name, schema: BlogSchema },
-      { name: Post.name, schema: PostSchema }
+      { name: Post.name, schema: PostSchema },
+      { name: Comment.name, schema: CommentSchema },
+      // { name: Like.name, schema: LikeSchema },
     ]),
   ],
   // Регистрация провайдеров
   providers: [
+    CommentsQueryRepository,
     ...usersProviders,
     ...blogsProviders,
     ...postsProviders,
+    // ...commentsProviders,
     AuthService,
     {
       provide: AppSettings,
@@ -56,6 +68,12 @@ const postsProviders: Provider[] = [
     },
   ],
   // Регистрация контроллеров
-  controllers: [UsersController, BlogsController, PostsController, TestingController],
+  controllers: [
+    UsersController,
+    BlogsController,
+    PostsController,
+    CommentsController,
+    TestingController,
+  ],
 })
 export class AppModule { }

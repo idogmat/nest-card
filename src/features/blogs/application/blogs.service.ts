@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
 import { PostsRepository } from 'src/features/posts/infrastructure/posts.repository';
+import { isValidObjectId } from 'mongoose';
 
 @Injectable()
 export class BlogsService {
@@ -30,14 +31,20 @@ export class BlogsService {
   async update(
     id,
     updateModel
-  ): Promise<any> {
+  ): Promise<boolean> {
 
-    const updatedResult = await this.blogsRepository.update(id, updateModel);
-    console.log(updatedResult, 'service');
+    if (!isValidObjectId(id)) return null;
+
+    const blog = await this.blogsRepository.update(id, updateModel);
+
+    if (!blog) return null;
+
     return true;
   }
 
   async delete(id: string): Promise<boolean> {
+    if (!isValidObjectId(id)) return null;
+
     return this.blogsRepository.delete(id);
   }
 }

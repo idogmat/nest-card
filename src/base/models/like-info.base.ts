@@ -1,13 +1,13 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
 
-export type LikeType = 'None' | 'Like' | 'Dislike'
+export type LikeType = 'None' | 'Like' | 'Dislike';
 
 export interface LikesInfo {
   likesCount: number;
   dislikesCount: number;
   myStatus: LikeType;
-  newestLikes: NewestLikes[]
+  newestLikes: NewestLikes[];
 }
 
 @Schema()
@@ -31,9 +31,9 @@ export class Like {
   newestLikes: NewestLikes[];
 }
 
-
+export const LikeSchema = SchemaFactory.createForClass(Like);
 
 // Types
 export type LikeDocument = HydratedDocument<Like>;
 
-export type PostModelType = Model<LikeDocument>; //& UserModelStaticType;
+export type LikeModelType = Model<LikeDocument>; //& UserModelStaticType;

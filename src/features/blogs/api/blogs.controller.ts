@@ -20,81 +20,127 @@ import { BlogOutputModel } from './model/output/blog.output.model';
 import { BlogCreateModel } from './model/input/create-blog.input.model';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
+import { PostsService } from 'src/features/posts/application/posts.service';
+import { PostsQueryRepository } from 'src/features/posts/infrastructure/posts.query-repository';
+import { PostOutputModel } from 'src/features/posts/api/model/output/post.output.model';
+import { PostInBlogCreateModel } from './model/input/create-post.input.model';
+
+export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
+  ['title', 'blogId', 'blogName', 'content', 'createdAt'];
 
 export const BLOGS_SORTING_PROPERTIES: SortingPropertiesType<BlogOutputModel> =
   ['name', 'description', 'createdAt'];
 
-// Tag для swagger
 @ApiTags('Blogs')
 @Controller('blogs')
 export class BlogsController {
   constructor(
     private readonly blogsService: BlogsService,
+    private readonly postsService: PostsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
+    private readonly postsQueryRepository: PostsQueryRepository,
   ) { }
 
   @Get()
   async getAll(
-    // Для работы с query
     @Query() query: any,
   ) {
-
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
         query,
         BLOGS_SORTING_PROPERTIES,
       );
 
-    const users: PaginationOutput<BlogOutputModel> =
+    const blogs: PaginationOutput<BlogOutputModel> =
       await this.blogsQueryRepository.getAll(pagination);
 
-    return users;
+    return blogs;
   }
 
   @Get(':id')
   async getById(
     @Param('id') id: string,
   ) {
-    const users: BlogOutputModel =
+
+    const blog: BlogOutputModel =
       await this.blogsQueryRepository.getById(id);
 
-    return users;
+    if (!blog) throw new NotFoundException();
+
+    return blog;
   }
 
   @Post()
   async create(@Body() createModel: BlogCreateModel) {
     const { name, description, websiteUrl } = createModel;
 
-    const createdUserId = await this.blogsService.create(
+    const createdBlogId = await this.blogsService.create(
       name, description, websiteUrl
     );
 
-    const createdUser: BlogOutputModel | null =
-      await this.blogsQueryRepository.getById(createdUserId);
+    const createdBlog: BlogOutputModel | null =
+      await this.blogsQueryRepository.getById(createdBlogId);
 
-    return createdUser;
+    return createdBlog;
+  }
+
+  @Post(':id/posts')
+  async createPost(
+    @Param('id') id: string,
+    @Body() createModel: PostInBlogCreateModel
+  ) {
+    const { content, shortDescription, title } = createModel;
+
+    const blog = await this.getById(id);
+
+    const createdPostId = await this.postsService.create(
+      id, blog.name, content, shortDescription, title,
+    );
+
+    const createdPost: PostOutputModel | null =
+      await this.postsQueryRepository.getById(createdPostId);
+
+    return createdPost;
+  }
+
+  @Get(':id/posts')
+  async getPosts(
+    @Param('id') id: string,
+    @Query() query: any
+  ) {
+    await this.getById(id);
+    const pagination: PaginationWithSearchBlogNameTerm =
+      new PaginationWithSearchBlogNameTerm(
+        query,
+        POSTS_SORTING_PROPERTIES,
+      );
+
+    const posts: PaginationOutput<PostOutputModel> =
+      await this.postsQueryRepository.getAll(pagination, id);
+
+    return posts;
   }
 
   @Put(':id')
   @HttpCode(204)
-  async update(@Param('id') id: string, @Body() updateModel: BlogCreateModel) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateModel: BlogCreateModel
+  ) {
     const updatedResult = await this.blogsService.update(id, updateModel);
 
     if (!updatedResult) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new NotFoundException(`Blog with id ${id} not found`);
     }
   }
-  // :id в декораторе говорит nest о том что это параметр
-  // Можно прочитать с помощью @Param("id") и передать в property такое же название параметра
-  // Если property не указать, то вернется объект @Param()
+
   @Delete(':id')
-  // Для переопределения default статус кода https://docs.nestjs.com/controllers#status-code
   @HttpCode(204)
   async delete(@Param('id') id: string) {
     const deletingResult: boolean = await this.blogsService.delete(id);
 
     if (!deletingResult) {
-      throw new NotFoundException(`User with id ${id} not found`);
+      throw new NotFoundException(`Blog with id ${id} not found`);
     }
   }
 }

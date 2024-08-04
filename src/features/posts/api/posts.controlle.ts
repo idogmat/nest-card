@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import {
@@ -19,22 +20,23 @@ import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { PostOutputModel } from './model/output/post.output.model';
 import { PostCreateModel } from './model/input/create-post.input.model';
 import { PostsService } from '../application/posts.service';
+import { BlogsQueryRepository } from 'src/features/blogs/infrastructure/blogs.query-repository';
+import { PostUpdateModel } from './model/input/update-post.input.model';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
 
-// Tag для swagger
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
+    private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) { }
 
   @Get()
   async getAll(
-    // Для работы с query
     @Query() query: any,
   ) {
 
@@ -44,43 +46,63 @@ export class PostsController {
         POSTS_SORTING_PROPERTIES,
       );
 
-    const users: PaginationOutput<PostOutputModel> =
+    const posts: PaginationOutput<PostOutputModel> =
       await this.postsQueryRepository.getAll(pagination);
 
-    return users;
+    return posts;
   }
 
   @Get(':id')
   async getById(
     @Param('id') id: string,
   ) {
-    const users: PostOutputModel =
+    const post: PostOutputModel =
       await this.postsQueryRepository.getById(id);
 
-    return users;
+    if (!post) {
+      throw new NotFoundException();
+    }
+
+    return post;
   }
 
   @Post()
   async create(@Body() createModel: PostCreateModel) {
+    const blog = await this.blogsQueryRepository.getById(createModel?.blogId);
+    if (!blog) throw new NotFoundException();
     const { blogId, content, shortDescription, title } = createModel;
 
-    const createdUserId = await this.postsService.create(
-      blogId, content, shortDescription, title
+    const createdPostId = await this.postsService.create(
+      blogId, blog.name, content, shortDescription, title,
     );
 
-    const createdUser: PostOutputModel | null =
-      await this.postsQueryRepository.getById(createdUserId);
+    const createdPost: PostOutputModel | null =
+      await this.postsQueryRepository.getById(createdPostId);
 
-    return createdUser;
+    return createdPost;
   }
 
-  // :id в декораторе говорит nest о том что это параметр
-  // Можно прочитать с помощью @Param("id") и передать в property такое же название параметра
-  // Если property не указать, то вернется объект @Param()
+  @Put(':id')
+  @HttpCode(204)
+  async update(@Param('id') id: string, @Body() updateModel: PostUpdateModel) {
+    const post = await this.getById(id);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    const updatedResult = await this.postsService.update(id, updateModel);
+
+    if (!updatedResult) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+  }
+
   @Delete(':id')
-  // Для переопределения default статус кода https://docs.nestjs.com/controllers#status-code
   @HttpCode(204)
   async delete(@Param('id') id: string) {
+    const post = await this.getById(id);
+    if (!post) {
+      throw new NotFoundException();
+    }
     const deletingResult: boolean = await this.postsService.delete(id);
 
     if (!deletingResult) {
