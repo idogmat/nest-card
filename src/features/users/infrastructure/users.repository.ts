@@ -17,4 +17,16 @@ export class UsersRepository {
 
     return deletingResult.deletedCount === 1;
   }
+
+  async findByLoginOrEmail(loginOrEmail: string) {
+    const model = await this.UserModel.findOne({
+      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
+    });
+    return model;
+  }
+
+  async findByLogin(login: string) {
+    const model = await this.UserModel.findOne({ login: login });
+    return model;
+  }
 }

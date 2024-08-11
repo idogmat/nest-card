@@ -17,7 +17,7 @@ export const applyAppSettings = (app: INestApplication) => {
   // Применение глобальных Interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
 
-  //const userService = app.get(UsersService)
+  // const userService = app.get(UsersService);
 
   // Применение глобальных Guards
   // app.useGlobalGuards(new AuthGuard(userService));

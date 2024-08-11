@@ -11,23 +11,26 @@ export class User {
   passwordHash: string;
 
   @Prop({ type: String, required: true })
+  passwordSalt: string;
+
+  @Prop({ type: String, required: true })
   email: string;
 
   @Prop({ type: Date, default: new Date() })
   createdAt: Date;
 
   static createUser(login: string, email: string | null) {
-        const user = new this();
+    const user = new this();
 
-        user.login = login;
-        user.email = email ?? `${randomUUID()}_${login}@it-incubator.io`;
+    user.login = login;
+    user.email = email ?? `${randomUUID()}_${login}@it-incubator.io`;
 
-        return user;
-    }
+    return user;
+  }
 
-    getLogin() {
-        return this.login;
-    }
+  getLogin() {
+    return this.login;
+  }
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

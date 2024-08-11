@@ -7,7 +7,7 @@ export class PostsRepository {
   constructor(@InjectModel(Post.name) private PostModel: PostModelType) { }
 
   async create(newPost: Post): Promise<string> {
-    const model = await new this.PostModel({ ...newPost, createdAt: new Date().getTime() });
+    const model = await new this.PostModel({ ...newPost, createdAt: new Date() });
     await model.save();
     return model._id.toString();
   }

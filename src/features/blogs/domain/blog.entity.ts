@@ -19,16 +19,16 @@ export class Blog {
   isMembership: boolean;
 
   static createBlog(name: string, description: string, websiteUrl: string) {
-        const blog = new this();
+    const blog = new this();
 
-        blog.name = name;
-        blog.description = description;
-        blog.websiteUrl = websiteUrl;
-        blog.createdAt = new Date();
-        blog.isMembership = false;
+    blog.name = name;
+    blog.description = description;
+    blog.websiteUrl = websiteUrl;
+    blog.createdAt = new Date();
+    blog.isMembership = false;
 
-        return blog;
-    }
+    return blog;
+  }
 
 
 }

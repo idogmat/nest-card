@@ -30,9 +30,10 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly usersQueryRepository: UsersQueryRepository,
-  ) {}
+  ) { }
 
   @Get()
+  // @UseGuards(AuthGuard)
   async getAll(
     // Для работы с query
     @Query() query: any,

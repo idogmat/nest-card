@@ -2,7 +2,7 @@ import { config } from 'dotenv';
 
 config();
 
-export type EnvironmentVariable = { [key: string]: string | undefined };
+export type EnvironmentVariable = { [key: string]: string | undefined; };
 export type EnvironmentsTypes =
   | 'DEVELOPMENT'
   | 'STAGING'
@@ -11,7 +11,7 @@ export type EnvironmentsTypes =
 export const Environments = ['DEVELOPMENT', 'STAGING', 'PRODUCTION', 'TESTING'];
 
 export class EnvironmentSettings {
-  constructor(private env: EnvironmentsTypes) {}
+  constructor(private env: EnvironmentsTypes) { }
 
   getEnv() {
     return this.env;
@@ -38,13 +38,19 @@ export class AppSettings {
   constructor(
     public env: EnvironmentSettings,
     public api: APISettings,
-  ) {}
+  ) { }
 }
 
 class APISettings {
   // Application
   public readonly APP_PORT: number;
   public readonly HASH_ROUNDS: number;
+  public readonly ADMIN_LOGIN: string;
+  public readonly ADMIN_PASSWORD: string;
+  public readonly ACCESS_SECRET_TOKEN: string;
+  public readonly REFRESH_SECRET_TOKEN: string;
+  public readonly ACCESS_SECRET_TOKEN_EXPIRATION: string;
+  public readonly REFRESH_SECRET_TOKEN_EXPIRATION: string;
 
   // Database
   public readonly MONGO_CONNECTION_URI: string;

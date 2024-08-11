@@ -21,7 +21,17 @@ import { PostsController } from './features/posts/api/posts.controlle';
 import { CommentsController } from './features/comments/api/comments.controller';
 import { Comment, CommentSchema } from './features/comments/domain/comment.entity';
 import { CommentsQueryRepository } from './features/comments/infrastructure/comments.query-repository';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { AuthController } from './features/auth/api/auth.controller';
+import { PassportModule } from '@nestjs/passport';
 
+import env from 'dotenv';
+import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
+import { LocalStrategy } from './features/auth/strategies/local.strategy';
+env.config();
+
+const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
+const expiresIn = process.env.ACCESS_SECRET_TOKEN_EXPIRATION || '15m';
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -53,6 +63,11 @@ const postsProviders: Provider[] = [
       { name: Comment.name, schema: CommentSchema },
       // { name: Like.name, schema: LikeSchema },
     ]),
+    JwtModule.register({
+      secret,
+      signOptions: { expiresIn }
+    }),
+    PassportModule
   ],
   // Регистрация провайдеров
   providers: [
@@ -62,6 +77,9 @@ const postsProviders: Provider[] = [
     ...postsProviders,
     // ...commentsProviders,
     AuthService,
+    JwtService,
+    JwtStrategy,
+    LocalStrategy,
     {
       provide: AppSettings,
       useValue: appSettings,
@@ -69,6 +87,7 @@ const postsProviders: Provider[] = [
   ],
   // Регистрация контроллеров
   controllers: [
+    AuthController,
     UsersController,
     BlogsController,
     PostsController,
