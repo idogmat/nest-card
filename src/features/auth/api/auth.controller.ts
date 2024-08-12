@@ -1,5 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
@@ -13,17 +14,17 @@ import { CreateUserModel, LoginInputModel } from './model/input/auth.input.model
 import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { UsersQueryRepository } from 'src/features/users/infrastructure/users.query-repository';
+import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
+import { AuthMeOutputModel, EmailRecovery, SetNewPassword } from './model/output/auth.output.model';
+import { EmailService } from '../application/email.service';
 
-
-
-// Tag для swagger
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersQueryRepository: UsersQueryRepository,
+    private readonly usersRepository: UsersRepository,
+    private readonly emailService: EmailService
   ) { }
 
 
@@ -42,37 +43,27 @@ export class AuthController {
     return { accessToken };
   }
 
-  // @Post('/password-recovery')
-  // async passwordRecovery(@Body() createModel: UserCreateModel) {
-  //   const { login, password, email } = createModel;
 
-  //   const createdUserId = await this.usersService.create(
-  //     login,
-  //     password,
-  //     email,
-  //   );
+  @Post('/password-recovery')
+  @HttpCode(204)
+  async passwordRecovery(@Body() recovery: EmailRecovery) {
+    const { email } = recovery;
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user) throw new BadRequestException();
+    const code = await this.authService.setRecoveryCode(user.id);
+    await this.emailService.sendMailPasswordRecovery(user.login, user.email, code);
+  }
 
-  //   const createdUser: UserOutputModel | null =
-  //     await this.usersQueryRepository.getById(createdUserId);
+  @Post('/new-password')
+  @HttpCode(204)
+  async setNewPassword(@Body() recovery: SetNewPassword) {
+    const { newPassword, recoveryCode } = recovery;
 
-  //   return createdUser;
-  // }
+    const user = await this.usersRepository.findByRecoveryCode(recoveryCode);
+    if (!user) throw new BadRequestException();
 
-  // @Post('/new-password')
-  // async setNewPassword(@Body() createModel: UserCreateModel) {
-  //   const { login, password, email } = createModel;
-
-  //   const createdUserId = await this.usersService.create(
-  //     login,
-  //     password,
-  //     email,
-  //   );
-
-  //   const createdUser: UserOutputModel | null =
-  //     await this.usersQueryRepository.getById(createdUserId);
-
-  //   return createdUser;
-  // }
+    await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
+  }
 
   // @Post('/registration-confirmation')
   // async registrationConfirmation(@Body() createModel: UserCreateModel) {
@@ -119,8 +110,9 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async authMe(@Request() req) {
-    const user = await this.usersQueryRepository.getById(req.user.userId);
+    const user = await this.usersRepository.getById(req.user.userId);
     if (!user) throw new UnauthorizedException();
-    return user;
+
+    return AuthMeOutputModel.getAuthMe(user);
   }
 }

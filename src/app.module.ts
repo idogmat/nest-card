@@ -28,6 +28,7 @@ import { PassportModule } from '@nestjs/passport';
 import env from 'dotenv';
 import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './features/auth/strategies/local.strategy';
+import { EmailService } from './features/auth/application/email.service';
 env.config();
 
 const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
@@ -46,6 +47,13 @@ const postsProviders: Provider[] = [
   PostsRepository,
   PostsService,
   PostsQueryRepository,
+];
+const authProviders: Provider[] = [
+  AuthService,
+  JwtService,
+  JwtStrategy,
+  LocalStrategy,
+  EmailService,
 ];
 // const commentsProviders: Provider[] = [
 // CommentsRepository,
@@ -76,10 +84,7 @@ const postsProviders: Provider[] = [
     ...blogsProviders,
     ...postsProviders,
     // ...commentsProviders,
-    AuthService,
-    JwtService,
-    JwtStrategy,
-    LocalStrategy,
+    ...authProviders,
     {
       provide: AppSettings,
       useValue: appSettings,
