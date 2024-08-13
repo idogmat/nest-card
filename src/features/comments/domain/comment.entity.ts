@@ -16,8 +16,8 @@ export class Comment {
   @Prop({ type: String, required: true })
   content: string;
 
-  @Prop({ type: Date, default: new Date() })
-  createdAt: Date;
+  @Prop({ type: Number, default: new Date().getTime() })
+  createdAt: number;
 
   @Prop({ type: CommentatorInfo, default: {} })
   commentatorInfo: CommentatorInfo;

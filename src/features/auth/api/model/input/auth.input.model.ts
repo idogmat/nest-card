@@ -21,3 +21,27 @@ export class CreateUserModel {
   @Length(6, 20)
   password: string;
 }
+
+export class EmailRecovery {
+
+  @IsEmail()
+  email: string;
+
+}
+
+export class SetNewPassword {
+
+  @IsString()
+  newPassword: string;
+
+  @IsString()
+  recoveryCode: string;
+
+}
+
+export class ConfirmCode {
+
+  @IsString()
+  code: string;
+
+}

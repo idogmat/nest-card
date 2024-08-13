@@ -10,7 +10,7 @@ export class PostOutputModel {
   blogId: string;
   blogName: string;
   createdAt: string;
-  extendedLikesInfo: LikesInfo
+  extendedLikesInfo: LikesInfo;
 }
 
 // MAPPERS
@@ -24,7 +24,7 @@ export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
   outputModel.content = post.content;
   outputModel.blogId = post.blogId;
   outputModel.blogName = post.blogName;
-  outputModel.createdAt = post.createdAt.toISOString();
+  outputModel.createdAt = new Date(post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
     likesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Like') || 0,
     dislikesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Dislike') || 0,
@@ -32,9 +32,9 @@ export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
     newestLikes: post.extendedLikesInfo?.newestLikes?.length
       ? post.extendedLikesInfo?.newestLikes?.filter((e, i) => i < 3)
       : [],
-  }
+  };
   outputModel.blogId = post.blogId;
-  outputModel.createdAt = post.createdAt.toISOString();
+  outputModel.createdAt = new Date(post.createdAt).toISOString();
 
   return outputModel;
 };

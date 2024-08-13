@@ -8,11 +8,11 @@ export class EmailConfirmation {
   @Prop({ type: String })
   confirmationCode: string;
 
-  @Prop({ type: String })
-  expirationDate: string;
+  @Prop({ type: Date })
+  expirationDate: Date;
 
-  @Prop({ type: String })
-  isConfirmed: string;
+  @Prop({ type: Boolean })
+  isConfirmed: boolean;
 }
 
 
@@ -30,8 +30,8 @@ export class User {
   @Prop({ type: String, required: true })
   email: string;
 
-  @Prop({ type: Date, default: new Date() })
-  createdAt: Date;
+  @Prop({ type: Number, default: new Date().getTime() })
+  createdAt: number;
 
   @Prop({ type: EmailConfirmation, required: false })
   emailConfirmation: EmailConfirmation;

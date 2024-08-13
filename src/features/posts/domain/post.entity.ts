@@ -19,8 +19,8 @@ export class Post {
   @Prop({ type: String, required: true })
   blogId: string;
 
-  @Prop({ type: Date, default: new Date() })
-  createdAt: Date;
+  @Prop({ type: Number, default: new Date().getTime() })
+  createdAt: number;
 
   @Prop({ type: Like, default: {}, schema: LikeSchema })
   extendedLikesInfo: Like;

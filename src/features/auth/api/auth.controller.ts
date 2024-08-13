@@ -10,12 +10,12 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { CreateUserModel, LoginInputModel } from './model/input/auth.input.model';
+import { ConfirmCode, CreateUserModel, EmailRecovery, LoginInputModel, SetNewPassword } from './model/input/auth.input.model';
 import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
-import { AuthMeOutputModel, EmailRecovery, SetNewPassword } from './model/output/auth.output.model';
+import { AuthMeOutputModel } from './model/output/auth.output.model';
 import { EmailService } from '../application/email.service';
 
 @ApiTags('Auth')
@@ -65,47 +65,37 @@ export class AuthController {
     await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
   }
 
-  // @Post('/registration-confirmation')
-  // async registrationConfirmation(@Body() createModel: UserCreateModel) {
-  //   const { login, password, email } = createModel;
-
-  //   const createdUserId = await this.usersService.create(
-  //     login,
-  //     password,
-  //     email,
-  //   );
-
-  //   const createdUser: UserOutputModel | null =
-  //     await this.usersQueryRepository.getById(createdUserId);
-
-  //   return createdUser;
-  // }
-
+  @Post('/registration-confirmation')
   @HttpCode(204)
+  async registrationConfirmation(@Body() body: ConfirmCode) {
+    const { code } = body;
+    const result = await this.authService.setConfirm(code);
+    if (!result) throw new BadRequestException();
+  }
+
   @Post('/registration')
+  @HttpCode(204)
   async registration(@Body() createModel: CreateUserModel) {
     const { login, password, email } = createModel;
-    await this.authService.registration(login, password, email);
+    const user = await this.usersRepository.findByLoginAndEmail(login, email);
+    if (user) throw new BadRequestException();
+    const createdUserId = await this.authService.registration(login, password, email);
+    const code = await this.authService.setConfirmRegistrationCode(createdUserId);
+    await this.emailService.sendMail(login, email, code);
     // if (!createdUser) {
     //   throw new UnauthorizedException();
     // }
   }
 
-  // @Post('/registration-email-resending')
-  // async registrationEmailResending(@Body() createModel: UserCreateModel) {
-  //   const { login, password, email } = createModel;
-
-  //   const createdUserId = await this.usersService.create(
-  //     login,
-  //     password,
-  //     email,
-  //   );
-
-  //   const createdUser: UserOutputModel | null =
-  //     await this.usersQueryRepository.getById(createdUserId);
-
-  //   return createdUser;
-  // }
+  @Post('/registration-email-resending')
+  @HttpCode(204)
+  async registrationEmailResending(@Body() recovery: EmailRecovery) {
+    const { email } = recovery;
+    const user = await this.usersRepository.findByEmail(email);
+    if (!user || user.emailConfirmation.isConfirmed) throw new BadRequestException();
+    const code = await this.authService.setConfirmRegistrationCode(user.id);
+    await this.emailService.sendMail(user.login, email, code);
+  }
 
   @UseGuards(JwtAuthGuard)
   @Get('/me')

@@ -1,4 +1,3 @@
-import { IsEmail, IsString } from "class-validator";
 import { UserDocument } from "src/features/users/domain/user.entity";
 
 export class AuthOutputModel {
@@ -17,22 +16,4 @@ export class AuthMeOutputModel {
       userId: user.id,
     };
   }
-}
-
-
-export class EmailRecovery {
-
-  @IsEmail()
-  email: string;
-
-}
-
-export class SetNewPassword {
-
-  @IsString()
-  newPassword: string;
-
-  @IsString()
-  recoveryCode: string;
-
 }

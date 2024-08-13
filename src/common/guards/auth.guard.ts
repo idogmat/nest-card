@@ -7,10 +7,7 @@ import { UsersService } from "../../features/users/application/users.service";
 // https://docs.nestjs.com/guards
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private readonly usersService: UsersService) {
-  }
-
-
+  constructor(private readonly usersService: UsersService) { }
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {

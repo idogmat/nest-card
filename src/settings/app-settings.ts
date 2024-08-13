@@ -59,7 +59,12 @@ class APISettings {
     // Application
     this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 7840);
     this.HASH_ROUNDS = this.getNumberOrDefault(envVariables.HASH_ROUNDS, 10);
-
+    this.ADMIN_LOGIN = this.envVariables.ADMIN_LOGIN;
+    this.ADMIN_PASSWORD = this.envVariables.ADMIN_PASSWORD;
+    this.ACCESS_SECRET_TOKEN = this.envVariables.ACCESS_SECRET_TOKEN;
+    this.REFRESH_SECRET_TOKEN = this.envVariables.REFRESH_SECRET_TOKEN;
+    this.ACCESS_SECRET_TOKEN_EXPIRATION = this.envVariables.ACCESS_SECRET_TOKEN_EXPIRATION;
+    this.REFRESH_SECRET_TOKEN_EXPIRATION = this.envVariables.REFRESH_SECRET_TOKEN_EXPIRATION;
     // Database
     this.MONGO_CONNECTION_URI =
       envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';

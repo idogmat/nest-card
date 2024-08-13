@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/features/users/domain/user.entity';
 import env from 'dotenv';
 import { randomUUID } from 'crypto';
+import { dateSetter } from 'src/common/utils/dataSetter';
 env.config();
 
 const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
@@ -35,7 +36,8 @@ export class AuthService {
 
   async registration(login: string, password: string, email: string) {
     const { passwordHash, passwordSalt } = await this.generatePasswordHash(password);
-    this.usersRepository.create({ login, email, passwordHash, passwordSalt } as User);
+    const id = await this.usersRepository.create({ login, email, passwordHash, passwordSalt } as User);
+    return id;
   }
 
   async login(loginOrEmail: string, password: string) {
@@ -69,5 +71,26 @@ export class AuthService {
   async setNewPssword(id: string, newPassword: string, salt: string) {
     const passwordHash = await this.hashPassword(newPassword, salt);
     this.usersRepository.setNewPassword(id, passwordHash);
+  }
+
+  async setConfirmRegistrationCode(id: string, confirmed: boolean = false) {
+    const emailConfirmation = {
+      confirmationCode: randomUUID(),
+      expirationDate: dateSetter(new Date(), {
+        hours: 1,
+        minutes: 30,
+      }),
+      isConfirmed: confirmed,
+    };
+    await this.usersRepository.setConfirmRegistrationCode(id, emailConfirmation);
+    return emailConfirmation.confirmationCode;
+  }
+
+  async setConfirm(code: string) {
+    const user = await this.usersRepository.findByConfirmCode(code);
+    if (!user) return false;
+    if (user.emailConfirmation.isConfirmed || user.emailConfirmation.expirationDate < new Date()) return false;
+    await this.setConfirmRegistrationCode(user.id, true);
+    return true;
   }
 }

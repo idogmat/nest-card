@@ -19,7 +19,7 @@ export const BlogOutputModelMapper = (blog: BlogDocument): BlogOutputModel => {
   outputModel.description = blog.description;
   outputModel.websiteUrl = blog.websiteUrl;
   outputModel.isMembership = blog.isMembership;
-  outputModel.createdAt = blog.createdAt.toISOString();
+  outputModel.createdAt = new Date(blog.createdAt).toISOString();
 
   return outputModel;
 };

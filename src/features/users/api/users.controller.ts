@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersQueryRepository } from '../infrastructure/users.query-repository';
 import { UsersService } from '../application/users.service';
@@ -19,9 +20,10 @@ import {
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
 import { SortingPropertiesType } from '../../../base/types/sorting-properties.type';
+import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 
 export const USERS_SORTING_PROPERTIES: SortingPropertiesType<UserOutputModel> =
-  ['login', 'email'];
+  ['login', 'email', 'createdAt'];
 
 // Tag для swagger
 @ApiTags('Users')
@@ -49,7 +51,7 @@ export class UsersController {
 
     return users;
   }
-
+  @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() createModel: UserCreateModel) {
     const { login, password, email } = createModel;

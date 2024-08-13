@@ -30,7 +30,7 @@ export const CommentOutputModelMapper = (comment: CommentDocument): CommentOutpu
   // outputModel.likesInfo.likesCount = comment.extendedLikesInfo.additionalLikes;
   // outputModel.likesInfo.dislikesCount = comment.extendedLikesInfo.additionalLikes;
   // outputModel.likesInfo.myStatus = comment.extendedLikesInfo.additionalLikes;
-  outputModel.createdAt = comment.createdAt.toISOString();
+  outputModel.createdAt = new Date(comment.createdAt).toISOString();
 
   return outputModel;
 };

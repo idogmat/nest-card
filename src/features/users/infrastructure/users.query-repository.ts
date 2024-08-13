@@ -13,7 +13,7 @@ import { FilterQuery } from 'mongoose';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectModel(User.name) private userModel: UserModelType) {}
+  constructor(@InjectModel(User.name) private userModel: UserModelType) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
     const user = await this.userModel.findOne({ _id: id });
@@ -65,10 +65,10 @@ export class UsersQueryRepository {
 
     const totalCount = await this.userModel.countDocuments(filter);
 
-    const mappedPosts = users.map(UserOutputModelMapper);
+    const mappedUsers = users.map(UserOutputModelMapper);
 
     return new PaginationOutput<UserOutputModel>(
-      mappedPosts,
+      mappedUsers,
       pagination.pageNumber,
       pagination.pageSize,
       totalCount,

@@ -12,8 +12,8 @@ export class Blog {
   @Prop({ type: String, required: true })
   websiteUrl: string;
 
-  @Prop({ type: Date, default: new Date() })
-  createdAt: Date;
+  @Prop({ type: Number, default: new Date().getTime() })
+  createdAt: number;
 
   @Prop({ type: Boolean, default: false })
   isMembership: boolean;
@@ -24,7 +24,7 @@ export class Blog {
     blog.name = name;
     blog.description = description;
     blog.websiteUrl = websiteUrl;
-    blog.createdAt = new Date();
+    blog.createdAt = new Date().getTime();
     blog.isMembership = false;
 
     return blog;
