@@ -29,6 +29,7 @@ import env from 'dotenv';
 import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './features/auth/strategies/local.strategy';
 import { EmailService } from './features/auth/application/email.service';
+import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from './common/decorators/validate/is-email-or-login-exist';
 env.config();
 
 const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
@@ -48,6 +49,12 @@ const postsProviders: Provider[] = [
   PostsService,
   PostsQueryRepository,
 ];
+const validators: Provider[] = [
+  CustomEmailValidation,
+  CustomLoginValidation,
+  CustomCodeValidation,
+  CustomEmailExistValidation,
+];
 const authProviders: Provider[] = [
   AuthService,
   JwtService,
@@ -55,15 +62,17 @@ const authProviders: Provider[] = [
   LocalStrategy,
   EmailService,
 ];
-// const commentsProviders: Provider[] = [
-// CommentsRepository,
-// CommentsService,
-// CommentsQueryRepository,
-// ];
+const commentsProviders: Provider[] = [
+  // CommentsRepository,
+  // CommentsService,
+  CommentsQueryRepository,
+];
 @Module({
   // Регистрация модулей
   imports: [
-    MongooseModule.forRoot(appSettings.api.MONGO_CONNECTION_URI),
+    MongooseModule.forRoot(appSettings.env.isTesting()
+      ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
+      : appSettings.api.MONGO_CONNECTION_URI),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Blog.name, schema: BlogSchema },
@@ -79,11 +88,11 @@ const authProviders: Provider[] = [
   ],
   // Регистрация провайдеров
   providers: [
-    CommentsQueryRepository,
+    ...validators,
     ...usersProviders,
     ...blogsProviders,
     ...postsProviders,
-    // ...commentsProviders,
+    ...commentsProviders,
     ...authProviders,
     {
       provide: AppSettings,

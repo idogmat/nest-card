@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import "dotenv/config";
 import { Injectable } from "@nestjs/common";
 
 @Injectable()
@@ -16,7 +15,7 @@ export class EmailService {
     });
   }
 
-  async sendMail(name: string, mail: string, code: string) {
+  async sendMail(_name: string, mail: string, code: string) {
     const transporter = await this.transporter();
     const url = process.env.CONFIRM_EMAIL + code;
     transporter.sendMail({
@@ -33,7 +32,7 @@ export class EmailService {
   }
 
   async sendMailPasswordRecovery(
-    name: string,
+    _name: string,
     mail: string,
     code: string,
   ) {

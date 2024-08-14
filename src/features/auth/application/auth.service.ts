@@ -1,16 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { AppSettings } from '../../../settings/app-settings';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/features/users/domain/user.entity';
-import env from 'dotenv';
 import { randomUUID } from 'crypto';
 import { dateSetter } from 'src/common/utils/dataSetter';
-env.config();
+import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 
-const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
-const expiresIn = process.env.ACCESS_SECRET_TOKEN_EXPIRATION || '15m';
 
 @Injectable()
 export class AuthService {
@@ -50,7 +46,13 @@ export class AuthService {
   }
 
   async createToken(payload: any) {
-    const token = await this.jwtService.sign(payload, { secret, expiresIn });
+    const token = await this.jwtService.sign(
+      payload,
+      {
+        secret: this.appSettings.api.ACCESS_SECRET_TOKEN,
+        expiresIn: this.appSettings.api.ACCESS_SECRET_TOKEN_EXPIRATION
+      }
+    );
     return token;
   }
 

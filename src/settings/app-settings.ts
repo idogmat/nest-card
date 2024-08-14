@@ -52,8 +52,10 @@ class APISettings {
   public readonly ACCESS_SECRET_TOKEN_EXPIRATION: string;
   public readonly REFRESH_SECRET_TOKEN_EXPIRATION: string;
 
+
   // Database
   public readonly MONGO_CONNECTION_URI: string;
+  public readonly MONGO_CONNECTION_URI_FOR_TESTS: string;
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     // Application
@@ -68,6 +70,8 @@ class APISettings {
     // Database
     this.MONGO_CONNECTION_URI =
       envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
+    this.MONGO_CONNECTION_URI_FOR_TESTS =
+      envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
   }
 
   private getNumberOrDefault(value: string, defaultValue: number): number {

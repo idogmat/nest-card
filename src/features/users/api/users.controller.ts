@@ -68,11 +68,9 @@ export class UsersController {
     return createdUser;
   }
 
-  // :id в декораторе говорит nest о том что это параметр
-  // Можно прочитать с помощью @Param("id") и передать в property такое же название параметра
-  // Если property не указать, то вернется объект @Param()
+
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
-  // Для переопределения default статус кода https://docs.nestjs.com/controllers#status-code
   @HttpCode(204)
   async delete(@Param('id') id: string) {
     const deletingResult: boolean = await this.usersService.delete(id);

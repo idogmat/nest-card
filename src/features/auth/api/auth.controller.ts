@@ -30,6 +30,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('/login')
+  @HttpCode(200)
   async login(@Body() loginModel: LoginInputModel) {
     const { loginOrEmail, password } = loginModel;
 
@@ -92,7 +93,6 @@ export class AuthController {
   async registrationEmailResending(@Body() recovery: EmailRecovery) {
     const { email } = recovery;
     const user = await this.usersRepository.findByEmail(email);
-    if (!user || user.emailConfirmation.isConfirmed) throw new BadRequestException();
     const code = await this.authService.setConfirmRegistrationCode(user.id);
     await this.emailService.sendMail(user.login, email, code);
   }

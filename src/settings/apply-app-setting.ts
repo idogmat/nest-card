@@ -80,7 +80,7 @@ const setAppPipes = (app: INestApplication) => {
           constraintKeys.forEach((cKey) => {
             const msg = e.constraints[cKey];
 
-            customErrors.push({ key: e.property, message: msg });
+            customErrors.push({ field: e.property, message: msg });
           });
         });
 

@@ -25,6 +25,7 @@ export class UsersService {
       passwordHash,
       passwordSalt,
       email,
+      createdAt: new Date().getTime()
     } as User;
 
     const createdUserId: string = await this.usersRepository.create(newUser);
