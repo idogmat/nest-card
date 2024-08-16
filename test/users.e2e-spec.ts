@@ -5,7 +5,7 @@ import { UsersService } from '../src/features/users/application/users.service';
 import { UsersRepository } from '../src/features/users/infrastructure/users.repository';
 import { UserServiceMock } from './mock/user.service.mock';
 import { initSettings } from './utils/init-settings';
-import { UsersTestManager } from './utils/users-test-manager';
+import { UsersTestManager } from './utils/routes/users-test-manager';
 
 describe('users', () => {
   let app: INestApplication;
@@ -24,7 +24,7 @@ describe('users', () => {
         }),
     );
     app = result.app;
-    userTestManger = result.userTestManger;
+    userTestManger = result.userTestManager;
   });
 
   afterAll(async () => {
@@ -34,7 +34,7 @@ describe('users', () => {
   it('should create user', async () => {
     const body = { login: 'name1', password: 'qwerty', email: 'email@email.em' };
 
-    const response = await userTestManger.createUser('123', body);
+    const response = await userTestManger.createUser('admin', body);
 
     expect(response.body).toEqual({ login: body.login, email: body.email, id: expect.any(String), createdAt: expect.any(String) });
   });
@@ -42,7 +42,7 @@ describe('users', () => {
   it('should get users', async () => {
     const body = { login: 'name2', password: 'qwerty', email: 'email2@email.em' };
 
-    const createUserResponse = await userTestManger.createUser('123', body);
+    await userTestManger.createUser('admin', body);
 
     const getUserResponse = await request(app.getHttpServer())
       .get(`/api/users`)

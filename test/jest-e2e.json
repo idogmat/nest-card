@@ -8,6 +8,8 @@
     "<rootDir>/../"
   ],
   "modulePaths": [
+    ".",
+    "node_modules",
     "<rootDir>",
     "<rootDir>/../"
   ],

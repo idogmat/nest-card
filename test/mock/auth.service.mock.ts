@@ -1,10 +1,11 @@
 import { AuthService } from 'src/features/auth/application/auth.service';
-import { UsersService } from '../../src/features/users/application/users.service';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
+import { JwtService } from '@nestjs/jwt';
+import { AppSettings } from 'src/settings/app-settings';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)
-export const UserServiceMockObject = {
+export const AuthServiceMockObject = {
   sendMessageOnEmail(_email: string) {
     console.log('Call mock method sendMessageOnEmail / MailService');
     return Promise.resolve(true);
@@ -26,15 +27,10 @@ export const UserServiceMockObject = {
 //      }
 //     )
 
-export class UserServiceMock extends UsersService {
-  constructor(usersRepository: UsersRepository, authService: AuthService) {
-    super(usersRepository, authService);
-  }
-
-  sendMessageOnEmail(_email: string) {
-    console.log(
-      'Call mock method sendMessageOnEmail / MailService, for specific test',
-    );
-    return Promise.resolve(true);
+export class AuthServiceMock extends AuthService {
+  constructor(appSettings: AppSettings,
+    usersRepository: UsersRepository,
+    jwtService: JwtService) {
+    super(appSettings, usersRepository, jwtService);
   }
 }

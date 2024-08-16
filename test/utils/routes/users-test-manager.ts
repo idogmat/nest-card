@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { UserCreateModel } from '../../src/features/users/api/models/input/create-user.input.model';
+import { UserCreateModel } from '../../../src/features/users/api/models/input/create-user.input.model';
 
 export class UsersTestManager {
   constructor(protected readonly app: INestApplication) {
@@ -16,8 +16,8 @@ export class UsersTestManager {
   async createUser(adminAccessToken: string, createModel: UserCreateModel, statusCode: number = 201) {
     return request(this.app.getHttpServer())
       .post('/api/users')
-      .auth(adminAccessToken, {
-        type: 'bearer',
+      .auth(adminAccessToken, 'qwerty', {
+        type: 'basic',
       })
       .send(createModel)
       .expect(statusCode);

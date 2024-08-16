@@ -5,7 +5,7 @@ import { UserCreateModel } from '../src/features/users/api/models/input/create-u
 import { UsersService } from '../src/features/users/application/users.service';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
 import { skipSettings } from './utils/skip-settings';
-import { UsersTestManager } from './utils/users-test-manager';
+import { UsersTestManager } from './utils/routes/users-test-manager';
 import { aDescribe } from './utils/aDescribe';
 import { UserServiceMock } from './mock/user.service.mock';
 

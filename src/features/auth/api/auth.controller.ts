@@ -77,6 +77,7 @@ export class AuthController {
   @Post('/registration')
   @HttpCode(204)
   async registration(@Body() createModel: CreateUserModel) {
+    console.log('render');
     const { login, password, email } = createModel;
     const user = await this.usersRepository.findByLoginAndEmail(login, email);
     if (user) throw new BadRequestException();
