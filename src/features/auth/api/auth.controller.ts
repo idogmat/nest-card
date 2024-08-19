@@ -77,16 +77,13 @@ export class AuthController {
   @Post('/registration')
   @HttpCode(204)
   async registration(@Body() createModel: CreateUserModel) {
-    console.log('render');
+    // console.log('render');
     const { login, password, email } = createModel;
     const user = await this.usersRepository.findByLoginAndEmail(login, email);
     if (user) throw new BadRequestException();
     const createdUserId = await this.authService.registration(login, password, email);
     const code = await this.authService.setConfirmRegistrationCode(createdUserId);
     await this.emailService.sendMail(login, email, code);
-    // if (!createdUser) {
-    //   throw new UnauthorizedException();
-    // }
   }
 
   @Post('/registration-email-resending')

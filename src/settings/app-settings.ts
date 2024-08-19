@@ -59,7 +59,7 @@ class APISettings {
 
   constructor(private readonly envVariables: EnvironmentVariable) {
     // Application
-    this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 7840);
+    this.APP_PORT = this.getNumberOrDefault(envVariables.APP_PORT, 3003);
     this.HASH_ROUNDS = this.getNumberOrDefault(envVariables.HASH_ROUNDS, 10);
     this.ADMIN_LOGIN = this.envVariables.ADMIN_LOGIN;
     this.ADMIN_PASSWORD = this.envVariables.ADMIN_PASSWORD;

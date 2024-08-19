@@ -24,16 +24,11 @@ import { CommentsQueryRepository } from './features/comments/infrastructure/comm
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthController } from './features/auth/api/auth.controller';
 import { PassportModule } from '@nestjs/passport';
-
-import env from 'dotenv';
 import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './features/auth/strategies/local.strategy';
 import { EmailService } from './features/auth/application/email.service';
 import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from './common/decorators/validate/is-email-or-login-exist';
-env.config();
 
-const secret = process.env.ACCESS_SECRET_TOKEN || 'any';
-const expiresIn = process.env.ACCESS_SECRET_TOKEN_EXPIRATION || '15m';
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -81,8 +76,8 @@ const commentsProviders: Provider[] = [
       // { name: Like.name, schema: LikeSchema },
     ]),
     JwtModule.register({
-      secret,
-      signOptions: { expiresIn }
+      secret: appSettings.api.ACCESS_SECRET_TOKEN,
+      signOptions: { expiresIn: appSettings.api.ACCESS_SECRET_TOKEN_EXPIRATION }
     }),
     PassportModule
   ],

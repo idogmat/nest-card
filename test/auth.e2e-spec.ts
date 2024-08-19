@@ -1,31 +1,21 @@
 import { INestApplication } from '@nestjs/common';
-import { AuthService } from '../src/features/auth/application/auth.service';
-import { UsersRepository } from '../src/features/users/infrastructure/users.repository';
-import { initSettings } from './utils/init-settings';
-import { AppSettings } from 'src/settings/app-settings';
-import { JwtService } from '@nestjs/jwt';
-import { AuthServiceMock } from './mock/auth.service.mock';
-import { AuthTestManager } from './utils/routes/auth-test-manager';
+import request from 'supertest';
+import { Test } from '@nestjs/testing';
+import { AppModule } from 'src/app.module';
+
+const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
 describe('auth', () => {
   let app: INestApplication;
-  let authTestManager: AuthTestManager;
 
   beforeAll(async () => {
-    const result = await initSettings((moduleBuilder) =>
-      //override UsersService еще раз
-      moduleBuilder
-        .overrideProvider(AuthService)
-        .useFactory({
-          factory: (appSettings: AppSettings,
-            usersRepository: UsersRepository,
-            jwtService: JwtService) => {
-            return new AuthServiceMock(appSettings, usersRepository, jwtService);
-          }, inject: [AppSettings, UsersRepository, JwtService]
-        }).compile(),
-    );
-    app = result.app;
-    authTestManager = result.authTestManager;
+
+    const moduleFixture = await Test.createTestingModule({
+      imports: [AppModule]
+    }).compile();
+
+    app = await moduleFixture.createNestApplication();
+    await app.init();
   });
 
   afterAll(async () => {
@@ -33,21 +23,39 @@ describe('auth', () => {
   });
 
   it('should create user', async () => {
-    const body = { login: 'name77', password: 'qwerty', email: 'email77@gma.em' };
-    // console.log(authTestManager);
-    const response = await authTestManager.registration(body);
-    expect(response.status).toBe(201);
+    const result = await request(app.getHttpServer())
+      .post('/auth/registration')
+      .send(regUser);
+    expect(result.status).toBe(204);
+
+    const { login: loginOrEmail, password } = regUser;
+
+    const loginRequest = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ loginOrEmail, password });
+    expect(loginRequest.status).toBe(200);
+    expect(loginRequest.body).toHaveProperty('accessToken');
+
   });
 
-  it('should get users', async () => {
-    // const body = { login: 'name2', password: 'qwerty', email: 'email2@email.em' };
+  it('should get user data', async () => {
+    const { login: loginOrEmail, password } = regUser;
 
-    // await userTestManger.createUser('admin', body);
+    const loginRequest = await request(app.getHttpServer())
+      .post('/auth/login')
+      .send({ loginOrEmail, password });
 
-    // const getUserResponse = await request(app.getHttpServer())
-    //   .get(`/api/users`)
-    //   .expect(200);
+    expect(loginRequest.status).toBe(200);
+    expect(loginRequest.body).toHaveProperty('accessToken');
 
-    // expect(getUserResponse.body.totalCount).toBe(2);
+    const accessToken: string = loginRequest.body?.accessToken.toString();
+
+    const authMeRequest = await request(app.getHttpServer())
+      .get('/auth/me')
+      .set({ Authorization: "Bearer " + accessToken })
+      .send({ loginOrEmail, password });
+
+    expect(authMeRequest.status).toBe(200);
+    expect(authMeRequest.body).toEqual({ login: regUser.login, email: regUser.email, userId: expect.any(String) });
   });
 });
