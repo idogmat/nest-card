@@ -3,9 +3,11 @@ import { AppModule } from './app.module';
 import { appSettings } from './settings/app-settings';
 import { applyAppSettings } from './settings/apply-app-setting';
 import { useContainer } from 'class-validator';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(cookieParser());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   applyAppSettings(app);
 

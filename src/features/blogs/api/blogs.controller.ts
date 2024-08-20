@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   PaginationOutput,
@@ -24,6 +25,7 @@ import { PostsService } from 'src/features/posts/application/posts.service';
 import { PostsQueryRepository } from 'src/features/posts/infrastructure/posts.query-repository';
 import { PostOutputModel } from 'src/features/posts/api/model/output/post.output.model';
 import { PostInBlogCreateModel } from './model/input/create-post.input.model';
+import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -70,6 +72,7 @@ export class BlogsController {
     return blog;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() createModel: BlogCreateModel) {
     const { name, description, websiteUrl } = createModel;
@@ -84,6 +87,7 @@ export class BlogsController {
     return createdBlog;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post(':id/posts')
   async createPost(
     @Param('id') id: string,
@@ -121,9 +125,11 @@ export class BlogsController {
     return posts;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
   async update(
+    // @Request() req,
     @Param('id') id: string,
     @Body() updateModel: BlogCreateModel
   ) {
@@ -134,9 +140,13 @@ export class BlogsController {
     }
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  async delete(@Param('id') id: string) {
+  async delete(
+    // @Request() req,
+    @Param('id') id: string
+  ) {
     const deletingResult: boolean = await this.blogsService.delete(id);
 
     if (!deletingResult) {

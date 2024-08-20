@@ -1,13 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { AppSettings } from 'src/settings/app-settings';
 
 // Custom guard
 // https://docs.nestjs.com/guards
 @Injectable()
 export class BasicAuthGuard implements CanActivate {
-  constructor(private appSettings: AppSettings) { }
+  constructor(private configService: ConfigService) { }
 
   canActivate(
     context: ExecutionContext,
@@ -16,7 +16,7 @@ export class BasicAuthGuard implements CanActivate {
 
     try {
       const authorization = request.headers?.authorization;
-
+      console.log(authorization);
       if (!authorization) {
         throw new UnauthorizedException();
       }
@@ -37,14 +37,14 @@ export class BasicAuthGuard implements CanActivate {
 
       const bytes = Buffer.from(secondTokenPart, 'base64').toString('utf8');
 
-      const CREDENTIALS = `${this.appSettings.api.ADMIN_LOGIN}:${this.appSettings.api.ADMIN_PASSWORD}`;
+      const CREDENTIALS = `${this.configService.get('ADMIN_LOGIN')}:${this.configService.get('ADMIN_PASSWORD')}`;
 
       if (bytes !== CREDENTIALS) {
         throw new UnauthorizedException();
       }
 
       return true;
-    } catch (e) {
+    } catch (_e: any) {
       throw new UnauthorizedException();
     }
   }

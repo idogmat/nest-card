@@ -1,7 +1,3 @@
-import { config } from 'dotenv';
-
-config();
-
 export type EnvironmentVariable = { [key: string]: string | undefined; };
 export type EnvironmentsTypes =
   | 'DEVELOPMENT'

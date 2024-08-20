@@ -30,10 +30,11 @@ export class BlogsService {
 
   async update(
     id,
-    updateModel
+    updateModel,
   ): Promise<boolean> {
 
     if (!isValidObjectId(id)) return null;
+    // const blogEntity = await this.blogsRepository.getById(id)
 
     const blog = await this.blogsRepository.update(id, updateModel);
 
@@ -44,6 +45,7 @@ export class BlogsService {
 
   async delete(id: string): Promise<boolean> {
     if (!isValidObjectId(id)) return null;
+    // const blogEntity = await this.blogsRepository.getById(id)
 
     return this.blogsRepository.delete(id);
   }

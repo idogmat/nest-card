@@ -7,6 +7,7 @@ import {
   HttpCode,
   Post,
   Request,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { AuthMeOutputModel } from './model/output/auth.output.model';
 import { EmailService } from '../application/email.service';
+import { Response } from 'express';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -31,17 +33,20 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   @HttpCode(200)
-  async login(@Body() loginModel: LoginInputModel) {
+  async login(@Res() res: Response, @Body() loginModel: LoginInputModel) {
     const { loginOrEmail, password } = loginModel;
 
-    const accessToken = await this.authService.login(
+    const result = await this.authService.login(
       loginOrEmail,
       password,
     );
-
-    console.log(accessToken);
-
-    return { accessToken };
+    if (!result) throw new UnauthorizedException();
+    const { accessToken, refreshToken } = result as { accessToken: string, refreshToken: string; };
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.status(200).send({ accessToken });
   }
 
 

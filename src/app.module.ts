@@ -28,7 +28,7 @@ import { JwtStrategy } from './features/auth/strategies/jwt.strategy';
 import { LocalStrategy } from './features/auth/strategies/local.strategy';
 import { EmailService } from './features/auth/application/email.service';
 import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from './common/decorators/validate/is-email-or-login-exist';
-
+import { ConfigModule, ConfigService } from '@nestjs/config';
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -65,6 +65,10 @@ const commentsProviders: Provider[] = [
 @Module({
   // Регистрация модулей
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     MongooseModule.forRoot(appSettings.env.isTesting()
       ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
       : appSettings.api.MONGO_CONNECTION_URI),
@@ -93,6 +97,7 @@ const commentsProviders: Provider[] = [
       provide: AppSettings,
       useValue: appSettings,
     },
+    ConfigService,
   ],
   // Регистрация контроллеров
   controllers: [

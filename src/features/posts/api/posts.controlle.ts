@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   PaginationOutput,
@@ -22,6 +23,7 @@ import { PostCreateModel } from './model/input/create-post.input.model';
 import { PostsService } from '../application/posts.service';
 import { BlogsQueryRepository } from 'src/features/blogs/infrastructure/blogs.query-repository';
 import { PostUpdateModel } from './model/input/update-post.input.model';
+import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -66,6 +68,7 @@ export class PostsController {
     return post;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() createModel: PostCreateModel) {
     const blog = await this.blogsQueryRepository.getById(createModel?.blogId);
@@ -82,6 +85,7 @@ export class PostsController {
     return createdPost;
   }
 
+  @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
   async update(@Param('id') id: string, @Body() updateModel: PostUpdateModel) {
@@ -96,6 +100,7 @@ export class PostsController {
     }
   }
 
+  @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
   async delete(@Param('id') id: string) {

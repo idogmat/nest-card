@@ -6,6 +6,7 @@ import { User } from 'src/features/users/domain/user.entity';
 import { randomUUID } from 'crypto';
 import { dateSetter } from 'src/common/utils/dataSetter';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
+import { ConfigService } from '@nestjs/config';
 
 
 @Injectable()
@@ -13,7 +14,8 @@ export class AuthService {
   constructor(
     private readonly appSettings: AppSettings,
     private readonly usersRepository: UsersRepository,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private configService: ConfigService
   ) { }
 
   async generatePasswordHash(password: string): Promise<{ passwordHash, passwordSalt; }> {
@@ -36,21 +38,35 @@ export class AuthService {
     return id;
   }
 
-  async login(loginOrEmail: string, password: string) {
+  async login(loginOrEmail: string, password: string): Promise<boolean | { accessToken: string, refreshToken: string; }> {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user) return false;
     const passwordHash = await this.hashPassword(password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
-    const access_token = await this.createToken({ userId: user._id.toString() });
-    return access_token;
+    const accessToken = await this.createToken({ userId: user._id.toString() });
+    const refreshToken = await this.createToken({ userId: user._id.toString() });
+    return { accessToken, refreshToken };
   }
 
   async createToken(payload: any) {
+    // console.log(this.configService.get('ACCESS_SECRET_TOKEN'));
     const token = await this.jwtService.sign(
       payload,
       {
-        secret: this.appSettings.api.ACCESS_SECRET_TOKEN,
-        expiresIn: this.appSettings.api.ACCESS_SECRET_TOKEN_EXPIRATION
+        secret: this.configService.get('ACCESS_SECRET_TOKEN'),
+        expiresIn: this.configService.get('ACCESS_SECRET_TOKEN_EXPIRATION')
+      }
+    );
+    return token;
+  }
+
+  async createRefreshToken(payload: any) {
+    // console.log(this.configService.get('ACCESS_SECRET_TOKEN'));
+    const token = await this.jwtService.sign(
+      payload,
+      {
+        secret: this.configService.get('REFRESH_SECRET_TOKEN'),
+        expiresIn: this.configService.get('REFRESH_SECRET_TOKEN_EXPIRATION')
       }
     );
     return token;
