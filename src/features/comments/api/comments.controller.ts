@@ -7,7 +7,6 @@ import {
 import { CommentOutputModel } from './model/output/comment.output.model';
 import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
 
-
 @ApiTags('Comments')
 @Controller('comments')
 export class CommentsController {
@@ -24,6 +23,5 @@ export class CommentsController {
 
     return comment;
   }
-
 
 }

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema } from 'src/base/models/like-info.base';
+import { Like, LikeSchema } from 'src/features/likes/domain/like-info.entity';
 
-@Schema()
+@Schema({ _id: false })
 export class CommentatorInfo {
   @Prop({ type: String })
   userId: string;
@@ -15,6 +15,9 @@ export class CommentatorInfo {
 export class Comment {
   @Prop({ type: String, required: true })
   content: string;
+
+  @Prop({ type: String, required: true })
+  postId: string;
 
   @Prop({ type: Number, default: new Date().getTime() })
   createdAt: number;

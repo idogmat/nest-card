@@ -43,8 +43,8 @@ export class AuthService {
     if (!user) return false;
     const passwordHash = await this.hashPassword(password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
-    const accessToken = await this.createToken({ userId: user._id.toString() });
-    const refreshToken = await this.createToken({ userId: user._id.toString() });
+    const accessToken = await this.createToken({ userId: user._id.toString(), login: user.login });
+    const refreshToken = await this.createToken({ userId: user._id.toString(), login: user.login });
     return { accessToken, refreshToken };
   }
 

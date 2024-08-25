@@ -1,4 +1,4 @@
-import { LikesInfo, LikeType } from "src/base/models/like-info.base";
+import { LikesInfo, LikeType } from "src/features/likes/domain/like-info.entity";
 import { PostDocument } from "src/features/posts/domain/post.entity";
 
 
@@ -15,9 +15,9 @@ export class PostOutputModel {
 
 // MAPPERS
 
-export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
+export const PostOutputModelMapper = (post: PostDocument, userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-
+  console.log(post.extendedLikesInfo.newestLikes);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -28,9 +28,9 @@ export const PostOutputModelMapper = (post: PostDocument): PostOutputModel => {
   outputModel.extendedLikesInfo = {
     likesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Like') || 0,
     dislikesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Dislike') || 0,
-    myStatus: 'None',
+    myStatus: getCurrentStatus(post.extendedLikesInfo?.additionalLikes, userId),
     newestLikes: post.extendedLikesInfo?.newestLikes?.length
-      ? post.extendedLikesInfo?.newestLikes?.filter((e, i) => i < 3)
+      ? post.extendedLikesInfo?.newestLikes?.filter((_, i) => i < 3)
       : [],
   };
   outputModel.blogId = post.blogId;
@@ -47,7 +47,7 @@ export const getLikeCount = (map: Map<string, string>, type: LikeType) => {
   return count;
 };
 
-export const getCurrentStatus = (map: Map<string, string>, userId: string) => {
+export const getCurrentStatus = (map: Map<string, LikeType>, userId: string): LikeType => {
   console.log(map.get(userId));
   return map.get(userId) || "None";
 };

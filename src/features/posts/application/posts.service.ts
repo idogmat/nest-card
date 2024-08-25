@@ -39,6 +39,20 @@ export class PostsService {
     return true;
   }
 
+  async setLike(
+    id,
+    user,
+    likeStatus,
+  ): Promise<boolean> {
+
+    const result = await this.postsRepository.setLike(id, user, likeStatus);
+    return result;
+  }
+
+  async getById(id: string) {
+    return this.postsRepository.getById(id);
+  }
+
   async delete(id: string): Promise<boolean> {
     return this.postsRepository.delete(id);
   }

@@ -10,9 +10,11 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
+  Pagination,
   PaginationOutput,
   PaginationWithSearchBlogNameTerm,
 } from '../../../base/models/pagination.base.model';
@@ -24,22 +26,36 @@ import { PostsService } from '../application/posts.service';
 import { BlogsQueryRepository } from 'src/features/blogs/infrastructure/blogs.query-repository';
 import { PostUpdateModel } from './model/input/update-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
+import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
+import { LikeSetOnPostModel } from 'src/features/likes/api/model/input/like-post.input.model';
+import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
+import { CommentCreateModel } from 'src/features/comments/api/model/input/create-comment.input.model';
+import { CommentsService } from 'src/features/comments/application/comments.service';
+import { CommentsQueryRepository } from 'src/features/comments/infrastructure/comments.query-repository';
+import { CommentOutputModel } from 'src/features/comments/api/model/output/comment.output.model';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
+
+export const COMMENTS_SORTING_PROPERTIES: SortingPropertiesType<CommentOutputModel> =
+  ['content', 'createdAt'];
 
 @ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
+    private readonly commentsService: CommentsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly commentsQueryRepository: CommentsQueryRepository,
   ) { }
 
+  @UseGuards(AuthGetGuard)
   @Get()
   async getAll(
     @Query() query: any,
+    @Req() req?
   ) {
 
     const pagination: PaginationWithSearchBlogNameTerm =
@@ -49,17 +65,18 @@ export class PostsController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination);
+      await this.postsQueryRepository.getAll(pagination, req?.user?.userId);
 
     return posts;
   }
 
+  @UseGuards(AuthGetGuard)
   @Get(':id')
-  async getById(
-    @Param('id') id: string,
+  async getById(@Param('id') id: string,
+    @Req() req?
   ) {
     const post: PostOutputModel =
-      await this.postsQueryRepository.getById(id);
+      await this.postsQueryRepository.getById(id, req?.user?.userId);
 
     if (!post) {
       throw new NotFoundException();
@@ -85,11 +102,47 @@ export class PostsController {
     return createdPost;
   }
 
+  @UseGuards(AuthGetGuard)
+  @Get(':id/comments')
+  async getComment(
+    @Param('id') id: string,
+    @Query() query: any,
+    @Req() req
+  ) {
+    const pagination: Pagination =
+      new Pagination(
+        query,
+        COMMENTS_SORTING_PROPERTIES,
+      );
+
+    const comments: PaginationOutput<CommentOutputModel> =
+      await this.commentsQueryRepository.getAll(pagination, id, req?.user?.userId);
+
+    return comments;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/comments')
+  async createComment(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() createModel: CommentCreateModel) {
+    const post = await this.postsQueryRepository.getById(id);
+    if (!post) throw new NotFoundException();
+    const { content } = createModel;
+
+    const createdComment = await this.commentsService.create(
+      id, content, req.user.userId, req.user.login
+    );
+
+    return createdComment;
+  }
+
   @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
   async update(@Param('id') id: string, @Body() updateModel: PostUpdateModel) {
-    const post = await this.getById(id);
+    const post = await this.postsService.getById(id);
     if (!post) {
       throw new NotFoundException();
     }
@@ -104,7 +157,7 @@ export class PostsController {
   @Delete(':id')
   @HttpCode(204)
   async delete(@Param('id') id: string) {
-    const post = await this.getById(id);
+    const post = await this.postsService.getById(id);
     if (!post) {
       throw new NotFoundException();
     }
@@ -113,5 +166,20 @@ export class PostsController {
     if (!deletingResult) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put(':id/like-status')
+  @HttpCode(204)
+  async setLikeStatus(@Req() req, @Param('id') id: string, @Body() like: LikeSetOnPostModel) {
+    const post = await this.postsService.getById(req.params.id);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    await this.postsService.setLike(
+      id,
+      req.user,
+      like.likeStatus,
+    );
   }
 }

@@ -9,15 +9,15 @@ import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post
 export class PostsQueryRepository {
   constructor(@InjectModel(Post.name) private postModel: PostModelType) { }
 
-  async getById(id: string): Promise<PostOutputModel | null> {
+  async getById(id: string, userId?: string): Promise<PostOutputModel | null> {
 
     if (!isValidObjectId(id)) return null;
-    const blog = await this.postModel.findOne({ _id: id });
-    if (blog === null) {
+    const model = await this.postModel.findById(id);
+    if (model === null) {
       return null;
     }
 
-    return PostOutputModelMapper(blog);
+    return PostOutputModelMapper(model, userId);
   }
 
   async getAll(
@@ -41,12 +41,13 @@ export class PostsQueryRepository {
       filter.blogId = id;
     }
 
-    return await this.__getResult(filter, pagination);
+    return await this.__getResult(filter, pagination, id);
   }
 
   private async __getResult(
     filter: FilterQuery<Post>,
     pagination: PaginationWithSearchBlogNameTerm,
+    id?: string
   ): Promise<PaginationOutput<PostOutputModel>> {
     const blogs = await this.postModel
       .find(filter)
@@ -58,7 +59,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.postModel.countDocuments(filter);
 
-    const mappedPosts = blogs.map(PostOutputModelMapper);
+    const mappedPosts = blogs.map(b => PostOutputModelMapper(b, id));
 
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,

@@ -2,6 +2,8 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
+import { EmailService } from 'src/features/auth/application/email.service';
+import { EmailTestManager } from './utils/routes/auth-test-manager';
 
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
@@ -12,7 +14,10 @@ describe('auth', () => {
 
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
-    }).compile();
+    })
+      .overrideProvider(EmailService)
+      .useClass(EmailTestManager)
+      .compile();
 
     app = await moduleFixture.createNestApplication();
     await app.init();

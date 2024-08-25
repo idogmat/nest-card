@@ -29,6 +29,9 @@ import { LocalStrategy } from './features/auth/strategies/local.strategy';
 import { EmailService } from './features/auth/application/email.service';
 import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from './common/decorators/validate/is-email-or-login-exist';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CustomBlogIdValidation } from './features/posts/validate/blogId.validate';
+import { CommentsRepository } from './features/comments/infrastructure/comments.repository';
+import { CommentsService } from './features/comments/application/comments.service';
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -49,6 +52,7 @@ const validators: Provider[] = [
   CustomLoginValidation,
   CustomCodeValidation,
   CustomEmailExistValidation,
+  CustomBlogIdValidation,
 ];
 const authProviders: Provider[] = [
   AuthService,
@@ -58,8 +62,8 @@ const authProviders: Provider[] = [
   EmailService,
 ];
 const commentsProviders: Provider[] = [
-  // CommentsRepository,
-  // CommentsService,
+  CommentsRepository,
+  CommentsService,
   CommentsQueryRepository,
 ];
 @Module({

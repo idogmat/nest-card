@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema } from 'src/base/models/like-info.base';
+import { Like, LikeSchema } from 'src/features/likes/domain/like-info.entity';
 
 @Schema()
 export class Post {
