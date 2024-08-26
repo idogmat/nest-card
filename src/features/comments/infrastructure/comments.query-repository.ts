@@ -8,14 +8,14 @@ import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.mo
 export class CommentsQueryRepository {
   constructor(@InjectModel(Comment.name) private CommentModel: CommentModelType) { }
 
-  async getById(id: string): Promise<CommentOutputModel | null> {
+  async getById(id: string, userId?: string): Promise<CommentOutputModel | null> {
     const comment = await this.CommentModel.findById(id);
 
     if (comment === null) {
       return null;
     }
-
-    return CommentOutputModelMapper(comment);
+    console.log(userId);
+    return CommentOutputModelMapper(comment, userId);
   }
 
   async getAll(

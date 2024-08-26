@@ -1,7 +1,9 @@
 import { IsString, Length } from "class-validator";
+import { Trim } from "src/common/decorators/transform/trim";
 
 export class PostInBlogCreateModel {
   @IsString()
+  @Trim()
   @Length(1, 30)
   title: string;
 
@@ -10,6 +12,7 @@ export class PostInBlogCreateModel {
   shortDescription: string;
 
   @IsString()
+  @Trim()
   @Length(1, 1000)
   content: string;
 }

@@ -7,7 +7,7 @@ export interface LikesInfo {
   likesCount: number;
   dislikesCount: number;
   myStatus: LikeType;
-  newestLikes: NewestLikes[];
+  newestLikes?: NewestLikes[];
 }
 
 @Schema()
@@ -28,7 +28,7 @@ export class Like {
   additionalLikes: Map<string, LikeType>;
 
   @Prop({ type: [], of: NewestLikes, default: [] })
-  newestLikes: NewestLikes[];
+  newestLikes?: NewestLikes[];
 }
 
 export const LikeSchema = SchemaFactory.createForClass(Like);

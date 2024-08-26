@@ -27,7 +27,7 @@ export class PostsQueryRepository {
 
     if (pagination.searchNameTerm) {
       filters.push({
-        email: { $regex: pagination.searchNameTerm, $options: 'i' },
+        title: { $regex: pagination.searchNameTerm, $options: 'i' },
       });
     }
 
@@ -35,10 +35,6 @@ export class PostsQueryRepository {
 
     if (filters.length > 0) {
       filter.$or = filters;
-    }
-
-    if (id) {
-      filter.blogId = id;
     }
 
     return await this.__getResult(filter, pagination, id);
@@ -49,7 +45,7 @@ export class PostsQueryRepository {
     pagination: PaginationWithSearchBlogNameTerm,
     id?: string
   ): Promise<PaginationOutput<PostOutputModel>> {
-    const blogs = await this.postModel
+    const posts = await this.postModel
       .find(filter)
       .sort({
         [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
@@ -59,7 +55,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.postModel.countDocuments(filter);
 
-    const mappedPosts = blogs.map(b => PostOutputModelMapper(b, id));
+    const mappedPosts = posts.map(b => PostOutputModelMapper(b, id));
 
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,

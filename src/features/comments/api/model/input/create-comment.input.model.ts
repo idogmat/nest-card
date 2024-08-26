@@ -3,6 +3,6 @@ import { IsString, Length } from "class-validator";
 export class CommentCreateModel {
 
   @IsString()
-  @Length(3, 10)
+  @Length(20, 300)
   content: string;
 }

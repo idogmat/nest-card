@@ -9,7 +9,6 @@ export class PostCreateModel {
   title: string;
 
   @IsString()
-  @Trim()
   @Length(1, 100)
   shortDescription: string;
 

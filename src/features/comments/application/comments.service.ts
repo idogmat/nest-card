@@ -28,4 +28,27 @@ export class CommentsService {
 
     return CommentOutputModelMapper(comment);
   }
+
+  async setLike(
+    id,
+    user,
+    likeStatus,
+  ): Promise<boolean> {
+
+    const result = await this.commentsRepository.setLike(id, user, likeStatus);
+    return result;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    return this.commentsRepository.delete(id);
+  }
+
+  async update(
+    id,
+    updateModel
+  ): Promise<boolean> {
+
+    await this.commentsRepository.update(id, updateModel);
+    return true;
+  }
 }

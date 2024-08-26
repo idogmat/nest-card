@@ -27,7 +27,7 @@ import { BlogsQueryRepository } from 'src/features/blogs/infrastructure/blogs.qu
 import { PostUpdateModel } from './model/input/update-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
-import { LikeSetOnPostModel } from 'src/features/likes/api/model/input/like-post.input.model';
+import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
 import { CommentCreateModel } from 'src/features/comments/api/model/input/create-comment.input.model';
 import { CommentsService } from 'src/features/comments/application/comments.service';
@@ -72,7 +72,8 @@ export class PostsController {
 
   @UseGuards(AuthGetGuard)
   @Get(':id')
-  async getById(@Param('id') id: string,
+  async getById(
+    @Param('id') id: string,
     @Req() req?
   ) {
     const post: PostOutputModel =
@@ -104,7 +105,7 @@ export class PostsController {
 
   @UseGuards(AuthGetGuard)
   @Get(':id/comments')
-  async getComment(
+  async getComments(
     @Param('id') id: string,
     @Query() query: any,
     @Req() req
@@ -141,7 +142,10 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Put(':id')
   @HttpCode(204)
-  async update(@Param('id') id: string, @Body() updateModel: PostUpdateModel) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateModel: PostUpdateModel
+  ) {
     const post = await this.postsService.getById(id);
     if (!post) {
       throw new NotFoundException();
@@ -171,7 +175,11 @@ export class PostsController {
   @UseGuards(JwtAuthGuard)
   @Put(':id/like-status')
   @HttpCode(204)
-  async setLikeStatus(@Req() req, @Param('id') id: string, @Body() like: LikeSetOnPostModel) {
+  async setLikeStatus(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() like: LikeSetModel
+  ) {
     const post = await this.postsService.getById(req.params.id);
     if (!post) {
       throw new NotFoundException();
