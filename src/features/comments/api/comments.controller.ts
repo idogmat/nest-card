@@ -36,7 +36,7 @@ export class CommentsController {
   ) {
     const comment: CommentOutputModel =
       await this.commentsQueryRepository.getById(id, req?.user?.userId);
-
+    if (!comment) throw new NotFoundException;
     return comment;
   }
 
@@ -49,9 +49,7 @@ export class CommentsController {
     @Req() req?
   ) {
     const comment = await this.commentsQueryRepository.getById(id);
-    if (!comment) {
-      throw new NotFoundException();
-    }
+    if (!comment) throw new NotFoundException();
 
     if (comment.commentatorInfo.userId !== req?.user?.userId) {
       throw new ForbiddenException();
@@ -72,10 +70,8 @@ export class CommentsController {
     @Param('id') id: string,
     @Body() like: LikeSetModel
   ) {
-    const post = await this.commentsQueryRepository.getById(req.params.id);
-    if (!post) {
-      throw new NotFoundException();
-    }
+    const comment = await this.commentsQueryRepository.getById(req.params.id);
+    if (!comment) throw new NotFoundException();
     await this.commentsService.setLike(
       id,
       req.user,

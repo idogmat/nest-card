@@ -32,6 +32,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CustomBlogIdValidation } from './features/posts/validate/blogId.validate';
 import { CommentsRepository } from './features/comments/infrastructure/comments.repository';
 import { CommentsService } from './features/comments/application/comments.service';
+import { AuthLoginUseCase } from './features/auth/application/user-cases/auth-login-use-case';
+import { CqrsModule } from '@nestjs/cqrs';
+import { ThrottlerModule } from '@nestjs/throttler';
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -66,9 +69,23 @@ const commentsProviders: Provider[] = [
   CommentsService,
   CommentsQueryRepository,
 ];
+
+const useCases = [
+  AuthLoginUseCase
+];
+
+// const commandUseCases = [
+//   AuthLoginCommand
+// ];
+console.log(appSettings.api.THROTTLER_LIMIT);
 @Module({
   // Регистрация модулей
   imports: [
+    ThrottlerModule.forRoot([{
+      ttl: appSettings.api.THROTTLER_TTL,
+      limit: appSettings.api.THROTTLER_LIMIT,
+    }]),
+    CqrsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -91,6 +108,7 @@ const commentsProviders: Provider[] = [
   ],
   // Регистрация провайдеров
   providers: [
+    ...useCases,
     ...validators,
     ...usersProviders,
     ...blogsProviders,

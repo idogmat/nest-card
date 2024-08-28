@@ -19,6 +19,9 @@ import { UsersRepository } from 'src/features/users/infrastructure/users.reposit
 import { AuthMeOutputModel } from './model/output/auth.output.model';
 import { EmailService } from '../application/email.service';
 import { Response } from 'express';
+import { AuthLoginCommand } from '../application/user-cases/auth-login-use-case';
+import { CommandBus } from '@nestjs/cqrs';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -26,19 +29,21 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersRepository: UsersRepository,
-    private readonly emailService: EmailService
+    private readonly emailService: EmailService,
+    private commandBus: CommandBus
   ) { }
 
 
   @UseGuards(LocalAuthGuard)
+  @UseGuards(ThrottlerGuard)
   @Post('/login')
   @HttpCode(200)
   async login(@Res() res: Response, @Body() loginModel: LoginInputModel) {
     const { loginOrEmail, password } = loginModel;
 
-    const result = await this.authService.login(
+    const result = await this.commandBus.execute(new AuthLoginCommand(
       loginOrEmail,
-      password,
+      password)
     );
     if (!result) throw new UnauthorizedException();
     const { accessToken, refreshToken } = result as { accessToken: string, refreshToken: string; };

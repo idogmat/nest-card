@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { AppSettings } from '../../../settings/app-settings';
 import { JwtService } from '@nestjs/jwt';
 import { User } from 'src/features/users/domain/user.entity';
 import { randomUUID } from 'crypto';
@@ -12,7 +11,6 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly appSettings: AppSettings,
     private readonly usersRepository: UsersRepository,
     private jwtService: JwtService,
     private configService: ConfigService
@@ -38,15 +36,15 @@ export class AuthService {
     return id;
   }
 
-  async login(loginOrEmail: string, password: string): Promise<boolean | { accessToken: string, refreshToken: string; }> {
-    const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
-    if (!user) return false;
-    const passwordHash = await this.hashPassword(password, user.passwordSalt);
-    if (user.passwordHash !== passwordHash) return false;
-    const accessToken = await this.createToken({ userId: user._id.toString(), login: user.login });
-    const refreshToken = await this.createToken({ userId: user._id.toString(), login: user.login });
-    return { accessToken, refreshToken };
-  }
+  // async login(loginOrEmail: string, password: string): Promise<boolean | { accessToken: string, refreshToken: string; }> {
+  //   const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
+  //   if (!user) return false;
+  //   const passwordHash = await this.hashPassword(password, user.passwordSalt);
+  //   if (user.passwordHash !== passwordHash) return false;
+  //   const accessToken = await this.createToken({ userId: user._id.toString(), login: user.login });
+  //   const refreshToken = await this.createToken({ userId: user._id.toString(), login: user.login });
+  //   return { accessToken, refreshToken };
+  // }
 
   async createToken(payload: any) {
     // console.log(this.configService.get('ACCESS_SECRET_TOKEN'));

@@ -19,7 +19,12 @@ export class AuthGetGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     if (!request.headers?.authorization) return true;
     const token = request.headers?.authorization?.split(" ");
-    const res = await this.jwtService.verify(token[1], { secret: this.configService.get('ACCESS_SECRET_TOKEN') });
+    let res: any = undefined;
+    try {
+      res = await this.jwtService.verify(token[1], { secret: this.configService.get('ACCESS_SECRET_TOKEN') });
+    } catch {
+
+    }
     request.user = res;
     return true;
   }

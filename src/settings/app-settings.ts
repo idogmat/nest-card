@@ -47,7 +47,8 @@ class APISettings {
   public readonly REFRESH_SECRET_TOKEN: string;
   public readonly ACCESS_SECRET_TOKEN_EXPIRATION: string;
   public readonly REFRESH_SECRET_TOKEN_EXPIRATION: string;
-
+  public readonly THROTTLER_TTL: number;
+  public readonly THROTTLER_LIMIT: number;
 
   // Database
   public readonly MONGO_CONNECTION_URI: string;
@@ -63,6 +64,8 @@ class APISettings {
     this.REFRESH_SECRET_TOKEN = this.envVariables.REFRESH_SECRET_TOKEN;
     this.ACCESS_SECRET_TOKEN_EXPIRATION = this.envVariables.ACCESS_SECRET_TOKEN_EXPIRATION;
     this.REFRESH_SECRET_TOKEN_EXPIRATION = this.envVariables.REFRESH_SECRET_TOKEN_EXPIRATION;
+    this.THROTTLER_TTL = this.getNumberOrDefault(this.envVariables.THROTTLER_TTL, 10000);
+    this.THROTTLER_LIMIT = this.getNumberOrDefault(this.envVariables.THROTTLER_LIMIT, 5);
     // Database
     this.MONGO_CONNECTION_URI =
       envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';

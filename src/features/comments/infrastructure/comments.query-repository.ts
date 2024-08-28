@@ -23,7 +23,7 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string
   ): Promise<PaginationOutput<CommentOutputModel>> {
-    const blogs = await this.CommentModel
+    const comments = await this.CommentModel
       .find({ postId: id })
       .sort({
         [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
@@ -33,7 +33,7 @@ export class CommentsQueryRepository {
 
     const totalCount = await this.CommentModel.countDocuments({ postId: id });
 
-    const mappedComments = blogs.map(e => CommentOutputModelMapper(e, userId));
+    const mappedComments = comments.map(e => CommentOutputModelMapper(e, userId));
 
     return new PaginationOutput<CommentOutputModel>(
       mappedComments,

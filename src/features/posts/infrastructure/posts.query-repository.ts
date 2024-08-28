@@ -21,7 +21,7 @@ export class PostsQueryRepository {
   }
 
   async getAll(
-    pagination: PaginationWithSearchBlogNameTerm, id?: string
+    pagination: PaginationWithSearchBlogNameTerm, id: string, userId: string
   ): Promise<PaginationOutput<PostOutputModel>> {
     const filters: FilterQuery<Post>[] = [];
 
@@ -31,19 +31,21 @@ export class PostsQueryRepository {
       });
     }
 
-    const filter: FilterQuery<Post> = {};
+    let filter: FilterQuery<Post> = {};
+
+    if (id) filter = { blogId: id };
 
     if (filters.length > 0) {
       filter.$or = filters;
     }
 
-    return await this.__getResult(filter, pagination, id);
+    return await this.__getResult(filter, pagination, userId);
   }
 
   private async __getResult(
     filter: FilterQuery<Post>,
     pagination: PaginationWithSearchBlogNameTerm,
-    id?: string
+    userId?: string
   ): Promise<PaginationOutput<PostOutputModel>> {
     const posts = await this.postModel
       .find(filter)
@@ -55,7 +57,7 @@ export class PostsQueryRepository {
 
     const totalCount = await this.postModel.countDocuments(filter);
 
-    const mappedPosts = posts.map(b => PostOutputModelMapper(b, id));
+    const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
 
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,

@@ -65,7 +65,7 @@ export class PostsController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, req?.user?.userId);
+      await this.postsQueryRepository.getAll(pagination, '', req?.user?.userId);
 
     return posts;
   }
@@ -108,8 +108,10 @@ export class PostsController {
   async getComments(
     @Param('id') id: string,
     @Query() query: any,
-    @Req() req
+    @Req() req?
   ) {
+    const post = await this.postsQueryRepository.getById(id);
+    if (!post) throw new NotFoundException();
     const pagination: Pagination =
       new Pagination(
         query,
@@ -147,9 +149,7 @@ export class PostsController {
     @Body() updateModel: PostUpdateModel
   ) {
     const post = await this.postsService.getById(id);
-    if (!post) {
-      throw new NotFoundException();
-    }
+    if (!post) throw new NotFoundException();
     const updatedResult = await this.postsService.update(id, updateModel);
 
     if (!updatedResult) {

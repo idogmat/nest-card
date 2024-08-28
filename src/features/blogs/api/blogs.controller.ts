@@ -10,6 +10,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -26,6 +27,7 @@ import { PostsQueryRepository } from 'src/features/posts/infrastructure/posts.qu
 import { PostOutputModel } from 'src/features/posts/api/model/output/post.output.model';
 import { PostInBlogCreateModel } from './model/input/create-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
+import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -107,12 +109,15 @@ export class BlogsController {
     return createdPost;
   }
 
+  @UseGuards(AuthGetGuard)
   @Get(':id/posts')
   async getPosts(
     @Param('id') id: string,
-    @Query() query: any
+    @Query() query: any,
+    @Req() req?
   ) {
-    await this.getById(id);
+    const blog = await this.blogsQueryRepository.getById(id);
+    if (!blog) throw new NotFoundException();
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
         query,
@@ -120,7 +125,7 @@ export class BlogsController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, id);
+      await this.postsQueryRepository.getAll(pagination, id, req?.user?.userId);
 
     return posts;
   }
