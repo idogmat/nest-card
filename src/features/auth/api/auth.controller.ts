@@ -6,7 +6,7 @@ import {
   Get,
   HttpCode,
   Post,
-  Request,
+  Req,
   Res,
   UnauthorizedException,
   UseGuards,
@@ -18,7 +18,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { AuthMeOutputModel } from './model/output/auth.output.model';
 import { EmailService } from '../application/email.service';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthLoginCommand } from '../application/user-cases/auth-login-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -37,9 +37,17 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @UseGuards(ThrottlerGuard)
   @Post('/login')
-  @HttpCode(200)
-  async login(@Res() res: Response, @Body() loginModel: LoginInputModel) {
+  async login(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() loginModel: LoginInputModel
+  ) {
     const { loginOrEmail, password } = loginModel;
+
+    const browser = req.get("user-agent");
+    const ip = req.ip || req.headers["x-forwarded-for"];
+    console.log(browser);
+    console.log(ip);
 
     const result = await this.commandBus.execute(new AuthLoginCommand(
       loginOrEmail,
@@ -54,7 +62,7 @@ export class AuthController {
     res.status(200).send({ accessToken });
   }
 
-
+  @UseGuards(ThrottlerGuard)
   @Post('/password-recovery')
   @HttpCode(204)
   async passwordRecovery(@Body() recovery: EmailRecovery) {
@@ -65,6 +73,7 @@ export class AuthController {
     await this.emailService.sendMailPasswordRecovery(user.login, user.email, code);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('/new-password')
   @HttpCode(204)
   async setNewPassword(@Body() recovery: SetNewPassword) {
@@ -105,9 +114,16 @@ export class AuthController {
     await this.emailService.sendMail(user.login, email, code);
   }
 
+  @Post('/refresh-token')
+  @HttpCode(204)
+  async refreshToken(@Req() req, @Res() res) {
+    console.log(req.cookies);
+    res.send({});
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async authMe(@Request() req) {
+  async authMe(@Req() req) {
     const user = await this.usersRepository.getById(req.user.userId);
     if (!user) throw new UnauthorizedException();
 

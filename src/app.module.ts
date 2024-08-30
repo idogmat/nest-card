@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common';
+import { Inject, Module, Provider } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppSettings, appSettings } from './settings/app-settings';
 import { UsersRepository } from './features/users/infrastructure/users.repository';
@@ -35,6 +35,13 @@ import { CommentsService } from './features/comments/application/comments.servic
 import { AuthLoginUseCase } from './features/auth/application/user-cases/auth-login-use-case';
 import { CqrsModule } from '@nestjs/cqrs';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { getConfiguration } from './settings/configuration';
+import { DevicesController } from './features/devices/api/devices.controller';
+import { DevicesQueryRepository } from './features/devices/infrastructure/devices.query-repository';
+import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
+import { DevicesService } from './features/devices/application/devices.service';
+import { Device, DeviceSchema } from './features/devices/domain/device.entity';
+
 const usersProviders: Provider[] = [
   UsersRepository,
   UsersService,
@@ -70,40 +77,56 @@ const commentsProviders: Provider[] = [
   CommentsQueryRepository,
 ];
 
+const devicesProviders: Provider[] = [
+  DevicesService,
+  DevicesQueryRepository,
+  DevicesRepository
+];
+
 const useCases = [
   AuthLoginUseCase
 ];
 
-// const commandUseCases = [
-//   AuthLoginCommand
-// ];
-console.log(appSettings.api.THROTTLER_LIMIT);
+const env = getConfiguration();
+console.log(getConfiguration().THROTTLER_LIMIT);
 @Module({
   // Регистрация модулей
   imports: [
     ThrottlerModule.forRoot([{
-      ttl: appSettings.api.THROTTLER_TTL,
-      limit: appSettings.api.THROTTLER_LIMIT,
+      ttl: env.THROTTLER_TTL,
+      limit: env.THROTTLER_LIMIT,
     }]),
     CqrsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
+      load: [getConfiguration]
     }),
-    MongooseModule.forRoot(appSettings.env.isTesting()
-      ? appSettings.api.MONGO_CONNECTION_URI_FOR_TESTS
-      : appSettings.api.MONGO_CONNECTION_URI),
+    MongooseModule.forRootAsync({
+      useFactory: (configService: ConfigService) => {
+        const uri = configService.get('ENV') === 'TESTING'
+          ? configService.get('MONGO_CONNECTION_URI_FOR_TESTS')
+          : configService.get('MONGO_CONNECTION_URI');
+        return { uri };
+      },
+      inject: [ConfigService]
+    }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
-      // { name: Like.name, schema: LikeSchema },
+      { name: Device.name, schema: DeviceSchema },
     ]),
-    JwtModule.register({
-      secret: appSettings.api.ACCESS_SECRET_TOKEN,
-      signOptions: { expiresIn: appSettings.api.ACCESS_SECRET_TOKEN_EXPIRATION }
-    }),
+    JwtModule.registerAsync({
+      useFactory: (configService: ConfigService) => {
+        return {
+          secret: configService.get('ACCESS_SECRET_TOKEN'),
+          signOptions: { expiresIn: configService.get('ACCESS_SECRET_TOKEN_EXPIRATION') },
+        };
+      },
+      inject: [ConfigService]
+    },),
     PassportModule
   ],
   // Регистрация провайдеров
@@ -115,6 +138,7 @@ console.log(appSettings.api.THROTTLER_LIMIT);
     ...postsProviders,
     ...commentsProviders,
     ...authProviders,
+    ...devicesProviders,
     {
       provide: AppSettings,
       useValue: appSettings,
@@ -128,6 +152,7 @@ console.log(appSettings.api.THROTTLER_LIMIT);
     BlogsController,
     PostsController,
     CommentsController,
+    DevicesController,
     TestingController,
   ],
 })
