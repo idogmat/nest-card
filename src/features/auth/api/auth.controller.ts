@@ -22,6 +22,8 @@ import { Request, Response } from 'express';
 import { AuthLoginCommand } from '../application/user-cases/auth-login-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { RefreshGuard } from 'src/common/guards/refresh.guard';
+import { DevicesService } from 'src/features/devices/application/devices.service';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -30,6 +32,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
+    private readonly devicesService: DevicesService,
     private commandBus: CommandBus
   ) { }
 
@@ -44,14 +47,14 @@ export class AuthController {
   ) {
     const { loginOrEmail, password } = loginModel;
 
-    const browser = req.get("user-agent");
-    const ip = req.ip || req.headers["x-forwarded-for"];
+    const browser = req.get("user-agent") || 'null';
+    const ip = req.ip || req.headers["x-forwarded-for"] || 'null';
     console.log(browser);
     console.log(ip);
 
     const result = await this.commandBus.execute(new AuthLoginCommand(
       loginOrEmail,
-      password)
+      password, { ip: ip.toString(), title: browser.toString() })
     );
     if (!result) throw new UnauthorizedException();
     const { accessToken, refreshToken } = result as { accessToken: string, refreshToken: string; };
@@ -85,6 +88,7 @@ export class AuthController {
     await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('/registration-confirmation')
   @HttpCode(204)
   async registrationConfirmation(@Body() body: ConfirmCode) {
@@ -93,6 +97,7 @@ export class AuthController {
     if (!result) throw new BadRequestException();
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('/registration')
   @HttpCode(204)
   async registration(@Body() createModel: CreateUserModel) {
@@ -105,6 +110,7 @@ export class AuthController {
     await this.emailService.sendMail(login, email, code);
   }
 
+  @UseGuards(ThrottlerGuard)
   @Post('/registration-email-resending')
   @HttpCode(204)
   async registrationEmailResending(@Body() recovery: EmailRecovery) {
@@ -114,11 +120,44 @@ export class AuthController {
     await this.emailService.sendMail(user.login, email, code);
   }
 
+  @UseGuards(RefreshGuard)
   @Post('/refresh-token')
+  async refreshToken(
+    @Req() req,
+    @Res() res
+  ) {
+    const lastActiveDate = new Date().getTime();
+    await this.devicesService.updateDate(req.user.deviceId, lastActiveDate);
+
+    const accessToken = await this.authService.createToken({
+      userId: req.user.userId,
+      login: req.user.login,
+      deviceId: req.user.deviceId,
+      lastActiveDate,
+    });
+    const refreshToken = await this.authService.createRefreshToken({
+      userId: req.user.userId,
+      login: req.user.login,
+      deviceId: req.user.deviceId,
+      lastActiveDate,
+    });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+    });
+    res.status(200).send({ accessToken });
+  }
+
+  @UseGuards(RefreshGuard)
+  @Post('/logout')
   @HttpCode(204)
-  async refreshToken(@Req() req, @Res() res) {
-    console.log(req.cookies);
-    res.send({});
+  async logout(
+    @Req() req,
+    @Res() res: Response
+  ) {
+    await this.devicesService.delete(req.user.deviceId, req.user.userId);
+    res.clearCookie("refreshToken", { httpOnly: true, secure: true });
+    res.sendStatus(204);
   }
 
   @UseGuards(JwtAuthGuard)

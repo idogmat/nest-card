@@ -12,14 +12,44 @@ export class DevicesRepository {
     return model;
   }
 
+  async getById(id: string): Promise<DeviceDocument | null> {
+    const device = await this.DeviceModel.findById(id);
+    return device;
+  }
+
+  async findByUserId(userId: string): Promise<DeviceDocument[] | null> {
+    const devices = await this.DeviceModel.find({ userId });
+
+    return devices;
+  }
+
   async delete(id: string): Promise<boolean> {
     const deletingResult = await this.DeviceModel.deleteOne({ _id: id });
 
     return deletingResult.deletedCount === 1;
   };
 
-  async update(id: string, newModel: Comment) {
-    const model = await this.DeviceModel.findByIdAndUpdate({ _id: id }, { ...newModel });
+  async deleteAll(id: string, userId: string): Promise<void> {
+    await this.DeviceModel.deleteMany({ userId, _id: { $ne: id } });
+  };
+
+  async updateDate(id: string, lastActiveDate: string) {
+    console.log(lastActiveDate);
+    const model = await this.DeviceModel.findByIdAndUpdate(id, { lastActiveDate }, { returnDocument: 'after' });
+    console.log(model);
+    return model;
+  }
+
+  async updateFields(id: string, newModel: Device) {
+    console.log(newModel, 'newModel');
+    const model = await this.DeviceModel.findByIdAndUpdate(id,
+      {
+        ip: newModel.ip,
+        title: newModel.title,
+        lastActiveDate: newModel.lastActiveDate
+      },
+      { returnDocument: 'after' });
+    console.log(model, 'model');
     return model;
   }
 }

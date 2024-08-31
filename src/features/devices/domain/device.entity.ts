@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, Model } from "mongoose";
 
-@Schema()
+@Schema({ _id: true })
 export class Device {
   @Prop({ type: String, required: true })
   userId: string;
@@ -14,9 +14,6 @@ export class Device {
 
   @Prop({ type: Number, default: new Date().getTime() })
   lastActiveDate: number;
-
-  @Prop({ type: String, required: true })
-  deviceId: string;
 }
 
 export const DeviceSchema = SchemaFactory.createForClass(Device);

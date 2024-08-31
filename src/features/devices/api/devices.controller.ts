@@ -10,49 +10,49 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { DevicesQueryRepository } from '../infrastructure/devices.query-repository';
-import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
-import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
-import { DevicesRepository } from '../infrastructure/devices.repository';
 import { DeviceOutputModel } from './model/output/device.output.model';
 import { DevicesService } from '../application/devices.service';
+import { isValidObjectId } from 'mongoose';
+import { RefreshGuard } from 'src/common/guards/refresh.guard';
 
 @ApiTags('Devices')
-@Controller('security/')
+@Controller('security/devices')
 export class DevicesController {
   constructor(
     private readonly devicesQueryRepository: DevicesQueryRepository,
-    private readonly devicesRepository: DevicesRepository,
     private readonly devicesService: DevicesService,
   ) { }
 
-  @UseGuards(AuthGetGuard)
-  @Get(':id')
-  async getById(
-    @Param('id') id: string,
+  @UseGuards(RefreshGuard)
+  @Get()
+  async getAll(
     @Req() req?
   ) {
-    const comment: DeviceOutputModel =
-      await this.devicesQueryRepository.getById(id);
-    if (!comment) throw new NotFoundException;
-    return comment;
+    const devices: DeviceOutputModel[] | [] =
+      await this.devicesQueryRepository.getAll(req.user.userId);
+    return devices;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(RefreshGuard)
   @Delete(':id')
   @HttpCode(204)
   async delete(
     @Param('id') id: string,
     @Req() req,
   ) {
-    const comment = await this.devicesQueryRepository.getById(id);
-    if (!comment) {
+    if (!isValidObjectId(id)) throw new NotFoundException();
+    const device = await this.devicesService.delete(id, req.user.userId);
+    if (!device) {
       throw new NotFoundException();
     }
+  }
 
-    const deletingResult: boolean = await this.devicesRepository.delete(id);
-
-    if (!deletingResult) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
+  @UseGuards(RefreshGuard)
+  @Delete()
+  @HttpCode(204)
+  async deleteAll(
+    @Req() req,
+  ) {
+    await this.devicesService.deleteAll(req.user.deviceId, req.user.userId);
   }
 }

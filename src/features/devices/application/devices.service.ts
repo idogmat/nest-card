@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { DeviceOutputModel, DeviceOutputModelMapper } from '../api/model/output/device.output.model';
+import { DeviceDocument } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesService {
@@ -8,37 +8,61 @@ export class DevicesService {
     private readonly devicesRepository: DevicesRepository,
   ) { }
   async create(
-    postId: string,
-    content: string,
+    ip: string,
+    title: string,
     userId: string,
-    userLogin: string,
-  ): Promise<DeviceOutputModel> {
+    lastActiveDate?: number
+  ): Promise<DeviceDocument> {
 
-    const newComment: any = {
-      postId,
-      content,
-      commentatorInfo: {
+    const devices = await this.devicesRepository.findByUserId(userId);
+    const diviceExist = devices.find(d => (ip === d.ip && title === d.title));
+    if (diviceExist) {
+      const deviceForReturn = await this.devicesRepository.updateFields(diviceExist.id, { ...diviceExist, lastActiveDate });
+      return deviceForReturn;
+    } else {
+      const newDevice: any = {
+        ip,
+        title,
         userId,
-        userLogin
-      },
-      createdAt: new Date().getTime()
-    };
-
-    const comment = await this.devicesRepository.create(newComment);
-
-    return DeviceOutputModelMapper(comment);
+        lastActiveDate: lastActiveDate || new Date().getTime()
+      };
+      const deviceForReturn = await this.devicesRepository.create(newDevice);
+      return deviceForReturn;
+    }
   }
 
-  async delete(id: string): Promise<boolean> {
+  async getById(deviceId: string) {
+    return await this.devicesRepository.getById(deviceId);
+  }
+
+  async delete(id: string, userId: string): Promise<boolean> {
+    const device = await this.devicesRepository.getById(id);
+    if (!device) {
+      throw new NotFoundException();
+    }
+    if (device.userId !== userId) throw new ForbiddenException();
     return this.devicesRepository.delete(id);
   }
 
-  async update(
+  async deleteAll(id: string, userId: string): Promise<void> {
+    await this.devicesRepository.deleteAll(id, userId);
+  }
+
+  async updateDate(
     id,
     updateModel
   ): Promise<boolean> {
 
-    await this.devicesRepository.update(id, updateModel);
+    await this.devicesRepository.updateDate(id, updateModel);
+    return true;
+  }
+
+  async updateFields(
+    id,
+    updateModel
+  ): Promise<boolean> {
+
+    await this.devicesRepository.updateFields(id, updateModel);
     return true;
   }
 }
