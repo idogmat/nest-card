@@ -13,7 +13,7 @@ export class UsersRepository {
   }
 
   async getById(id: string): Promise<UserDocument | null> {
-    const user = await this.userModel.findOne({ _id: id });
+    const user = await this.userModel.findById(id);
 
     if (user === null) {
       return null;

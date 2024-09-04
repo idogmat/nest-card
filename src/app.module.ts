@@ -41,6 +41,9 @@ import { DevicesQueryRepository } from './features/devices/infrastructure/device
 import { DevicesRepository } from './features/devices/infrastructure/devices.repository';
 import { DevicesService } from './features/devices/application/devices.service';
 import { Device, DeviceSchema } from './features/devices/domain/device.entity';
+import { AuthModule } from './features/auth/auth.module';
+import { UserModule } from './features/users/users.module';
+import { DeviceModule } from './features/devices/device.module';
 
 const usersProviders: Provider[] = [
   UsersRepository,
@@ -92,11 +95,14 @@ console.log(getConfiguration().THROTTLER_LIMIT);
 @Module({
   // Регистрация модулей
   imports: [
+    AuthModule,
+    UserModule,
+    DeviceModule,
     ThrottlerModule.forRoot([{
       ttl: env.THROTTLER_TTL,
       limit: env.THROTTLER_LIMIT,
     }]),
-    CqrsModule,
+    // CqrsModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -112,11 +118,11 @@ console.log(getConfiguration().THROTTLER_LIMIT);
       inject: [ConfigService]
     }),
     MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
+      // { name: User.name, schema: UserSchema },
       { name: Blog.name, schema: BlogSchema },
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
-      { name: Device.name, schema: DeviceSchema },
+      // { name: Device.name, schema: DeviceSchema },
     ]),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
@@ -126,19 +132,19 @@ console.log(getConfiguration().THROTTLER_LIMIT);
         };
       },
       inject: [ConfigService]
-    },),
-    PassportModule
+    }),
+    // PassportModule
   ],
   // Регистрация провайдеров
   providers: [
-    ...useCases,
+    // ...useCases,
     ...validators,
-    ...usersProviders,
+    // ...usersProviders,
     ...blogsProviders,
     ...postsProviders,
     ...commentsProviders,
-    ...authProviders,
-    ...devicesProviders,
+    // ...authProviders,
+    // ...devicesProviders,
     {
       provide: AppSettings,
       useValue: appSettings,
@@ -147,13 +153,13 @@ console.log(getConfiguration().THROTTLER_LIMIT);
   ],
   // Регистрация контроллеров
   controllers: [
-    AuthController,
-    UsersController,
+    // AuthController,
+    // UsersController,
     BlogsController,
     PostsController,
     CommentsController,
-    DevicesController,
-    TestingController,
+    // DevicesController,
+    // TestingController,
   ],
 })
 export class AppModule { }

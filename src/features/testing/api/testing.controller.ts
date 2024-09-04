@@ -9,7 +9,7 @@ import { User, UserModelType } from 'src/features/users/domain/user.entity';
 import { Blog, BlogModelType } from 'src/features/blogs/domain/blog.entity';
 import { Post, PostModelType } from 'src/features/posts/domain/post.entity';
 import { Comment, CommentModelType } from 'src/features/comments/domain/comment.entity';
-import { DeviceModelType } from 'src/features/devices/domain/device.entity';
+import { Device, DeviceModelType } from 'src/features/devices/domain/device.entity';
 
 // Tag для swagger
 @ApiTags('Testing')
@@ -20,7 +20,7 @@ export class TestingController {
     @InjectModel(Blog.name) private BlogModel: BlogModelType,
     @InjectModel(Post.name) private PostModel: PostModelType,
     @InjectModel(Comment.name) private CommentModel: CommentModelType,
-    @InjectModel(Comment.name) private DeviceModel: DeviceModelType,
+    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
   ) { }
 
 

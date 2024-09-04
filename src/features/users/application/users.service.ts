@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { AuthService } from '../../auth/application/auth.service';
 import { User } from '../domain/user.entity';
+import bcrypt from 'bcrypt';
 
 // Для провайдера всегда необходимо применять декоратор @Injectable() и регистрировать в модуле
 @Injectable()
 export class UsersService {
   constructor(
     private readonly usersRepository: UsersRepository,
-    private readonly authService: AuthService,
   ) { }
 
   async create(
@@ -16,9 +15,8 @@ export class UsersService {
     password: string,
     email: string,
   ): Promise<string> {
-    const { passwordHash, passwordSalt } = await this.authService.generatePasswordHash(
-      password,
-    );
+    const passwordSalt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, passwordSalt);
 
     const newUser = {
       login: login,
@@ -35,5 +33,22 @@ export class UsersService {
 
   async delete(id: string): Promise<boolean> {
     return this.usersRepository.delete(id);
+  }
+
+  async findByEmail(email: string) {
+    return await this.usersRepository.findByEmail(email);
+  }
+  async findByRecoveryCode(recoveryCode: string) {
+    return await this.usersRepository.findByRecoveryCode(recoveryCode);
+  }
+  async findByLoginAndEmail(login: string, email: string) {
+    return await this.usersRepository.findByLoginAndEmail(login, email);
+  }
+  async getById(id: string) {
+    return await this.usersRepository.getById(id);
+  }
+
+  async findByLoginOrEmail(loginOrEmail: string) {
+    return await this.usersRepository.findByLoginOrEmail(loginOrEmail);
   }
 }

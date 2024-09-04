@@ -15,7 +15,6 @@ import { ConfirmCode, CreateUserModel, EmailRecovery, LoginInputModel, SetNewPas
 import { AuthService } from '../application/auth.service';
 import { LocalAuthGuard } from '../guards/local-auth.guard';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { AuthMeOutputModel } from './model/output/auth.output.model';
 import { EmailService } from '../application/email.service';
 import { Request, Response } from 'express';
@@ -30,7 +29,6 @@ import { DevicesService } from 'src/features/devices/application/devices.service
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly usersRepository: UsersRepository,
     private readonly emailService: EmailService,
     private readonly devicesService: DevicesService,
     private commandBus: CommandBus
@@ -49,8 +47,6 @@ export class AuthController {
 
     const browser = req.get("user-agent") || 'null';
     const ip = req.ip || req.headers["x-forwarded-for"] || 'null';
-    console.log(browser);
-    console.log(ip);
 
     const result = await this.commandBus.execute(new AuthLoginCommand(
       loginOrEmail,
@@ -70,7 +66,7 @@ export class AuthController {
   @HttpCode(204)
   async passwordRecovery(@Body() recovery: EmailRecovery) {
     const { email } = recovery;
-    const user = await this.usersRepository.findByEmail(email);
+    const user = await this.authService.findByEmail(email);
     if (!user) throw new BadRequestException();
     const code = await this.authService.setRecoveryCode(user.id);
     await this.emailService.sendMailPasswordRecovery(user.login, user.email, code);
@@ -82,7 +78,7 @@ export class AuthController {
   async setNewPassword(@Body() recovery: SetNewPassword) {
     const { newPassword, recoveryCode } = recovery;
 
-    const user = await this.usersRepository.findByRecoveryCode(recoveryCode);
+    const user = await this.authService.findByRecoveryCode(recoveryCode);
     if (!user) throw new BadRequestException();
 
     await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
@@ -103,7 +99,7 @@ export class AuthController {
   async registration(@Body() createModel: CreateUserModel) {
     // console.log('render');
     const { login, password, email } = createModel;
-    const user = await this.usersRepository.findByLoginAndEmail(login, email);
+    const user = await this.authService.findByLoginAndEmail(login, email);
     if (user) throw new BadRequestException();
     const createdUserId = await this.authService.registration(login, password, email);
     const code = await this.authService.setConfirmRegistrationCode(createdUserId);
@@ -115,7 +111,7 @@ export class AuthController {
   @HttpCode(204)
   async registrationEmailResending(@Body() recovery: EmailRecovery) {
     const { email } = recovery;
-    const user = await this.usersRepository.findByEmail(email);
+    const user = await this.authService.findByEmail(email);
     const code = await this.authService.setConfirmRegistrationCode(user.id);
     await this.emailService.sendMail(user.login, email, code);
   }
@@ -163,7 +159,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('/me')
   async authMe(@Req() req) {
-    const user = await this.usersRepository.getById(req.user.userId);
+    const user = await this.authService.getById(req.user.userId);
     if (!user) throw new UnauthorizedException();
 
     return AuthMeOutputModel.getAuthMe(user);

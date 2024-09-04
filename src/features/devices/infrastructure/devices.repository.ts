@@ -34,14 +34,11 @@ export class DevicesRepository {
   };
 
   async updateDate(id: string, lastActiveDate: string) {
-    console.log(lastActiveDate);
     const model = await this.DeviceModel.findByIdAndUpdate(id, { lastActiveDate }, { returnDocument: 'after' });
-    console.log(model);
     return model;
   }
 
   async updateFields(id: string, newModel: Device) {
-    console.log(newModel, 'newModel');
     const model = await this.DeviceModel.findByIdAndUpdate(id,
       {
         ip: newModel.ip,
@@ -49,7 +46,6 @@ export class DevicesRepository {
         lastActiveDate: newModel.lastActiveDate
       },
       { returnDocument: 'after' });
-    console.log(model, 'model');
     return model;
   }
 }

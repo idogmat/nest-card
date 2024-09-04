@@ -36,18 +36,7 @@ export class AuthService {
     return id;
   }
 
-  // async login(loginOrEmail: string, password: string): Promise<boolean | { accessToken: string, refreshToken: string; }> {
-  //   const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
-  //   if (!user) return false;
-  //   const passwordHash = await this.hashPassword(password, user.passwordSalt);
-  //   if (user.passwordHash !== passwordHash) return false;
-  //   const accessToken = await this.createToken({ userId: user._id.toString(), login: user.login });
-  //   const refreshToken = await this.createToken({ userId: user._id.toString(), login: user.login });
-  //   return { accessToken, refreshToken };
-  // }
-
   async createToken(payload: any) {
-    // console.log(this.configService.get('ACCESS_SECRET_TOKEN'));
     const token = await this.jwtService.sign(
       payload,
       {
@@ -108,5 +97,18 @@ export class AuthService {
     if (user.emailConfirmation.isConfirmed || user.emailConfirmation.expirationDate < new Date()) return false;
     await this.setConfirmRegistrationCode(user.id, true);
     return true;
+  }
+
+  async findByEmail(email: string) {
+    return await this.usersRepository.findByEmail(email);
+  }
+  async findByRecoveryCode(recoveryCode: string) {
+    return await this.usersRepository.findByRecoveryCode(recoveryCode);
+  }
+  async findByLoginAndEmail(login: string, email: string) {
+    return await this.usersRepository.findByLoginAndEmail(login, email);
+  }
+  async getById(id: string) {
+    return await this.usersRepository.getById(id);
   }
 }

@@ -1,9 +1,10 @@
-import { UsersRepository } from "src/features/users/infrastructure/users.repository";
 import { AuthService } from "../auth.service";
 import { Injectable } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { DevicesService } from "src/features/devices/application/devices.service";
+import { UsersService } from "src/features/users/application/users.service";
 
+@Injectable()
 export class AuthLoginCommand {
   constructor(
     public readonly loginOrEmail: string,
@@ -17,14 +18,14 @@ export class AuthLoginCommand {
 @Injectable()
 export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
   constructor(
-    private readonly usersRepository: UsersRepository,
+    private readonly usersService: UsersService,
     private readonly authService: AuthService,
     private readonly devicesService: DevicesService,
   ) { }
 
   async execute(command: AuthLoginCommand): Promise<boolean | { accessToken: string, refreshToken: string; }> {
     console.log(command);
-    const user = await this.usersRepository.findByLoginOrEmail(command.loginOrEmail);
+    const user = await this.usersService.findByLoginOrEmail(command.loginOrEmail);
     if (!user) return false;
     const passwordHash = await this.authService.hashPassword(command.password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
