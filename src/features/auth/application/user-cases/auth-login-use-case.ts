@@ -1,10 +1,8 @@
 import { AuthService } from "../auth.service";
-import { Injectable } from "@nestjs/common";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { DevicesService } from "src/features/devices/application/devices.service";
 import { UsersService } from "src/features/users/application/users.service";
 
-@Injectable()
 export class AuthLoginCommand {
   constructor(
     public readonly loginOrEmail: string,
@@ -15,7 +13,6 @@ export class AuthLoginCommand {
 }
 
 @CommandHandler(AuthLoginCommand)
-@Injectable()
 export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
   constructor(
     private readonly usersService: UsersService,
@@ -31,7 +28,12 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
     if (user.passwordHash !== passwordHash) return false;
     const lastActiveDate = new Date().getTime();
     console.log(lastActiveDate);
-    const device = await this.devicesService.create(command.device.ip, command.device.title, user._id.toString(), lastActiveDate);
+    const device = await this.devicesService.create(
+      command.device.ip,
+      command.device.title,
+      user._id.toString(),
+      lastActiveDate
+    );
     const accessToken = await this.authService.createToken({
       userId: user._id.toString(),
       login: user.login,

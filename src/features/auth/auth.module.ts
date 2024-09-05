@@ -7,9 +7,10 @@ import { LocalStrategy } from "./strategies/local.strategy";
 import { JwtStrategy } from "./strategies/jwt.strategy";
 import { UserModule } from "../users/users.module";
 import { DeviceModule } from "../devices/device.module";
-import { CommandBus, CqrsModule } from "@nestjs/cqrs";
-import { AuthLoginCommand, AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
+import { CqrsModule } from "@nestjs/cqrs";
+import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
+import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from "src/common/decorators/validate/is-email-or-login-exist";
 
 
 @Module({
@@ -21,9 +22,11 @@ import { PassportModule } from "@nestjs/passport";
     JwtStrategy,
     LocalStrategy,
     EmailService,
-    CommandBus,
     AuthLoginUseCase,
-
+    CustomEmailValidation,
+    CustomLoginValidation,
+    CustomCodeValidation,
+    CustomEmailExistValidation,
   ],
   exports: [AuthService]
 })

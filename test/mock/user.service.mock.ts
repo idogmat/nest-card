@@ -1,4 +1,3 @@
-import { AuthService } from 'src/features/auth/application/auth.service';
 import { UsersService } from '../../src/features/users/application/users.service';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 
@@ -27,8 +26,8 @@ export const UserServiceMockObject = {
 //     )
 
 export class UserServiceMock extends UsersService {
-  constructor(usersRepository: UsersRepository, authService: AuthService) {
-    super(usersRepository, authService);
+  constructor(usersRepository: UsersRepository) {
+    super(usersRepository);
   }
 
   sendMessageOnEmail(_email: string) {
