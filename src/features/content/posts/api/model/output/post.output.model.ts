@@ -1,5 +1,5 @@
 import { LikesInfo, LikeType } from "src/features/likes/domain/like-info.entity";
-import { PostDocument } from "src/features/posts/domain/post.entity";
+import { PostDocument } from "../../../domain/post.entity";
 
 
 export class PostOutputModel {

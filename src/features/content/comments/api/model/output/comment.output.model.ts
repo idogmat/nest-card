@@ -1,5 +1,5 @@
-import { CommentDocument } from "src/features/comments/domain/comment.entity";
 import { LikeType } from "src/features/likes/domain/like-info.entity";
+import { CommentDocument } from "../../../domain/comment.entity";
 
 export class CommentOutputModel {
   id: string;

@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
-import { PostsRepository } from 'src/features/posts/infrastructure/posts.repository';
 import { isValidObjectId } from 'mongoose';
 
 @Injectable()
 export class BlogsService {
   constructor(
     private readonly blogsRepository: BlogsRepository,
-    private readonly postsRepository: PostsRepository,
   ) { }
 
   async create(

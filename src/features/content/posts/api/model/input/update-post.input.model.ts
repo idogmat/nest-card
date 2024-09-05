@@ -1,8 +1,8 @@
 import { IsString, Length, Validate } from "class-validator";
 import { Trim } from "src/common/decorators/transform/trim";
-import { CustomBlogIdValidation } from "src/features/posts/validate/blogId.validate";
+import { CustomBlogIdValidation } from "../../../validate/blogId.validate";
 
-export class PostCreateModel {
+export class PostUpdateModel {
   @IsString()
   @Trim()
   @Length(1, 30)
@@ -20,5 +20,4 @@ export class PostCreateModel {
   @IsString()
   @Validate(CustomBlogIdValidation)
   blogId: string;
-
 }

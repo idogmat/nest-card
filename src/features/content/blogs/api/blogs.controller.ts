@@ -16,18 +16,18 @@ import {
 import {
   PaginationOutput,
   PaginationWithSearchBlogNameTerm,
-} from '../../../base/models/pagination.base.model';
-import { SortingPropertiesType } from '../../../base/types/sorting-properties.type';
+} from '../../../../base/models/pagination.base.model';
+import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
 import { BlogOutputModel } from './model/output/blog.output.model';
 import { BlogCreateModel } from './model/input/create-blog.input.model';
 import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import { PostsService } from 'src/features/posts/application/posts.service';
-import { PostsQueryRepository } from 'src/features/posts/infrastructure/posts.query-repository';
-import { PostOutputModel } from 'src/features/posts/api/model/output/post.output.model';
 import { PostInBlogCreateModel } from './model/input/create-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
+import { PostsService } from '../../posts/application/posts.service';
+import { PostOutputModel } from '../../posts/api/model/output/post.output.model';
+import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];

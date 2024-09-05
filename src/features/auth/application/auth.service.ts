@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { dateSetter } from 'src/common/utils/dataSetter';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
+import { DevicesService } from 'src/features/devices/application/devices.service';
 
 
 @Injectable()
@@ -13,7 +14,8 @@ export class AuthService {
   constructor(
     private readonly usersRepository: UsersRepository,
     private jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
+    private devicesService: DevicesService,
   ) { }
 
   async generatePasswordHash(password: string): Promise<{ passwordHash, passwordSalt; }> {
@@ -110,5 +112,10 @@ export class AuthService {
   }
   async getById(id: string) {
     return await this.usersRepository.getById(id);
+  }
+
+  async _clearDb() {
+    await this.usersRepository._clear();
+    await this.devicesService._clear();
   }
 }

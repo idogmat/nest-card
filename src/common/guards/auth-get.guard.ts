@@ -1,15 +1,11 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Request } from "express";
-import { UsersService } from "../../features/users/application/users.service";
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
-// Custom guard
-// https://docs.nestjs.com/guards
 @Injectable()
 export class AuthGetGuard implements CanActivate {
   constructor(
-    private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService
   ) { }

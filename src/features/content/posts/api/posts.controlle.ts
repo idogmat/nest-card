@@ -17,22 +17,22 @@ import {
   Pagination,
   PaginationOutput,
   PaginationWithSearchBlogNameTerm,
-} from '../../../base/models/pagination.base.model';
-import { SortingPropertiesType } from '../../../base/types/sorting-properties.type';
+} from '../../../../base/models/pagination.base.model';
+import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { PostOutputModel } from './model/output/post.output.model';
 import { PostCreateModel } from './model/input/create-post.input.model';
 import { PostsService } from '../application/posts.service';
-import { BlogsQueryRepository } from 'src/features/blogs/infrastructure/blogs.query-repository';
 import { PostUpdateModel } from './model/input/update-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
 import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
-import { CommentCreateModel } from 'src/features/comments/api/model/input/create-comment.input.model';
-import { CommentsService } from 'src/features/comments/application/comments.service';
-import { CommentsQueryRepository } from 'src/features/comments/infrastructure/comments.query-repository';
-import { CommentOutputModel } from 'src/features/comments/api/model/output/comment.output.model';
+import { CommentOutputModel } from '../../comments/api/model/output/comment.output.model';
+import { CommentsService } from '../../comments/application/comments.service';
+import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
+import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
+import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];

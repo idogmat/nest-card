@@ -65,4 +65,8 @@ export class DevicesService {
     await this.devicesRepository.updateFields(id, updateModel);
     return true;
   }
+
+  async _clear() {
+    await this.devicesRepository._clear();
+  }
 }

@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, Provider } from "@nestjs/common";
 import { AuthController } from "./api/auth.controller";
 import { AuthService } from "./application/auth.service";
 import { EmailService } from "./application/email.service";
@@ -13,6 +13,13 @@ import { PassportModule } from "@nestjs/passport";
 import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from "src/common/decorators/validate/is-email-or-login-exist";
 
 
+const validators: Provider[] = [
+  CustomEmailValidation,
+  CustomLoginValidation,
+  CustomCodeValidation,
+  CustomEmailExistValidation,
+];
+
 @Module({
   imports: [UserModule, DeviceModule, CqrsModule, PassportModule],
   controllers: [AuthController],
@@ -23,11 +30,8 @@ import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation
     LocalStrategy,
     EmailService,
     AuthLoginUseCase,
-    CustomEmailValidation,
-    CustomLoginValidation,
-    CustomCodeValidation,
-    CustomEmailExistValidation,
+    ...validators
   ],
-  exports: [AuthService]
+  exports: [AuthService, ...validators, JwtService]
 })
 export class AuthModule { }

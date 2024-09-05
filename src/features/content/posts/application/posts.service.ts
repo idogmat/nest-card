@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PostsRepository } from '../infrastructure/posts.repository';
-import { BlogsRepository } from 'src/features/blogs/infrastructure/blogs.repository';
 
 @Injectable()
 export class PostsService {
   constructor(
     private readonly postsRepository: PostsRepository,
-    private readonly blogsRepository: BlogsRepository,
   ) { }
 
   async create(

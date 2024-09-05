@@ -48,4 +48,8 @@ export class DevicesRepository {
       { returnDocument: 'after' });
     return model;
   }
+
+  async _clear() {
+    await this.DeviceModel.deleteMany({});
+  }
 }
