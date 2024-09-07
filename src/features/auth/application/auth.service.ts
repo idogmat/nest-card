@@ -50,7 +50,6 @@ export class AuthService {
   }
 
   async createRefreshToken(payload: any) {
-    // console.log(this.configService.get('ACCESS_SECRET_TOKEN'));
     const token = await this.jwtService.sign(
       payload,
       {

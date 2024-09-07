@@ -6,10 +6,9 @@ import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity
 export class DevicesRepository {
   constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) { }
 
-  async create(device: Device): Promise<DeviceDocument> {
-    const model = await new this.DeviceModel(device);
+  async save(model: DeviceDocument): Promise<string> {
     await model.save();
-    return model;
+    return model.id;
   }
 
   async getById(id: string): Promise<DeviceDocument | null> {

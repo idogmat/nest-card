@@ -1,11 +1,13 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { DeviceDocument } from '../domain/device.entity';
+import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class DevicesService {
   constructor(
     private readonly devicesRepository: DevicesRepository,
+    @InjectModel(Device.name) private DeviceModel: DeviceModelType
   ) { }
   async create(
     ip: string,
@@ -13,22 +15,16 @@ export class DevicesService {
     userId: string,
     lastActiveDate?: number
   ): Promise<DeviceDocument> {
-
-    const devices = await this.devicesRepository.findByUserId(userId);
-    const diviceExist = devices.find(d => (ip === d.ip && title === d.title));
-    if (diviceExist) {
-      const deviceForReturn = await this.devicesRepository.updateFields(diviceExist.id, { ...diviceExist, lastActiveDate });
-      return deviceForReturn;
-    } else {
-      const newDevice: any = {
-        ip,
-        title,
-        userId,
-        lastActiveDate: lastActiveDate || new Date().getTime()
-      };
-      const deviceForReturn = await this.devicesRepository.create(newDevice);
-      return deviceForReturn;
-    }
+    const newDevice: any = {
+      ip,
+      title,
+      userId,
+      lastActiveDate: lastActiveDate || new Date().getTime()
+    };
+    const model = await new this.DeviceModel(newDevice);
+    const deviceId = await this.devicesRepository.save(model);
+    const device = await this.devicesRepository.getById(deviceId);
+    return device;
   }
 
   async getById(deviceId: string) {
