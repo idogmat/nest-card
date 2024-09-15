@@ -10,17 +10,7 @@ import { UserModule } from './features/users/users.module';
 import { DeviceModule } from './features/devices/device.module';
 import { ContentModule } from './features/content/content.module';
 import { TestModule } from './features/testing/testing.module';
-import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
-import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
-import CustomCodeValidation from "src/common/decorators/validate/is-code-validator";
-import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
 
-const validators: Provider[] = [
-  CustomEmailValidation,
-  CustomLoginValidation,
-  CustomCodeValidation,
-  CustomEmailExistValidation,
-];
 const env = getConfiguration();
 @Module({
   // Регистрация модулей
@@ -64,7 +54,6 @@ const env = getConfiguration();
       useValue: appSettings,
     },
     ConfigService,
-    ...validators
   ],
   controllers: [],
 })
