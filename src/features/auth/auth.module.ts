@@ -10,8 +10,10 @@ import { DeviceModule } from "../devices/device.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
-import { CustomCodeValidation, CustomEmailExistValidation, CustomEmailValidation, CustomLoginValidation } from "src/common/decorators/validate/is-email-or-login-exist";
-
+import { CustomEmailValidation } from "src/common/decorators/validate/is-email-validator";
+import { CustomLoginValidation } from "src/common/decorators/validate/is-login-validator";
+import { CustomCodeValidation } from "src/common/decorators/validate/is-code-validator";
+import { CustomEmailExistValidation } from "src/common/decorators/validate/is-email-exist-validator";
 
 const validators: Provider[] = [
   CustomEmailValidation,
