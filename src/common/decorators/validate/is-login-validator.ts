@@ -4,7 +4,7 @@ import { UsersRepository } from "src/features/users/infrastructure/users.reposit
 
 @ValidatorConstraint({ name: 'login', async: true })
 @Injectable()
-export class CustomLoginValidation implements ValidatorConstraintInterface {
+export default class CustomLoginValidation implements ValidatorConstraintInterface {
   constructor(private readonly usersRepository: UsersRepository) { }
 
   async validate(value: string): Promise<boolean> {

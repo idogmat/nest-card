@@ -4,7 +4,7 @@ import { UsersRepository } from "src/features/users/infrastructure/users.reposit
 
 @ValidatorConstraint({ name: 'email', async: true })
 @Injectable()
-export class CustomEmailValidation implements ValidatorConstraintInterface {
+export default class CustomEmailValidation implements ValidatorConstraintInterface {
   constructor(private readonly usersRepository: UsersRepository) { }
 
   async validate(value: string): Promise<boolean> {
