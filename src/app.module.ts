@@ -1,4 +1,4 @@
-import { Module, Provider } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AppSettings, appSettings } from './settings/app-settings';
 import { JwtModule } from '@nestjs/jwt';
