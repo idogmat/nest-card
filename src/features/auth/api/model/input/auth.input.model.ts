@@ -1,8 +1,8 @@
 import { IsEmail, IsString, Length, Validate } from "class-validator";
-import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
-import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
-import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
-import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
+// import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
+// import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
+// import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
+// import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
 
 export class LoginInputModel {
   @IsString()
@@ -15,12 +15,12 @@ export class LoginInputModel {
 export class CreateUserModel {
   @IsString()
   @Length(3, 10)
-  @Validate(CustomLoginValidation)
+  // @Validate(CustomLoginValidation)
   login: string;
 
   @IsString()
   @IsEmail()
-  @Validate(CustomEmailValidation)
+  // @Validate(CustomEmailValidation)
   email: string;
 
   @IsString()
@@ -32,7 +32,7 @@ export class CreateUserModel {
 export class EmailRecovery {
 
   @IsEmail()
-  @Validate(CustomEmailExistValidation)
+  // @Validate(CustomEmailExistValidation)
   email: string;
 
 }
@@ -50,7 +50,7 @@ export class SetNewPassword {
 export class ConfirmCode {
 
   @IsString()
-  @Validate(CustomCodeExistValidation)
+  // @Validate(CustomCodeExistValidation)
   code: string;
 
 }
