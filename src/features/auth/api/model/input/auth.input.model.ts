@@ -1,5 +1,5 @@
 import { IsEmail, IsString, Length, Validate } from "class-validator";
-import CustomCodeValidation from "src/common/decorators/validate/is-code-validator";
+import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
 import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
 import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
 import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
@@ -50,7 +50,7 @@ export class SetNewPassword {
 export class ConfirmCode {
 
   @IsString()
-  @Validate(CustomCodeValidation)
+  @Validate(CustomCodeExistValidation)
   code: string;
 
 }

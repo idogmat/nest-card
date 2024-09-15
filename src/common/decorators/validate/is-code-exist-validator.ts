@@ -4,7 +4,7 @@ import { UsersRepository } from "src/features/users/infrastructure/users.reposit
 
 @ValidatorConstraint({ name: 'code', async: true })
 @Injectable()
-export default class CustomCodeValidation implements ValidatorConstraintInterface {
+export default class CustomCodeExistValidation implements ValidatorConstraintInterface {
   constructor(private readonly usersRepository: UsersRepository) { }
 
   async validate(value: string): Promise<boolean> {
