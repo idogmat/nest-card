@@ -15,12 +15,12 @@ import CustomLoginValidation from "src/common/decorators/validate/is-login-valid
 import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
 import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
 
-const validators: Provider[] = [
-  CustomEmailValidation,
-  CustomLoginValidation,
-  CustomCodeExistValidation,
-  CustomEmailExistValidation,
-];
+// const validators: Provider[] = [
+//   CustomEmailValidation,
+//   CustomLoginValidation,
+//   CustomCodeExistValidation,
+//   CustomEmailExistValidation,
+// ];
 
 @Module({
   imports: [UserModule, DeviceModule, CqrsModule, PassportModule],
@@ -32,7 +32,7 @@ const validators: Provider[] = [
     LocalStrategy,
     EmailService,
     AuthLoginUseCase,
-    ...validators,
+    // ...validators,
   ],
   exports: [AuthService, JwtService]
 })
