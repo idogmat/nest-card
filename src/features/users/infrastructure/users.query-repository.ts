@@ -10,45 +10,60 @@ import {
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
 import { FilterQuery } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class UsersQueryRepository {
-  constructor(@InjectModel(User.name) private userModel: UserModelType) { }
+  constructor(
+    @InjectModel(User.name) private userModel: UserModelType,
+    @InjectDataSource() protected dataSource: DataSource
+  ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
-    const user = await this.userModel.findOne({ _id: id });
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.user_pg
+      WHERE id = $1
+      `, [id]);
+    console.log(res);
+    // const user = await this.userModel.findOne({ _id: id });
 
-    if (user === null) {
-      return null;
-    }
+    // if (user === null) {
+    return null;
+    // }
 
-    return UserOutputModelMapper(user);
+    // return UserOutputModelMapper(user);
   }
 
   async getAll(
     pagination: PaginationWithSearchLoginAndEmailTerm,
   ): Promise<PaginationOutput<UserOutputModel>> {
-    const filters: FilterQuery<User>[] = [];
+    // const filters: FilterQuery<User>[] = [];
+    const res = await this.dataSource.query(`
+      SELECT *
+      FROM public.user_pg;
+      `);
+    console.log(res);
+    // if (pagination.searchEmailTerm) {
+    //   filters.push({
+    //     email: { $regex: pagination.searchEmailTerm, $options: 'i' },
+    //   });
+    // }
 
-    if (pagination.searchEmailTerm) {
-      filters.push({
-        email: { $regex: pagination.searchEmailTerm, $options: 'i' },
-      });
-    }
+    // if (pagination.searchLoginTerm) {
+    //   filters.push({
+    //     login: { $regex: pagination.searchLoginTerm, $options: 'i' },
+    //   });
+    // }
 
-    if (pagination.searchLoginTerm) {
-      filters.push({
-        login: { $regex: pagination.searchLoginTerm, $options: 'i' },
-      });
-    }
+    // const filter: FilterQuery<User> = {};
 
-    const filter: FilterQuery<User> = {};
+    // if (filters.length > 0) {
+    //   filter.$or = filters;
+    // }
 
-    if (filters.length > 0) {
-      filter.$or = filters;
-    }
-
-    return await this.__getResult(filter, pagination);
+    return await res;
   }
 
   private async __getResult(

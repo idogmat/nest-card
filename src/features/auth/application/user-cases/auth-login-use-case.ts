@@ -24,24 +24,24 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
     console.log(command);
     const user = await this.usersService.findByLoginOrEmail(command.loginOrEmail);
     if (!user) return false;
-    const passwordHash = await this.authService.hashPassword(command.password, user.passwordSalt);
-    if (user.passwordHash !== passwordHash) return false;
+    const passwordHash = await this.authService.hashPassword(command.password, user.password_salt);
+    if (user.password_hash !== passwordHash) return false;
     const lastActiveDate = new Date().getTime();
     console.log(lastActiveDate);
     const device = await this.devicesService.create(
       command.device.ip,
       command.device.title,
-      user._id.toString(),
+      user.id,
       lastActiveDate
     );
     const accessToken = await this.authService.createToken({
-      userId: user._id.toString(),
+      userId: user.id,
       login: user.login,
       deviceId: device.id,
       lastActiveDate: lastActiveDate
     });
     const refreshToken = await this.authService.createRefreshToken({
-      userId: user._id.toString(),
+      userId: user.id,
       login: user.login,
       deviceId: device.id,
       lastActiveDate: lastActiveDate

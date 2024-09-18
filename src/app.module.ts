@@ -10,6 +10,7 @@ import { UserModule } from './features/users/users.module';
 import { DeviceModule } from './features/devices/device.module';
 import { ContentModule } from './features/content/content.module';
 import { TestModule } from './features/testing/testing.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 const env = getConfiguration();
 @Module({
@@ -20,6 +21,16 @@ const env = getConfiguration();
     DeviceModule,
     ContentModule,
     TestModule,
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: '127.0.0.1',
+      port: 5433,
+      username: 'postgres',
+      password: 'postgres',
+      database: 'test',
+      autoLoadEntities: false,
+      synchronize: false,
+    }),
     ThrottlerModule.forRoot([{
       ttl: env.THROTTLER_TTL,
       limit: env.THROTTLER_LIMIT,

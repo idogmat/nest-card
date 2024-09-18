@@ -1,13 +1,14 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
-import { InjectModel } from '@nestjs/mongoose';
+import { DeviceDocument } from '../domain/device.entity';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class DevicesService {
   constructor(
     private readonly devicesRepository: DevicesRepository,
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType
+    @InjectDataSource() protected dataSource: DataSource
   ) { }
   async create(
     ip: string,
@@ -15,20 +16,28 @@ export class DevicesService {
     userId: string,
     lastActiveDate?: number
   ): Promise<DeviceDocument> {
-    const newDevice: any = {
+
+    const res = await this.dataSource.query(`
+      INSERT INTO public.device_pg (
       ip,
       title,
-      userId,
-      lastActiveDate: lastActiveDate || new Date().getTime()
-    };
-    const model = await new this.DeviceModel(newDevice);
-    const deviceId = await this.devicesRepository.save(model);
-    const device = await this.devicesRepository.getById(deviceId);
+      user_id,
+      last_active_date
+      )
+      VALUES ($1, $2, $3, $4) RETURNING *
+      `, [ip, title, userId, lastActiveDate || new Date().getTime()]);
+    console.log(res);
+    const device = await this.devicesRepository.getById(res[0].id);
     return device;
   }
 
   async getById(deviceId: string) {
-    return await this.devicesRepository.getById(deviceId);
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.device_pg
+      WHERE id = $1;
+      `, [deviceId]);
+    return res[0];
   }
 
   async delete(id: string, userId: string): Promise<boolean> {

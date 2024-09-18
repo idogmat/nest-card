@@ -9,7 +9,7 @@ export default class CustomCodeExistValidation implements ValidatorConstraintInt
 
   async validate(value: string): Promise<boolean> {
     const user = await this.usersRepository.findByConfirmCode(value);
-    if (!user || user.emailConfirmation.isConfirmed) return false;
+    if (!user || user.isConfirmed) return false;
     else return true;
   }
   defaultMessage(_validationArguments?: ValidationArguments): string {

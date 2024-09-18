@@ -9,7 +9,7 @@ export default class CustomEmailExistValidation implements ValidatorConstraintIn
 
   async validate(value: string): Promise<boolean> {
     const user = await this.usersRepository.findByEmail(value);
-    if (!user || user.emailConfirmation.isConfirmed) return false;
+    if (!user || user.isConfirmed) return false;
     else return true;
   }
   defaultMessage(_validationArguments?: ValidationArguments): string {

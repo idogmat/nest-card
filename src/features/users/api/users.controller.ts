@@ -79,4 +79,13 @@ export class UsersController {
       throw new NotFoundException(`User with id ${id} not found`);
     }
   }
+
+  @UseGuards(BasicAuthGuard)
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    const createdUser: UserOutputModel | null =
+      await this.usersQueryRepository.getById(id);
+
+    return createdUser;
+  }
 }

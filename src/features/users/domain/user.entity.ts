@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { randomUUID } from 'crypto';
 import { HydratedDocument, Model } from 'mongoose';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 
 @Schema({ _id: false })
@@ -8,8 +9,8 @@ export class EmailConfirmation {
   @Prop({ type: String })
   confirmationCode: string;
 
-  @Prop({ type: Date })
-  expirationDate: Date;
+  @Prop({ type: Number })
+  expirationDate: number;
 
   @Prop({ type: Boolean })
   isConfirmed: boolean;
@@ -64,3 +65,30 @@ export type UserDocument = HydratedDocument<User>;
 // };
 
 export type UserModelType = Model<UserDocument>; //& UserModelStaticType;
+
+@Entity()
+export class UserPg {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column()
+  login: string;
+
+  @Column()
+  email: string;
+
+  @Column()
+  passwordHash: string;
+
+  // @Column()
+  // passwordSalt: string;
+
+  // @Column()
+  // createdAt: number;
+
+  // @Column()
+  // emailConfirmation: EmailConfirmation;
+
+  // @Column()
+  // recoveryCode: string;
+}

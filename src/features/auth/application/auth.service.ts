@@ -63,8 +63,8 @@ export class AuthService {
   async validateUser(loginOrEmail: string, password: string) {
     const user = await this.usersRepository.findByLoginOrEmail(loginOrEmail);
     if (!user) return false;
-    const passwordHash = await this.hashPassword(password, user.passwordSalt);
-    if (user.passwordHash !== passwordHash) return false;
+    const passwordHash = await this.hashPassword(password, user.password_salt);
+    if (user.password_hash !== passwordHash) return false;
     return user;
   }
 
@@ -85,7 +85,7 @@ export class AuthService {
       expirationDate: dateSetter(new Date(), {
         hours: 1,
         minutes: 30,
-      }),
+      }).getTime(),
       isConfirmed: confirmed,
     };
     await this.usersRepository.setConfirmRegistrationCode(id, emailConfirmation);
@@ -95,7 +95,7 @@ export class AuthService {
   async setConfirm(code: string) {
     const user = await this.usersRepository.findByConfirmCode(code);
     if (!user) return false;
-    if (user.emailConfirmation.isConfirmed || user.emailConfirmation.expirationDate < new Date()) return false;
+    if (user.is_confirmed || user.expiration_date < new Date().getTime()) return false;
     await this.setConfirmRegistrationCode(user.id, true);
     return true;
   }
@@ -110,7 +110,7 @@ export class AuthService {
     return await this.usersRepository.findByLoginAndEmail(login, email);
   }
   async getById(id: string) {
-    return await this.usersRepository.getById(id);
+    return await this.usersRepository.getById(+id);
   }
 
   async _clearDb() {

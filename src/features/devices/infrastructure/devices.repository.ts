@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) { }
+  constructor(
+    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
+    @InjectDataSource() protected dataSource: DataSource
+  ) { }
 
   async save(model: DeviceDocument): Promise<string> {
     await model.save();
@@ -12,8 +17,17 @@ export class DevicesRepository {
   }
 
   async getById(id: string): Promise<DeviceDocument | null> {
-    const device = await this.DeviceModel.findById(id);
-    return device;
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.device_pg
+      WHERE id = $1;
+      `, [id]);
+
+    if (res === null) {
+      return null;
+    }
+
+    return res[0];
   }
 
   async findByUserId(userId: string): Promise<DeviceDocument[] | null> {

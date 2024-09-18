@@ -1,86 +1,147 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { EmailConfirmation, User, UserDocument, UserModelType } from '../domain/user.entity';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) { }
+  constructor(
+    @InjectModel(User.name) private UserModel: UserModelType,
+    @InjectDataSource() protected dataSource: DataSource
+  ) { }
 
   async create(newUser: User): Promise<string> {
-    const model = await this.UserModel.create(newUser);
-    await model.save();
-    return model.id;
+    const res = await this.dataSource.query(`
+      INSERT INTO public.user_pg (
+      login, email,
+      password_hash,
+      password_salt,
+      created_at,
+      confirmation_code,
+      expiration_date,
+      is_confirmed
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id;
+      `, [
+      newUser.login,
+      newUser.email,
+      newUser.passwordHash,
+      newUser.passwordSalt,
+      newUser.createdAt || new Date().getTime(),
+      newUser.emailConfirmation?.confirmationCode || '',
+      newUser.emailConfirmation?.expirationDate || null,
+      newUser.emailConfirmation?.isConfirmed || false,
+    ]);
+    return res[0].id;
   }
 
-  async getById(id: string): Promise<UserDocument | null> {
-    const user = await this.UserModel.findById(id);
+  async getById(id: number): Promise<UserDocument | null> {
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.user_pg
+      WHERE id = $1;
+      `, [id]);
 
-    if (user === null) {
+    if (res === null) {
       return null;
     }
 
-    return user;
+    return res[0];
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.UserModel.deleteOne({ _id: id });
+    const res = await this.dataSource.query(`
+      DELETE FROM public.user_pg
+      WHERE id = $1;
+      `, [id]);
 
-    return deletingResult.deletedCount === 1;
+    return res[1] === 1;
   }
 
   async findByLoginOrEmail(loginOrEmail: string) {
-    const model = await this.UserModel.findOne({
-      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
-    });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE login = $1 OR email = $2;
+      `, [loginOrEmail, loginOrEmail]);
+    return res[0];
   }
 
   async findByLoginAndEmail(login: string, email: string) {
-    const model = await this.UserModel.findOne({
-      $or: [{ email: email }, { login: login }],
-    });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE login = $1 AND email = $2;
+      `, [login, email]);
+    return res[0];
   }
 
   async findByLogin(login: string) {
-    const model = await this.UserModel.findOne({ login: login });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE login = $1;
+      `, [login]);
+    return res[0];
   }
 
   async findByEmail(email: string) {
-    const model = await this.UserModel.findOne({ email: email });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE email = $1;
+      `, [email]);
+    return res[0];
   }
 
   async setRecoveryCode(id: string, recoveryCode: string) {
-    const model = await this.UserModel.findById(id);
-    model.recoveryCode = recoveryCode;
-    model.save();
-    return model;
+    const updated = await this.dataSource.query(`
+      UPDATE public.user_pg
+      SET recovery_code = $1
+      WHERE id = $2 RETURNING * ;
+      `, [recoveryCode, id]);
+    return updated[0];
   }
 
   async findByRecoveryCode(recoveryCode: string) {
-    const model = await this.UserModel.findOne({ recoveryCode: recoveryCode });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE recovery_code = $1;
+      `, [recoveryCode]);
+    return res[0];
   }
 
   async findByConfirmCode(confirmationCode: string) {
-    const model = await this.UserModel.findOne({ 'emailConfirmation.confirmationCode': confirmationCode });
-    return model;
+    const res = await this.dataSource.query(`
+      SELECT * FROM public.user_pg
+      WHERE confirmation_code = $1;
+      `, [confirmationCode]);
+    return res[0];
   }
 
   async setNewPassword(id: string, passwordHash: string) {
-    const user = await this.UserModel.findById(id);
-    user.passwordHash = passwordHash;
-    user.recoveryCode = null;
-    user.save();
+    const updated = await this.dataSource.query(`
+      UPDATE public.user_pg
+      SET password_hash = $1,
+      recovery_code = null
+      WHERE id = $2;
+      `, [passwordHash, id]);
+    return updated[0];
   }
 
   async setConfirmRegistrationCode(id: string, emailConfirmation: EmailConfirmation) {
-    const model = await this.UserModel.findById(id);
-    model.emailConfirmation = emailConfirmation;
-    model.save();
-    return model;
+
+    const res = await this.dataSource.query(`
+      UPDATE public.user_pg 
+      SET confirmation_code = $1,
+      expiration_date = $2,
+      is_confirmed = $3
+      WHERE id = $4 RETURNING id;
+      `, [
+      emailConfirmation.confirmationCode,
+      emailConfirmation.expirationDate,
+      emailConfirmation.isConfirmed,
+      id,
+    ]);
+    console.log(res, 'congirmcode');
+    return res[0].id;
   }
 
   async _clear() {
