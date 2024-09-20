@@ -45,7 +45,7 @@ export class UsersService {
     return await this.usersRepository.findByLoginAndEmail(login, email);
   }
   async getById(id: string) {
-    return await this.usersRepository.getById(+id);
+    return await this.usersRepository.getById(id);
   }
 
   async findByLoginOrEmail(loginOrEmail: string) {

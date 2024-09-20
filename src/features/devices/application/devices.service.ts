@@ -21,11 +21,18 @@ export class DevicesService {
       INSERT INTO public.device_pg (
       ip,
       title,
-      user_id,
-      last_active_date
+      "userId",
+      "lastActiveDate",
+      "createdAt"
       )
-      VALUES ($1, $2, $3, $4) RETURNING *
-      `, [ip, title, userId, lastActiveDate || new Date().getTime()]);
+      VALUES ($1, $2, $3, $4, $5) RETURNING *
+      `, [
+      ip,
+      title,
+      userId,
+      lastActiveDate || new Date().getTime(),
+      new Date().getTime()
+    ]);
     console.log(res);
     const device = await this.devicesRepository.getById(res[0].id);
     return device;
@@ -41,11 +48,15 @@ export class DevicesService {
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
-    const device = await this.devicesRepository.getById(id);
-    if (!device) {
+    const device = await this.dataSource.query(`
+      SELECT *
+	    FROM public.device_pg
+      WHERE id = $1 AND "userId" = $2;
+      `, [id, userId]);
+    if (!device?.[0]) {
       throw new NotFoundException();
     }
-    if (device.userId !== userId) throw new ForbiddenException();
+    if (device[0].userId !== userId) throw new ForbiddenException();
     return this.devicesRepository.delete(id);
   }
 
@@ -69,9 +80,5 @@ export class DevicesService {
 
     await this.devicesRepository.updateFields(id, updateModel);
     return true;
-  }
-
-  async _clear() {
-    await this.devicesRepository._clear();
   }
 }

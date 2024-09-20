@@ -15,12 +15,12 @@ export class UsersRepository {
     const res = await this.dataSource.query(`
       INSERT INTO public.user_pg (
       login, email,
-      password_hash,
-      password_salt,
-      created_at,
-      confirmation_code,
-      expiration_date,
-      is_confirmed
+      "passwordHash",
+      "passwordSalt",
+      "createdAt",
+      "confirmationCode",
+      "expirationDate",
+      "isConfirmed"
       )
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id;
       `, [
@@ -36,7 +36,7 @@ export class UsersRepository {
     return res[0].id;
   }
 
-  async getById(id: number): Promise<UserDocument | null> {
+  async getById(id: string): Promise<UserDocument | null> {
     const res = await this.dataSource.query(`
       SELECT *
 	    FROM public.user_pg
@@ -94,7 +94,7 @@ export class UsersRepository {
   async setRecoveryCode(id: string, recoveryCode: string) {
     const updated = await this.dataSource.query(`
       UPDATE public.user_pg
-      SET recovery_code = $1
+      SET "recoveryCode" = $1
       WHERE id = $2 RETURNING * ;
       `, [recoveryCode, id]);
     return updated[0];
@@ -103,7 +103,7 @@ export class UsersRepository {
   async findByRecoveryCode(recoveryCode: string) {
     const res = await this.dataSource.query(`
       SELECT * FROM public.user_pg
-      WHERE recovery_code = $1;
+      WHERE "recoveryCode" = $1;
       `, [recoveryCode]);
     return res[0];
   }
@@ -111,7 +111,7 @@ export class UsersRepository {
   async findByConfirmCode(confirmationCode: string) {
     const res = await this.dataSource.query(`
       SELECT * FROM public.user_pg
-      WHERE confirmation_code = $1;
+      WHERE "confirmationCode" = $1;
       `, [confirmationCode]);
     return res[0];
   }
@@ -119,8 +119,8 @@ export class UsersRepository {
   async setNewPassword(id: string, passwordHash: string) {
     const updated = await this.dataSource.query(`
       UPDATE public.user_pg
-      SET password_hash = $1,
-      recovery_code = null
+      SET "passwordHash" = $1,
+      "recoveryCode" = null
       WHERE id = $2;
       `, [passwordHash, id]);
     return updated[0];
@@ -130,9 +130,9 @@ export class UsersRepository {
 
     const res = await this.dataSource.query(`
       UPDATE public.user_pg 
-      SET confirmation_code = $1,
-      expiration_date = $2,
-      is_confirmed = $3
+      SET "confirmationCode" = $1,
+      "expirationDate" = $2,
+      "isConfirmed" = $3
       WHERE id = $4 RETURNING id;
       `, [
       emailConfirmation.confirmationCode,
@@ -143,9 +143,4 @@ export class UsersRepository {
     console.log(res, 'congirmcode');
     return res[0].id;
   }
-
-  async _clear() {
-    await this.UserModel.deleteMany({});
-  }
-
 }

@@ -9,7 +9,6 @@ import {
   PaginationOutput,
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
-import { FilterQuery } from 'mongoose';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -21,72 +20,87 @@ export class UsersQueryRepository {
   ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
-    const res = await this.dataSource.query(`
+    const user = await this.dataSource.query(`
       SELECT *
 	    FROM public.user_pg
       WHERE id = $1
       `, [id]);
-    console.log(res);
+    console.log(user);
     // const user = await this.userModel.findOne({ _id: id });
 
-    // if (user === null) {
-    return null;
-    // }
+    if (user[0] === null) {
+      return null;
+    }
 
-    // return UserOutputModelMapper(user);
+    return UserOutputModelMapper(user[0]);
   }
 
   async getAll(
     pagination: PaginationWithSearchLoginAndEmailTerm,
   ): Promise<PaginationOutput<UserOutputModel>> {
-    // const filters: FilterQuery<User>[] = [];
-    const res = await this.dataSource.query(`
+    console.log(pagination);
+    const conditions = [];
+    const params = [];
+    if (pagination.searchLoginTerm) {
+      conditions.push(`login ILIKE $${params.length + 1}`);
+      params.push(`%${pagination.searchLoginTerm}%`);
+    }
+
+    if (pagination.searchEmailTerm) {
+      conditions.push(`email ILIKE $${params.length + 1}`);
+      params.push(`%${pagination.searchEmailTerm}%`);
+    }
+    console.log(conditions);
+    console.log(params);
+    console.log(conditions.join(' AND '));
+    const totalCount = await this.dataSource.query(`
+      SELECT COUNT(*)
+      FROM public.user_pg
+      ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''};
+      `, conditions.length > 0 ? params : []);
+    const users = await this.dataSource.query(`
       SELECT *
-      FROM public.user_pg;
-      `);
-    console.log(res);
-    // if (pagination.searchEmailTerm) {
-    //   filters.push({
-    //     email: { $regex: pagination.searchEmailTerm, $options: 'i' },
-    //   });
-    // }
-
-    // if (pagination.searchLoginTerm) {
-    //   filters.push({
-    //     login: { $regex: pagination.searchLoginTerm, $options: 'i' },
-    //   });
-    // }
-
-    // const filter: FilterQuery<User> = {};
-
-    // if (filters.length > 0) {
-    //   filter.$or = filters;
-    // }
-
-    return await res;
-  }
-
-  private async __getResult(
-    filter: FilterQuery<User>,
-    pagination: PaginationWithSearchLoginAndEmailTerm,
-  ): Promise<PaginationOutput<UserOutputModel>> {
-    const users = await this.userModel
-      .find(filter)
-      .sort({
-        [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
-      })
-      .skip(pagination.getSkipItemsCount())
-      .limit(pagination.pageSize);
-
-    const totalCount = await this.userModel.countDocuments(filter);
-
+      FROM public.user_pg
+      ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''}
+      ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2};
+      `,
+      conditions.length > 0
+        ? [...params, pagination.pageSize,
+        (pagination.pageNumber - 1) * pagination.pageSize]
+        : [pagination.pageSize,
+        (pagination.pageNumber - 1) * pagination.pageSize]
+    );
     const mappedUsers = users.map(UserOutputModelMapper);
-
     return new PaginationOutput<UserOutputModel>(
       mappedUsers,
       pagination.pageNumber,
       pagination.pageSize,
-      totalCount,
+      Number(totalCount[0].count),
     );
   }
+
+  // private async __getResult(
+  //   filter: FilterQuery<User>,
+  //   pagination: PaginationWithSearchLoginAndEmailTerm,
+  // ): Promise<PaginationOutput<UserOutputModel>> {
+  //   const users: UserDBModel = await this.userModel
+  //     .find(filter)
+  //     .sort({
+  //       [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
+  //     })
+  //     .skip(pagination.getSkipItemsCount())
+  //     .limit(pagination.pageSize);
+
+  //   const totalCount = await this.userModel.countDocuments(filter);
+
+  //   const mappedUsers = users.map(UserOutputModelMapper);
+
+  //   return new PaginationOutput<UserOutputModel>(
+  //     mappedUsers,
+  //     pagination.pageNumber,
+  //     pagination.pageSize,
+  //     totalCount,
+  //   );
+  // }
 }

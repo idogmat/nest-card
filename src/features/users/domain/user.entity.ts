@@ -83,8 +83,8 @@ export class UserPg {
   // @Column()
   // passwordSalt: string;
 
-  // @Column()
-  // createdAt: number;
+  @Column()
+  createdAt: number;
 
   // @Column()
   // emailConfirmation: EmailConfirmation;

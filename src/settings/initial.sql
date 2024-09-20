@@ -1,17 +1,21 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE public.user_pg
 (
     id uuid NOT NULL DEFAULT uuid_generate_v1(),
-    login character varying NOT NULL,
-    email character varying NOT NULL,
-    password_hash character varying NOT NULL,
-    password_salt character varying NOT NULL,
-    created_at bigint NOT NULL,
-    confirmation_code character varying,
-    expiration_date bigint,
-    is_confirmed boolean,
-    recovery_code character varying,
+    login character varying NOT NULL COLLATE "C",
+    email character varying NOT NULL COLLATE "C",
+    "passwordHash" character varying NOT NULL,
+    "passwordSalt" character varying NOT NULL,
+    "createdAt" numeric NOT NULL,
+    "confirmationCode" character varying,
+    "expirationDate" numeric,
+    "isConfirmed" boolean,
+    "recoveryCode" character varying,
     PRIMARY KEY (id)
 );
+
+
 
 INSERT INTO public.user_pg(
 	login, email, "passwordHash", "passwordSalt", "createdAt", "confirmationCode", "expirationDate", "isConfirmed")
@@ -23,13 +27,14 @@ INSERT INTO public.user_pg(
 
 CREATE TABLE public.device_pg
 (
-    id character varying NOT NULL DEFAULT uuid_generate_v1(),
-    ip character varying,
-    title character varying,
-    user_id uuid NOT NULL,
-    last_active_date bigint,
+    id uuid NOT NULL DEFAULT uuid_generate_v1(),
+    ip character varying COLLATE "C",
+    title character varying COLLATE "C",
+    "userId" uuid NOT NULL,
+    "lastActiveDate" numeric NOT NULL,
+    "createdAt" numeric NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (user_id)
+    FOREIGN KEY ("userId")
         REFERENCES public.user_pg (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION

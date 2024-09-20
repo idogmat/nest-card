@@ -1,5 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -27,7 +28,7 @@ export const USERS_SORTING_PROPERTIES: SortingPropertiesType<UserOutputModel> =
 
 // Tag для swagger
 @ApiTags('Users')
-@Controller('users')
+@Controller('sa/users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
@@ -51,11 +52,13 @@ export class UsersController {
 
     return users;
   }
+
   @UseGuards(BasicAuthGuard)
   @Post()
   async create(@Body() createModel: UserCreateModel) {
     const { login, password, email } = createModel;
-
+    const user = await this.usersService.findByLoginAndEmail(login, email);
+    if (user) throw new BadRequestException();
     const createdUserId = await this.usersService.create(
       login,
       password,

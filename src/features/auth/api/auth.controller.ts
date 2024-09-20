@@ -80,7 +80,7 @@ export class AuthController {
 
     const user = await this.authService.findByRecoveryCode(recoveryCode);
     if (!user) throw new BadRequestException();
-    await this.authService.setNewPssword(user.id, newPassword, user.password_salt);
+    await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
   }
 
   @UseGuards(ThrottlerGuard)

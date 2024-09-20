@@ -1,20 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
+import { Device, DeviceDocument } from '../domain/device.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
 @Injectable()
 export class DevicesRepository {
   constructor(
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
-
-  async save(model: DeviceDocument): Promise<string> {
-    await model.save();
-    return model.id;
-  }
 
   async getById(id: string): Promise<DeviceDocument | null> {
     const res = await this.dataSource.query(`
@@ -31,38 +24,68 @@ export class DevicesRepository {
   }
 
   async findByUserId(userId: string): Promise<DeviceDocument[] | null> {
-    const devices = await this.DeviceModel.find({ userId });
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.device_pg
+      WHERE "userId" = $1;
+      `, [userId]);
 
-    return devices;
+    if (res === null) {
+      return null;
+    }
+
+    return res[0];
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.DeviceModel.deleteOne({ _id: id });
-
-    return deletingResult.deletedCount === 1;
+    const res = await this.dataSource.query(`
+      DELETE FROM public.device_pg
+      WHERE id = $1;
+      `, [id]);
+    return res[1] === 1;
   };
 
   async deleteAll(id: string, userId: string): Promise<void> {
-    await this.DeviceModel.deleteMany({ userId, _id: { $ne: id } });
+    const res = await this.dataSource.query(`
+      DELETE FROM public.device_pg
+      WHERE id != $1 AND "userId" = $2;
+      `, [id, userId]);
+
+    console.log(res);
+    return res[1];
   };
 
   async updateDate(id: string, lastActiveDate: string) {
-    const model = await this.DeviceModel.findByIdAndUpdate(id, { lastActiveDate }, { returnDocument: 'after' });
-    return model;
+    const res = await this.dataSource.query(`
+      UPDATE public.device_pg
+      SET "lastActiveDate" = $2
+      WHERE id = $1;
+      `, [id, lastActiveDate]);
+
+    if (res === null) {
+      return null;
+    }
+
+    return res[0];
   }
 
   async updateFields(id: string, newModel: Device) {
-    const model = await this.DeviceModel.findByIdAndUpdate(id,
-      {
-        ip: newModel.ip,
-        title: newModel.title,
-        lastActiveDate: newModel.lastActiveDate
-      },
-      { returnDocument: 'after' });
-    return model;
-  }
+    const res = await this.dataSource.query(`
+      UPDATE public.device_pg
+      SET id = $2, title = $3, "lastActiveDate" = $4
+      WHERE id = $1
+      RETURNING *;
+      `, [
+      id,
+      newModel.ip,
+      newModel.title,
+      newModel.lastActiveDate
+    ]);
 
-  async _clear() {
-    await this.DeviceModel.deleteMany({});
+    if (res === null) {
+      return null;
+    }
+
+    return res[0];
   }
 }
