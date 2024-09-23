@@ -17,6 +17,7 @@ import { Comment, CommentSchema } from "./comments/domain/comment.entity";
 import { Post, PostSchema } from "./posts/domain/post.entity";
 import { CustomBlogIdValidation } from "./posts/validate/blogId.validate";
 import { AuthModule } from "../auth/auth.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { AuthModule } from "../auth/auth.module";
       { name: Post.name, schema: PostSchema },
       { name: Comment.name, schema: CommentSchema },
     ]),
+    TypeOrmModule.forFeature()
   ],
   controllers: [
     BlogsController,

@@ -16,7 +16,7 @@ export class DevicesRepository {
       WHERE id = $1;
       `, [id]);
 
-    if (res === null) {
+    if (!res[0]) {
       return null;
     }
 

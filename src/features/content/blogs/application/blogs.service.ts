@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { BlogsRepository } from '../infrastructure/blogs.repository';
-import { isValidObjectId } from 'mongoose';
 
 @Injectable()
 export class BlogsService {
@@ -18,7 +17,7 @@ export class BlogsService {
       name: name,
       description: description,
       websiteUrl: websiteUrl,
-      createdAt: new Date(),
+      createdAt: new Date().getTime(),
     };
 
     const createdBlogId: string = await this.blogsRepository.create(newBlog);
@@ -30,10 +29,8 @@ export class BlogsService {
     id,
     updateModel,
   ): Promise<boolean> {
-
-    if (!isValidObjectId(id)) return null;
-    // const blogEntity = await this.blogsRepository.getById(id)
-
+    const blogEntity = await this.blogsRepository.getById(id);
+    if (!blogEntity) return null;
     const blog = await this.blogsRepository.update(id, updateModel);
 
     if (!blog) return null;
@@ -42,9 +39,6 @@ export class BlogsService {
   }
 
   async delete(id: string): Promise<boolean> {
-    if (!isValidObjectId(id)) return null;
-    // const blogEntity = await this.blogsRepository.getById(id)
-
     return this.blogsRepository.delete(id);
   }
 }

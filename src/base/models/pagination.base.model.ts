@@ -105,6 +105,18 @@ export class PaginationWithSearchBlogNameTerm extends Pagination {
     this.searchNameTerm = query.searchNameTerm?.toString() || null;
   }
 }
+
+export class PaginationPostSearchBlogNameTerm extends Pagination {
+  public readonly searchTitleTerm: string | null;
+  public readonly searchBlogNameTerm: string | null;
+
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.searchTitleTerm = query.searchNameTerm?.toString() || null;
+    this.searchBlogNameTerm = query.searchBlogNameTerm?.toString() || null;
+  }
+}
 // TYPES
 
 export type SortDirectionType = "desc" | "asc";

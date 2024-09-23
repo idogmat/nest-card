@@ -1,38 +1,72 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Blog, BlogModelType } from '../domain/blog.entity';
-import { isValidObjectId } from 'mongoose';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) { }
+  constructor(
+    @InjectModel(Blog.name) private BlogModel: BlogModelType,
+    @InjectDataSource() protected dataSource: DataSource
+  ) { }
 
   async getById(id: string): Promise<Blog | null> {
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.blog_pg
+      WHERE id = $1;
+      `, [id]);
 
-    if (!isValidObjectId(id)) return null;
-    const blog = await this.BlogModel.findById(id);
-    if (blog === null) {
+    if (!res[0]) {
       return null;
     }
-    console.log(blog);
 
-    return blog;
+    return res[0];
   }
 
   async create(newBlog: Blog): Promise<string> {
-    const model = await new this.BlogModel({ ...newBlog, createdAt: new Date() });
-    await model.save();
-    return model._id.toString();
+    const res = await this.dataSource.query(`
+      INSERT INTO public.blog_pg (
+      name, 
+      description,
+      "websiteUrl",
+      "createdAt",
+      "isMembership"
+      )
+      VALUES ($1,$2,$3,$4,$5) RETURNING id;
+      `, [
+      newBlog.name,
+      newBlog.description,
+      newBlog.websiteUrl,
+      newBlog.createdAt || new Date().getTime(),
+      newBlog.isMembership || false,
+    ]);
+    return res[0].id;
   }
 
   async update(id: string, newModel: Blog) {
-    const result = await this.BlogModel.findByIdAndUpdate({ _id: id }, { ...newModel });
-    return result;
+    const updated = await this.dataSource.query(`
+      UPDATE public.blog_pg
+      SET name = $2, 
+      description = $3,
+      "websiteUrl" = $4
+      WHERE id = $1 RETURNING * ;
+      `, [
+      id,
+      newModel.name,
+      newModel.description,
+      newModel.websiteUrl
+    ]);
+    return updated[0];
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.BlogModel.deleteOne({ _id: id });
+    const res = await this.dataSource.query(`
+      DELETE FROM public.blog_pg
+      WHERE id = $1;
+      `, [id]);
 
-    return deletingResult.deletedCount === 1;
+    return res[1] === 1;
   }
 }

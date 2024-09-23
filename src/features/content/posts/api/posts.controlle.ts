@@ -33,15 +33,23 @@ import { CommentsService } from '../../comments/application/comments.service';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
+import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
+import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
-  ['title', 'blogId', 'blogName', 'content', 'createdAt'];
+  [
+    'title',
+    'blogId',
+    'blogName',
+    'content',
+    'createdAt'
+  ];
 
 export const COMMENTS_SORTING_PROPERTIES: SortingPropertiesType<CommentOutputModel> =
   ['content', 'createdAt'];
 
 @ApiTags('Posts')
-@Controller('posts')
+@Controller()
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
@@ -52,8 +60,28 @@ export class PostsController {
   ) { }
 
   @UseGuards(AuthGetGuard)
-  @Get()
+  @Get('posts')
   async getAll(
+    @Query() query: any,
+    @Req() req?
+  ) {
+    console.log(query);
+    const pagination: PaginationWithSearchBlogNameTerm =
+      new PaginationWithSearchBlogNameTerm(
+        query,
+        POSTS_SORTING_PROPERTIES,
+      );
+
+    const posts: PaginationOutput<PostOutputModel> =
+      await this.postsQueryRepository.getAll(pagination, '', req?.user?.userId);
+
+    return posts;
+  }
+
+  // SA
+  @UseGuards(AuthGetGuard)
+  @Get('sa/posts')
+  async getAllSa(
     @Query() query: any,
     @Req() req?
   ) {
@@ -71,9 +99,9 @@ export class PostsController {
   }
 
   @UseGuards(AuthGetGuard)
-  @Get(':id')
+  @Get('posts/:id')
   async getById(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Req() req?
   ) {
     const post: PostOutputModel =
@@ -85,16 +113,16 @@ export class PostsController {
 
     return post;
   }
-
+  // SA
   @UseGuards(BasicAuthGuard)
-  @Post()
+  @Post('sa/posts')
   async create(@Body() createModel: PostCreateModel) {
     const blog = await this.blogsQueryRepository.getById(createModel?.blogId);
     if (!blog) throw new NotFoundException();
     const { blogId, content, shortDescription, title } = createModel;
 
     const createdPostId = await this.postsService.create(
-      blogId, blog.name, content, shortDescription, title,
+      blogId, content, shortDescription, title,
     );
 
     const createdPost: PostOutputModel | null =
@@ -106,7 +134,7 @@ export class PostsController {
   @UseGuards(AuthGetGuard)
   @Get(':id/comments')
   async getComments(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Query() query: any,
     @Req() req?
   ) {
@@ -128,7 +156,7 @@ export class PostsController {
   @Post(':id/comments')
   async createComment(
     @Req() req,
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() createModel: CommentCreateModel) {
     const post = await this.postsQueryRepository.getById(id);
     if (!post) throw new NotFoundException();
@@ -145,7 +173,7 @@ export class PostsController {
   @Put(':id')
   @HttpCode(204)
   async update(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() updateModel: PostUpdateModel
   ) {
     const post = await this.postsService.getById(id);
@@ -160,7 +188,7 @@ export class PostsController {
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id', new EnhancedParseUUIDPipe()) id: string) {
     const post = await this.postsService.getById(id);
     if (!post) {
       throw new NotFoundException();
@@ -177,7 +205,7 @@ export class PostsController {
   @HttpCode(204)
   async setLikeStatus(
     @Req() req,
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() like: LikeSetModel
   ) {
     const post = await this.postsService.getById(req.params.id);
@@ -189,5 +217,66 @@ export class PostsController {
       req.user,
       like.likeStatus,
     );
+  }
+
+
+  @UseGuards(AuthGetGuard)
+  @Get('sa/blogs/:blogId/posts/:postId')
+  async getByIdSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+    @Req() req?
+  ) {
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post: PostOutputModel =
+      await this.postsQueryRepository.getById(postId, req?.user?.userId);
+
+    if (!post) {
+      throw new NotFoundException();
+    }
+
+    return post;
+  }
+
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Put('sa/blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async updateSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+    @Body() updateModel: PostInBlogCreateModel
+  ) {
+    console.log('cho');
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post = await this.postsService.getById(postId);
+    if (!post) throw new NotFoundException();
+    const updatedResult = await this.postsService.update(postId, updateModel);
+
+    if (!updatedResult) {
+      throw new NotFoundException(`User with id ${postId} not found`);
+    }
+  }
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Delete('sa/blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async deleteSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+  ) {
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post = await this.postsService.getById(postId);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    const deletingResult: boolean = await this.postsService.delete(postId);
+
+    if (!deletingResult) {
+      throw new NotFoundException(`User with id ${postId} not found`);
+    }
   }
 }

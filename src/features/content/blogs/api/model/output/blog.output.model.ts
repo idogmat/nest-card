@@ -13,13 +13,12 @@ export class BlogOutputModel {
 
 export const BlogOutputModelMapper = (blog: BlogDocument): BlogOutputModel => {
   const outputModel = new BlogOutputModel();
-
   outputModel.id = blog.id;
   outputModel.name = blog.name;
   outputModel.description = blog.description;
   outputModel.websiteUrl = blog.websiteUrl;
   outputModel.isMembership = blog.isMembership;
-  outputModel.createdAt = new Date(blog.createdAt).toISOString();
+  outputModel.createdAt = new Date(+blog.createdAt).toISOString();
 
   return outputModel;
 };

@@ -25,8 +25,6 @@ export class UsersQueryRepository {
 	    FROM public.user_pg
       WHERE id = $1
       `, [id]);
-    console.log(user);
-    // const user = await this.userModel.findOne({ _id: id });
 
     if (user[0] === null) {
       return null;
@@ -38,7 +36,7 @@ export class UsersQueryRepository {
   async getAll(
     pagination: PaginationWithSearchLoginAndEmailTerm,
   ): Promise<PaginationOutput<UserOutputModel>> {
-    console.log(pagination);
+
     const conditions = [];
     const params = [];
     if (pagination.searchLoginTerm) {
@@ -50,9 +48,7 @@ export class UsersQueryRepository {
       conditions.push(`email ILIKE $${params.length + 1}`);
       params.push(`%${pagination.searchEmailTerm}%`);
     }
-    console.log(conditions);
-    console.log(params);
-    console.log(conditions.join(' AND '));
+
     const totalCount = await this.dataSource.query(`
       SELECT COUNT(*)
       FROM public.user_pg

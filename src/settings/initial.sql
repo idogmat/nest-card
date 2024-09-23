@@ -2,7 +2,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE public.user_pg
 (
-    id uuid NOT NULL DEFAULT uuid_generate_v1(),
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
     login character varying NOT NULL COLLATE "C",
     email character varying NOT NULL COLLATE "C",
     "passwordHash" character varying NOT NULL,
@@ -27,7 +27,7 @@ INSERT INTO public.user_pg(
 
 CREATE TABLE public.device_pg
 (
-    id uuid NOT NULL DEFAULT uuid_generate_v1(),
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
     ip character varying COLLATE "C",
     title character varying COLLATE "C",
     "userId" uuid NOT NULL,
@@ -36,6 +36,33 @@ CREATE TABLE public.device_pg
     PRIMARY KEY (id),
     FOREIGN KEY ("userId")
         REFERENCES public.user_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);
+
+CREATE TABLE public.blog_pg
+(
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    name character varying NOT NULL COLLATE "C",
+    description text NOT NULL,
+    "websiteUrl" character varying NOT NULL,
+    "createdAt" numeric,
+    "isMembership" boolean DEFAULT false,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE public.post_pg
+(
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    title character  varying NOT NULL COLLATE "C",
+    content character  varying NOT NULL,
+    "shortDescription" character varying NOT NULL,
+    "blogId" uuid,
+    "createdAt" numeric,
+    PRIMARY KEY (id),
+    FOREIGN KEY ("blogId")
+        REFERENCES public.blog_pg (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID

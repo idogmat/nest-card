@@ -20,6 +20,8 @@ export class TestingController {
   async delete() {
     await this.dataSource.query(`TRUNCATE TABLE device_pg CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE user_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE blog_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE post_pg CASCADE`);
     return;
   }
 }

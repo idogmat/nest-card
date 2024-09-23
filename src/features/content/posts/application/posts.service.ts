@@ -9,7 +9,6 @@ export class PostsService {
 
   async create(
     blogId: string,
-    blogName: string,
     content: string,
     shortDescription: string,
     title: string
@@ -17,7 +16,6 @@ export class PostsService {
 
     const newPost: any = {
       blogId,
-      blogName,
       content,
       shortDescription,
       title
