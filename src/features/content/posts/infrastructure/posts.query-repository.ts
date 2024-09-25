@@ -13,7 +13,7 @@ export class PostsQueryRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async getById(id: string, userId?: string): Promise<PostOutputModel | null> {
+  async getById(blogId: string, userId?: string): Promise<PostOutputModel | null> {
 
     const res = await this.dataSource.query(`
       SELECT p.*, b.name as "blogName"
@@ -21,7 +21,7 @@ export class PostsQueryRepository {
       LEFT JOIN public.blog_pg as b
       ON p."blogId" = b.id
       WHERE p.id = $1;
-      `, [id]);
+      `, [blogId]);
 
     if (!res[0]) {
       return null;
@@ -57,7 +57,14 @@ export class PostsQueryRepository {
       ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''};
       `, conditions.length > 0 ? params : []);
     const posts = await this.dataSource.query(`
-        SELECT p.*, b."name" as "blogName"
+        SELECT p.*, b."name" as "blogName", 
+        (SELECT jsonb_agg(json_build_object(
+        'userId', pl."userId",
+        'login', pl.login,
+        'like', pl.type,
+        'addedAt', pl."addedAt"
+        )) 
+        FROM public.post_like_pg as pl WHERE p.id = pl."postId") as "extendedLikesInfo"
         FROM public.post_pg as p
         LEFT JOIN public.blog_pg as b
         ON b.id = p."blogId"
@@ -72,7 +79,6 @@ export class PostsQueryRepository {
         (pagination.pageNumber - 1) * pagination.pageSize]
     );
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
-
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,
       pagination.pageNumber,

@@ -22,6 +22,9 @@ export class TestingController {
     await this.dataSource.query(`TRUNCATE TABLE user_pg CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE blog_pg CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE post_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE post_like_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE comment_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE comment_like_pg CASCADE`);
     return;
   }
 }

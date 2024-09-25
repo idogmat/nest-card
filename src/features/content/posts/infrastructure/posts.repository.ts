@@ -28,7 +28,6 @@ export class PostsRepository {
       newPost.shortDescription,
       newPost.blogId,
       newPost.createdAt || new Date().getTime(),
-
     ]);
     return res[0].id;
   }
@@ -65,35 +64,25 @@ export class PostsRepository {
   }
 
   async setLike(id: string, user: { userId: string, login: string; }, like: LikeType) {
-    const model = await this.PostModel.findById(id);
-    if (!model) return false;
-    let index = -1;
-    if (like === "Like") {
-      model.extendedLikesInfo.newestLikes.forEach((el, i) => {
-        if (el.userId === user.userId) {
-          index = i;
-        }
-      });
-      if (index === -1) {
-        model.extendedLikesInfo.newestLikes.unshift({
-          userId: user.userId,
-          login: user?.login || "",
-          addedAt: new Date().toISOString(),
-        });
-      }
-    } else {
-      model.extendedLikesInfo.newestLikes.forEach((el, i) => {
-        if (el.userId === user.userId) {
-          index = i;
-        }
-        if (index !== -1) {
-          model.extendedLikesInfo.newestLikes.splice(index, 1);
-        }
-      });
-    }
-    model.extendedLikesInfo.additionalLikes.set(user.userId, like);
-    await model.save();
-    return true;
+    const updated = await this.dataSource.query(`
+      INSERT INTO public.post_like_pg (
+      "userId",
+      "login",
+      "postId",
+      "type",
+      "addedAt"
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT ("userId") 
+      DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2;
+      `, [
+      user.userId,
+      user.login,
+      id,
+      like,
+      new Date().getTime()
+    ]);
+    return updated[0];
   }
 
   async delete(id: string): Promise<boolean> {

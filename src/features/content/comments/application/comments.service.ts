@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
+import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepository: CommentsRepository,
+    private readonly postsRepository: PostsRepository,
   ) { }
   async create(
     postId: string,
@@ -14,18 +16,20 @@ export class CommentsService {
     userLogin: string,
   ): Promise<CommentOutputModel> {
 
+    const post = await this.postsRepository.getById(postId);
+    if (!post) throw new NotFoundException();
     const newComment: any = {
       postId,
       content,
-      commentatorInfo: {
-        userId,
-        userLogin
-      },
+      userId,
+      userLogin,
       createdAt: new Date().getTime()
     };
 
-    const comment = await this.commentsRepository.create(newComment);
-
+    const commentId = await this.commentsRepository.create(newComment);
+    if (!commentId) throw new NotFoundException();
+    const comment = await this.commentsRepository.getById(commentId);
+    if (!comment) throw new NotFoundException();
     return CommentOutputModelMapper(comment);
   }
 

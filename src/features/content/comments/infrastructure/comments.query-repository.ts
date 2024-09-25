@@ -3,19 +3,27 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Comment, CommentModelType } from '../domain/comment.entity';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
+import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class CommentsQueryRepository {
-  constructor(@InjectModel(Comment.name) private CommentModel: CommentModelType) { }
+  constructor(
+    @InjectModel(Comment.name) private CommentModel: CommentModelType,
+    @InjectDataSource() protected dataSource: DataSource
+  ) { }
 
   async getById(id: string, userId?: string): Promise<CommentOutputModel | null> {
-    const comment = await this.CommentModel.findById(id);
+    const res = await this.dataSource.query(`
+      SELECT *
+	    FROM public.comment_pg
+      WHERE id = $1;
+      `, [id]);
 
-    if (comment === null) {
+    if (!res[0]) {
       return null;
     }
-    console.log(userId);
-    return CommentOutputModelMapper(comment, userId);
+    return CommentOutputModelMapper(res[0], userId);
   }
 
   async getAll(
@@ -23,23 +31,31 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string
   ): Promise<PaginationOutput<CommentOutputModel>> {
-    const comments = await this.CommentModel
-      .find({ postId: id })
-      .sort({
-        [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
-      })
-      .skip(pagination.getSkipItemsCount())
-      .limit(pagination.pageSize);
+    const conditions = [];
+    const params = [];
 
-    const totalCount = await this.CommentModel.countDocuments({ postId: id });
+    const totalCount = await this.dataSource.query(`
+      SELECT COUNT(*)
+      FROM public.comment_pg
+      WHERE "postId" = $1
+      `, [id]);
 
+    const comments = await this.dataSource.query(`
+      SELECT *
+      FROM public.comment_pg
+      WHERE "postId" = $1
+      ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
+      LIMIT $2 OFFSET $3;
+      `, [id, pagination.pageSize,
+      (pagination.pageNumber - 1) * pagination.pageSize]);
+    console.log(comments);
     const mappedComments = comments.map(e => CommentOutputModelMapper(e, userId));
 
     return new PaginationOutput<CommentOutputModel>(
       mappedComments,
       pagination.pageNumber,
       pagination.pageSize,
-      totalCount,
+      Number(totalCount[0].count),
     );
   }
 }

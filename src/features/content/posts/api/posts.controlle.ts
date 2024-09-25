@@ -132,7 +132,7 @@ export class PostsController {
   }
 
   @UseGuards(AuthGetGuard)
-  @Get(':id/comments')
+  @Get('posts/:id/comments')
   async getComments(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Query() query: any,
@@ -153,24 +153,24 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post(':id/comments')
+  @Post('posts/:id/comments')
   async createComment(
     @Req() req,
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) postId: string,
     @Body() createModel: CommentCreateModel) {
-    const post = await this.postsQueryRepository.getById(id);
+    const post = await this.postsQueryRepository.getById(postId);
     if (!post) throw new NotFoundException();
     const { content } = createModel;
 
     const createdComment = await this.commentsService.create(
-      id, content, req.user.userId, req.user.login
+      postId, content, req.user.userId, req.user.login
     );
 
     return createdComment;
   }
 
   @UseGuards(BasicAuthGuard)
-  @Put(':id')
+  @Put('posts/:id')
   @HttpCode(204)
   async update(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
@@ -186,7 +186,7 @@ export class PostsController {
   }
 
   @UseGuards(BasicAuthGuard)
-  @Delete(':id')
+  @Delete('posts/:id')
   @HttpCode(204)
   async delete(@Param('id', new EnhancedParseUUIDPipe()) id: string) {
     const post = await this.postsService.getById(id);
@@ -201,14 +201,14 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':id/like-status')
+  @Put('posts/:id/like-status')
   @HttpCode(204)
   async setLikeStatus(
     @Req() req,
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() like: LikeSetModel
   ) {
-    const post = await this.postsService.getById(req.params.id);
+    const post = await this.postsService.getById(id);
     if (!post) {
       throw new NotFoundException();
     }

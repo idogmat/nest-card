@@ -15,8 +15,9 @@ export class PostOutputModel {
 
 // MAPPERS
 // FIXME поправить мапинг
-export const PostOutputModelMapper = (post: PostDocument, userId?: string): PostOutputModel => {
+export const PostOutputModelMapper = (post: PostDocument, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
+  console.log(post.extendedLikesInfo);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -25,26 +26,34 @@ export const PostOutputModelMapper = (post: PostDocument, userId?: string): Post
   outputModel.blogName = post.blogName;
   outputModel.createdAt = new Date(+post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
-    likesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Like') || 0,
-    dislikesCount: getLikeCount(post.extendedLikesInfo?.additionalLikes, 'Dislike') || 0,
-    myStatus: getCurrentStatus(post.extendedLikesInfo?.additionalLikes, userId),
-    // newestLikes: post.extendedLikesInfo?.newestLikes?.length
-    //   ? post.extendedLikesInfo?.newestLikes?.filter((_, i) => i < 3)
-    //   : [],
-    newestLikes: [],
+    likesCount: getLikeCount(post?.extendedLikesInfo, 'Like') || 0,
+    dislikesCount: getLikeCount(post?.extendedLikesInfo, 'Dislike') || 0,
+    myStatus: getCurrentStatus(post.extendedLikesInfo, _userId),
+    newestLikes: (post.extendedLikesInfo && post.extendedLikesInfo?.length)
+      ? post.extendedLikesInfo?.sort((a, b) => b.addedAt - a.addedAt)?.filter((_, i) => i < 3)?.map(e => ({ addedAt: new Date(+e.addedAt).toISOString(), login: e.login, userId: e.userId }))
+      : [],
   };
+  console.log(post);
 
   return outputModel;
 };
 
-export const getLikeCount = (map: Map<string, string>, type: LikeType) => {
+export const getLikeCount = (
+  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  type: LikeType
+): number => {
   let count = 0;
-  map?.forEach((like) => {
-    if (like === type) count++;
+  if (!arr && !arr?.length) return count;
+  arr?.forEach((like) => {
+    if (like.like === type) count++;
   });
   return count;
 };
 
-export const getCurrentStatus = (map: Map<string, LikeType>, userId: string): LikeType => {
-  return map?.get(userId) || "None";
+export const getCurrentStatus = (
+  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  userId: string
+): LikeType => {
+  if (!userId) return "None";
+  return arr?.find(like => like.userId === userId)?.like || "None";
 };

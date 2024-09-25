@@ -132,13 +132,13 @@ export class BlogsController {
   }
 
   @UseGuards(AuthGetGuard)
-  @Get('blogs/:id/posts')
+  @Get('blogs/:blogId/posts')
   async getPosts(
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Query() query: any,
     @Req() req?
   ) {
-    const blog = await this.blogsQueryRepository.getById(id);
+    const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
@@ -147,7 +147,7 @@ export class BlogsController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, id, req?.user?.userId);
+      await this.postsQueryRepository.getAll(pagination, blogId, req?.user?.userId);
 
     return posts;
   }

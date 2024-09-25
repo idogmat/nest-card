@@ -67,3 +67,56 @@ CREATE TABLE public.post_pg
         ON DELETE NO ACTION
         NOT VALID
 );
+
+CREATE TABLE public.comment_pg
+(
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    content text,
+    "postId" uuid NOT NULL,
+    "createdAt" numeric,
+    "userId" uuid NOT NULL,
+    "userLogin" character varying NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY ("postId")
+        REFERENCES public.post_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);
+
+CREATE TABLE public.post_like_pg
+(
+    id uuid NOT NULL DEFAULT  uuid_generate_v4(),
+    "postId" uuid NOT NULL,
+    "userId" uuid NOT NULL,
+    login character varying NOT NULL,
+    type character varying NOT NULL,
+    "addedAt" numeric NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE ("userId"),
+    FOREIGN KEY ("postId")
+        REFERENCES public.post_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    FOREIGN KEY ("userId")
+        REFERENCES public.user_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);
+
+CREATE TABLE public.comment_like_pg
+(
+    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    "userId" uuid NOT NULL,
+    login character varying NOT NULL,
+    "commentId" uuid NOT NULL,
+    type character varying NOT NULL DEFAULT 'None',
+    "addedAt" numeric NOT NULL,
+    FOREIGN KEY ("commentId")
+        REFERENCES public.comment_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);

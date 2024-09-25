@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema } from 'src/features/likes/domain/like-info.entity';
+import { LikeType } from 'src/features/likes/domain/like-info.entity';
 
 @Schema()
 export class Post {
@@ -22,8 +22,8 @@ export class Post {
   @Prop({ type: Number, default: new Date().getTime() })
   createdAt: number;
 
-  @Prop({ type: Like, default: {}, schema: LikeSchema })
-  extendedLikesInfo: Like;
+  @Prop({ type: Array, of: { like: String, userId: String, login: String, addedAt: Number }, default: {} })
+  extendedLikesInfo: { like: LikeType, userId: string, login: string, addedAt: number; }[];
 
 }
 
