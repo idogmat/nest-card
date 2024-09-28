@@ -17,7 +17,7 @@ export class PostOutputModel {
 // FIXME поправить мапинг
 export const PostOutputModelMapper = (post: PostDocument, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-  console.log(post.extendedLikesInfo);
+  console.log(post?.extendedLikesInfo);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -26,14 +26,16 @@ export const PostOutputModelMapper = (post: PostDocument, _userId?: string): Pos
   outputModel.blogName = post.blogName;
   outputModel.createdAt = new Date(+post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
-    likesCount: getLikeCount(post?.extendedLikesInfo, 'Like') || 0,
-    dislikesCount: getLikeCount(post?.extendedLikesInfo, 'Dislike') || 0,
-    myStatus: getCurrentStatus(post.extendedLikesInfo, _userId),
-    newestLikes: (post.extendedLikesInfo && post.extendedLikesInfo?.length)
-      ? post.extendedLikesInfo?.sort((a, b) => b.addedAt - a.addedAt)?.filter((_, i) => i < 3)?.map(e => ({ addedAt: new Date(+e.addedAt).toISOString(), login: e.login, userId: e.userId }))
+    likesCount: post.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Like') : 0,
+    dislikesCount: post.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Dislike') : 0,
+    myStatus: post.extendedLikesInfo?.length ? getCurrentStatus(post?.extendedLikesInfo, _userId) : "None",
+    newestLikes: post.extendedLikesInfo?.length ? post.extendedLikesInfo?.map(e => {
+      if (e.like === 'Like') {
+        return ({ addedAt: new Date(+e.addedAt).toISOString(), login: e.login, userId: e.userId });
+      }
+    })?.filter((_, i) => (i < 3 && _?.addedAt))
       : [],
   };
-  console.log(post);
 
   return outputModel;
 };
@@ -43,8 +45,8 @@ export const getLikeCount = (
   type: LikeType
 ): number => {
   let count = 0;
-  if (!arr && !arr?.length) return count;
-  arr?.forEach((like) => {
+  if (!arr || !arr?.length) return count;
+  arr.forEach((like) => {
     if (like.like === type) count++;
   });
   return count;

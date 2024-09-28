@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { EmailConfirmation, User, UserDocument, UserModelType } from '../domain/user.entity';
+import { EmailConfirmation, User, UserDocument } from '../domain/user.entity';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectModel(User.name) private UserModel: UserModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 

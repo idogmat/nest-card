@@ -3,15 +3,10 @@ import { UsersService } from "./application/users.service";
 import { UsersRepository } from "./infrastructure/users.repository";
 import { UsersQueryRepository } from "./infrastructure/users.query-repository";
 import { UsersController } from "./api/users.controller";
-import { MongooseModule } from "@nestjs/mongoose";
-import { User, UserSchema } from "./domain/user.entity";
 import { TypeOrmModule } from "@nestjs/typeorm";
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-    ]),
     TypeOrmModule.forFeature()
   ],
   controllers: [UsersController],

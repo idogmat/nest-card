@@ -3,8 +3,6 @@ import {
   UserOutputModel,
   UserOutputModelMapper,
 } from '../api/models/output/user.output.model';
-import { User, UserModelType } from '../domain/user.entity';
-import { InjectModel } from '@nestjs/mongoose';
 import {
   PaginationOutput,
   PaginationWithSearchLoginAndEmailTerm,
@@ -15,7 +13,6 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectModel(User.name) private userModel: UserModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 

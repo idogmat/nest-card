@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentModelType } from '../domain/comment.entity';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
 import { DataSource } from 'typeorm';
@@ -9,14 +7,20 @@ import { InjectDataSource } from '@nestjs/typeorm';
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
   async getById(id: string, userId?: string): Promise<CommentOutputModel | null> {
     const res = await this.dataSource.query(`
-      SELECT *
-	    FROM public.comment_pg
+      SELECT c.*,
+      (SELECT jsonb_agg(json_build_object(
+        'userId', cl."userId",
+        'login', cl.login,
+        'like', cl.type,
+        'addedAt', cl."addedAt"
+      )) 
+      FROM public.comment_like_pg as cl WHERE c.id = cl."commentId") as "extendedLikesInfo"
+	    FROM public.comment_pg as c
       WHERE id = $1;
       `, [id]);
 
@@ -41,14 +45,20 @@ export class CommentsQueryRepository {
       `, [id]);
 
     const comments = await this.dataSource.query(`
-      SELECT *
-      FROM public.comment_pg
+      SELECT c.*,
+      (SELECT jsonb_agg(json_build_object(
+        'userId', cl."userId",
+        'login', cl.login,
+        'like', cl.type,
+        'addedAt', cl."addedAt"
+      ) ORDER BY cl."addedAt" DESC ) 
+      FROM public.comment_like_pg as cl WHERE c.id = cl."commentId") as "extendedLikesInfo"
+      FROM public.comment_pg as c
       WHERE "postId" = $1
       ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
       LIMIT $2 OFFSET $3;
       `, [id, pagination.pageSize,
       (pagination.pageNumber - 1) * pagination.pageSize]);
-    console.log(comments);
     const mappedComments = comments.map(e => CommentOutputModelMapper(e, userId));
 
     return new PaginationOutput<CommentOutputModel>(

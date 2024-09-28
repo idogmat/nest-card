@@ -28,27 +28,34 @@ export const CommentOutputModelMapper = (comment: Comment, _userId?: string): Co
     userLogin: comment.userLogin
   },
     outputModel.likesInfo = {
-      // likesCount: getLikeCount(comment.extendedLikesInfo?.additionalLikes, 'Like') || 0,
-      // dislikesCount: getLikeCount(comment.extendedLikesInfo?.additionalLikes, 'Dislike') || 0,
-      // myStatus: getCurrentStatus(comment.extendedLikesInfo?.additionalLikes, userId),
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: "None",
+      likesCount: getLikeCount(comment.extendedLikesInfo, 'Like') || 0,
+      dislikesCount: getLikeCount(comment.extendedLikesInfo, 'Dislike') || 0,
+      myStatus: getCurrentStatus(comment.extendedLikesInfo, _userId),
+      // likesCount: 0,
+      // dislikesCount: 0,
+      // myStatus: "None",
     };
   outputModel.createdAt = new Date(+comment.createdAt).toISOString();
 
   return outputModel;
 };
 
-export const getLikeCount = (map: Map<string, string>, type: LikeType) => {
+export const getLikeCount = (
+  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  type: LikeType
+): number => {
   let count = 0;
-  map?.forEach((like) => {
-    if (like === type) count++;
+  if (!arr || !arr?.length) return count;
+  arr?.forEach((like) => {
+    if (like.like === type) count++;
   });
   return count;
 };
 
-export const getCurrentStatus = (map: Map<string, LikeType>, userId: string): LikeType => {
+export const getCurrentStatus = (
+  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  userId: string
+): LikeType => {
   if (!userId) return "None";
-  return map?.get(userId) || "None";
+  return arr?.find(like => like.userId === userId)?.like || "None";
 };

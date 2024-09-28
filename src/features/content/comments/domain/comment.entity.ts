@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema } from 'src/features/likes/domain/like-info.entity';
+import { Like, LikeSchema, LikeType } from 'src/features/likes/domain/like-info.entity';
 
 @Schema()
 export class Comment {
@@ -23,7 +23,7 @@ export class Comment {
   userLogin: string;
 
   @Prop({ type: Like, default: {}, schema: LikeSchema })
-  extendedLikesInfo: Like;
+  extendedLikesInfo: { like: LikeType, userId: string, login: string, addedAt: number; }[];
 }
 
 export const CommentSchema = SchemaFactory.createForClass(Comment);

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Comment, CommentModelType } from '../domain/comment.entity';
+import { Comment } from '../domain/comment.entity';
 import { LikeType } from 'src/features/likes/domain/like-info.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -8,7 +7,6 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class CommentsRepository {
   constructor(
-    @InjectModel(Comment.name) private CommentModel: CommentModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
@@ -47,22 +45,45 @@ export class CommentsRepository {
   };
 
   async setLike(id: string, user: { userId: string, login: string; }, like: LikeType) {
-    const model = await this.CommentModel.findById(id);
-    if (!model) return false;
-    console.log(user, like);
-    // model.extendedLikesInfo.additionalLikes.set(user.userId, like);
-    await model.save();
-    return true;
+    const updated = await this.dataSource.query(`
+      INSERT INTO public.comment_like_pg (
+      "userId",
+      "login",
+      "commentId",
+      "type",
+      "addedAt"
+      )
+      VALUES ($1, $2, $3, $4, $5)
+      ON CONFLICT ("userId") 
+      DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2
+      RETURNING id;`, [
+      user.userId,
+      user.login,
+      id,
+      like,
+      new Date().getTime()
+    ]);
+    return updated[0];
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.CommentModel.deleteOne({ _id: id });
+    const res = await this.dataSource.query(`
+      DELETE FROM public.comment_pg
+      WHERE id = $1;
+      `, [id]);
 
-    return deletingResult.deletedCount === 1;
+    return res[1] === 1;
   };
 
   async update(id: string, newModel: Comment) {
-    const model = await this.CommentModel.findByIdAndUpdate({ _id: id }, { ...newModel });
-    return model;
+    const updated = await this.dataSource.query(`
+      UPDATE public.comment_pg
+      SET "content" = $2
+      WHERE id = $1 RETURNING * ;
+      `, [
+      id,
+      newModel.content,
+    ]);
+    return updated[0];
   }
 }

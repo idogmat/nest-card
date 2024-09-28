@@ -108,14 +108,21 @@ CREATE TABLE public.post_like_pg
 
 CREATE TABLE public.comment_like_pg
 (
-    id uuid NOT NULL DEFAULT uuid_generate_v4(),
+    id uuid NOT NULL DEFAULT  uuid_generate_v4(),
+    "commentId" uuid NOT NULL,
     "userId" uuid NOT NULL,
     login character varying NOT NULL,
-    "commentId" uuid NOT NULL,
-    type character varying NOT NULL DEFAULT 'None',
+    type character varying NOT NULL,
     "addedAt" numeric NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE ("userId"),
     FOREIGN KEY ("commentId")
         REFERENCES public.comment_pg (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    FOREIGN KEY ("userId")
+        REFERENCES public.user_pg (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID

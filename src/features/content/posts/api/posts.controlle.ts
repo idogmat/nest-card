@@ -65,13 +65,11 @@ export class PostsController {
     @Query() query: any,
     @Req() req?
   ) {
-    console.log(query);
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
         query,
         POSTS_SORTING_PROPERTIES,
       );
-
     const posts: PaginationOutput<PostOutputModel> =
       await this.postsQueryRepository.getAll(pagination, '', req?.user?.userId);
 

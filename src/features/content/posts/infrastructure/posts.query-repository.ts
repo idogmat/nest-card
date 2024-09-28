@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
-import { Post, PostModelType } from '../domain/post.entity';
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -9,18 +7,30 @@ import { InjectDataSource } from '@nestjs/typeorm';
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectModel(Post.name) private postModel: PostModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
   async getById(blogId: string, userId?: string): Promise<PostOutputModel | null> {
 
     const res = await this.dataSource.query(`
-      SELECT p.*, b.name as "blogName"
+      SELECT p.*, b.name as "blogName",
+      CASE
+        WHEN (pl."userId") is null then '[]'::jsonb
+        ELSE jsonb_agg(json_build_object(
+          'userId', pl."userId",
+          'postId', pl."userId",
+          'login', pl.login,
+          'like', pl.type,
+          'addedAt', pl."addedAt"
+          ) ORDER BY pl."addedAt" DESC)
+        END AS "extendedLikesInfo"
 	    FROM public.post_pg as p
       LEFT JOIN public.blog_pg as b
       ON p."blogId" = b.id
-      WHERE p.id = $1;
+      LEFT JOIN public.post_like_pg as pl
+      ON p.id = pl."postId"
+      WHERE p.id = $1
+      GROUP BY p.id, b.name, pl."userId", p."createdAt"
       `, [blogId]);
 
     if (!res[0]) {
@@ -32,7 +42,7 @@ export class PostsQueryRepository {
 
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
-    blogId: string,
+    blogId?: string,
     userId?: string
   ): Promise<PaginationOutput<PostOutputModel>> {
     const conditions = [];
@@ -58,17 +68,23 @@ export class PostsQueryRepository {
       `, conditions.length > 0 ? params : []);
     const posts = await this.dataSource.query(`
         SELECT p.*, b."name" as "blogName", 
-        (SELECT jsonb_agg(json_build_object(
-        'userId', pl."userId",
-        'login', pl.login,
-        'like', pl.type,
-        'addedAt', pl."addedAt"
-        )) 
-        FROM public.post_like_pg as pl WHERE p.id = pl."postId") as "extendedLikesInfo"
+        CASE
+          WHEN (pl."userId") is null then '[]'::jsonb
+        ELSE jsonb_agg(json_build_object(
+            'userId', pl."userId",
+        'postId', pl."userId",
+            'login', pl.login,
+            'like', pl.type,
+            'addedAt', pl."addedAt"
+            ) ORDER BY pl."addedAt" DESC)
+        END AS "extendedLikesInfo"
         FROM public.post_pg as p
         LEFT JOIN public.blog_pg as b
         ON b.id = p."blogId"
+        LEFT JOIN public.post_like_pg as pl
+	      ON p.id = pl."postId"
         ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''}
+        GROUP BY p.id, p.title, b.id, b.name, pl."userId"
         ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
         LIMIT $${params.length + 1} OFFSET $${params.length + 2};
         `,
@@ -78,6 +94,7 @@ export class PostsQueryRepository {
         : [pagination.pageSize,
         (pagination.pageNumber - 1) * pagination.pageSize]
     );
+    console.log(posts);
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,

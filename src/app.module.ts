@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppSettings, appSettings } from './settings/app-settings';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -40,15 +39,15 @@ const env = getConfiguration();
       envFilePath: '.env',
       load: [getConfiguration]
     }),
-    MongooseModule.forRootAsync({
-      useFactory: (configService: ConfigService) => {
-        const uri = configService.get('ENV') === 'TESTING'
-          ? configService.get('MONGO_CONNECTION_URI_FOR_TESTS')
-          : configService.get('MONGO_CONNECTION_URI');
-        return { uri };
-      },
-      inject: [ConfigService]
-    }),
+    // MongooseModule.forRootAsync({
+    //   useFactory: (configService: ConfigService) => {
+    //     const uri = configService.get('ENV') === 'TESTING'
+    //       ? configService.get('MONGO_CONNECTION_URI_FOR_TESTS')
+    //       : configService.get('MONGO_CONNECTION_URI');
+    //     return { uri };
+    //   },
+    //   inject: [ConfigService]
+    // }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {
         return {

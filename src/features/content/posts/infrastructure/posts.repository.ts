@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../domain/post.entity';
+import { Post } from '../domain/post.entity';
 import { LikeType } from 'src/features/likes/domain/like-info.entity';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -8,7 +7,6 @@ import { InjectDataSource } from '@nestjs/typeorm';
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectModel(Post.name) private PostModel: PostModelType,
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
@@ -53,7 +51,7 @@ export class PostsRepository {
       SET title = $2, 
       "content" = $3,
       "shortDescription" = $4
-      WHERE id = $1 RETURNING * ;
+      WHERE id = $1 RETURNING *;
       `, [
       id,
       newModel.title,
@@ -74,7 +72,8 @@ export class PostsRepository {
       )
       VALUES ($1, $2, $3, $4, $5)
       ON CONFLICT ("userId") 
-      DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2;
+      DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2
+      RETURNING id;
       `, [
       user.userId,
       user.login,
@@ -82,7 +81,7 @@ export class PostsRepository {
       like,
       new Date().getTime()
     ]);
-    return updated[0];
+    return updated;
   }
 
   async delete(id: string): Promise<boolean> {
