@@ -22,7 +22,6 @@ export class DevicesQueryRepository {
     if (comments === null) {
       return null;
     }
-    console.log(comments);
 
     const mappedComments = comments.map(e => DeviceOutputModelMapper(e));
     return mappedComments;

@@ -21,6 +21,7 @@ export class AuthGetGuard implements CanActivate {
     } catch {
 
     }
+    console.log(res);
     request.user = res;
     return true;
   }

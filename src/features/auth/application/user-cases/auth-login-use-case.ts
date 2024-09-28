@@ -21,19 +21,18 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
   ) { }
 
   async execute(command: AuthLoginCommand): Promise<boolean | { accessToken: string, refreshToken: string; }> {
-    console.log(command);
     const user = await this.usersService.findByLoginOrEmail(command.loginOrEmail);
     if (!user) return false;
     const passwordHash = await this.authService.hashPassword(command.password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
     const lastActiveDate = new Date().getTime();
-    console.log(lastActiveDate);
     const device = await this.devicesService.create(
       command.device.ip,
       command.device.title,
       user.id,
       lastActiveDate
     );
+    console.log(user);
     const accessToken = await this.authService.createToken({
       userId: user.id,
       login: user.login,

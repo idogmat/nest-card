@@ -54,7 +54,7 @@ export class CommentsRepository {
       "addedAt"
       )
       VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT ("userId") 
+      ON CONFLICT ("userId", "commentId") 
       DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2
       RETURNING id;`, [
       user.userId,

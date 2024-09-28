@@ -23,7 +23,7 @@ export class CommentsQueryRepository {
 	    FROM public.comment_pg as c
       WHERE id = $1;
       `, [id]);
-
+    console.log(res);
     if (!res[0]) {
       return null;
     }

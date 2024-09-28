@@ -33,7 +33,6 @@ export class DevicesService {
       lastActiveDate || new Date().getTime(),
       new Date().getTime()
     ]);
-    console.log(res);
     const device = await this.devicesRepository.getById(res[0].id);
     return device;
   }

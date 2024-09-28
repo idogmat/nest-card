@@ -71,7 +71,7 @@ export class PostsRepository {
       "addedAt"
       )
       VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT ("userId") 
+      ON CONFLICT ("userId", "postId")
       DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2
       RETURNING id;
       `, [

@@ -93,7 +93,7 @@ CREATE TABLE public.post_like_pg
     type character varying NOT NULL,
     "addedAt" numeric NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE ("userId"),
+    UNIQUE ("userId", "postId"),
     FOREIGN KEY ("postId")
         REFERENCES public.post_pg (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -115,7 +115,7 @@ CREATE TABLE public.comment_like_pg
     type character varying NOT NULL,
     "addedAt" numeric NOT NULL,
     PRIMARY KEY (id),
-    UNIQUE ("userId"),
+    UNIQUE ("userId", "commentId"),
     FOREIGN KEY ("commentId")
         REFERENCES public.comment_pg (id) MATCH SIMPLE
         ON UPDATE NO ACTION

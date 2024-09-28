@@ -10,29 +10,52 @@ export class PostsQueryRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async getById(blogId: string, userId?: string): Promise<PostOutputModel | null> {
-
+  async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
     const res = await this.dataSource.query(`
       SELECT p.*, b.name as "blogName",
-      CASE
-        WHEN (pl."userId") is null then '[]'::jsonb
-        ELSE jsonb_agg(json_build_object(
-          'userId', pl."userId",
-          'postId', pl."userId",
-          'login', pl.login,
-          'like', pl.type,
-          'addedAt', pl."addedAt"
-          ) ORDER BY pl."addedAt" DESC)
-        END AS "extendedLikesInfo"
+      (SELECT jsonb_agg(json_build_object(
+        'userId', pl."userId",
+        'postId', pl."userId",
+        'login', pl.login,
+        'like', pl.type,
+        'addedAt', pl."addedAt"
+        ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
 	    FROM public.post_pg as p
       LEFT JOIN public.blog_pg as b
       ON p."blogId" = b.id
       LEFT JOIN public.post_like_pg as pl
       ON p.id = pl."postId"
       WHERE p.id = $1
-      GROUP BY p.id, b.name, pl."userId", p."createdAt"
+      GROUP BY p.id, b.name
+      `, [postId]);
+
+    if (!res[0]) {
+      return null;
+    }
+
+    return PostOutputModelMapper(res[0], userId);
+  }
+
+  async getByBlogId(blogId: string, userId?: string): Promise<PostOutputModel | null> {
+    const res = await this.dataSource.query(`
+      SELECT p.*, b.name as "blogName",
+      (SELECT jsonb_agg(json_build_object(
+        'userId', pl."userId",
+        'postId', pl."userId",
+        'login', pl.login,
+        'like', pl.type,
+        'addedAt', pl."addedAt"
+        ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
+	    FROM public.post_pg as p
+      LEFT JOIN public.blog_pg as b
+      ON p."blogId" = b.id
+      LEFT JOIN public.post_like_pg as pl
+      ON p.id = pl."postId"
+      WHERE p."blogId" = $1
+      GROUP BY p.id, b.name
       `, [blogId]);
 
+    console.log(res);
     if (!res[0]) {
       return null;
     }
@@ -68,23 +91,20 @@ export class PostsQueryRepository {
       `, conditions.length > 0 ? params : []);
     const posts = await this.dataSource.query(`
         SELECT p.*, b."name" as "blogName", 
-        CASE
-          WHEN (pl."userId") is null then '[]'::jsonb
-        ELSE jsonb_agg(json_build_object(
+        (SELECT jsonb_agg(json_build_object(
             'userId', pl."userId",
-        'postId', pl."userId",
+            'postId', pl."userId",
             'login', pl.login,
             'like', pl.type,
             'addedAt', pl."addedAt"
-            ) ORDER BY pl."addedAt" DESC)
-        END AS "extendedLikesInfo"
+            ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
         FROM public.post_pg as p
         LEFT JOIN public.blog_pg as b
         ON b.id = p."blogId"
         LEFT JOIN public.post_like_pg as pl
 	      ON p.id = pl."postId"
         ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''}
-        GROUP BY p.id, p.title, b.id, b.name, pl."userId"
+        GROUP BY p.id, b.name
         ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
         LIMIT $${params.length + 1} OFFSET $${params.length + 2};
         `,

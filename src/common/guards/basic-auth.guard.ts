@@ -16,7 +16,6 @@ export class BasicAuthGuard implements CanActivate {
 
     try {
       const authorization = request.headers?.authorization;
-      console.log(authorization);
       if (!authorization) {
         throw new UnauthorizedException();
       }

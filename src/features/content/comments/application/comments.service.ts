@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { PostsRepository } from '../../posts/infrastructure/posts.repository';
+import { Comment } from '../domain/comment.entity';
 
 @Injectable()
 export class CommentsService {
@@ -40,6 +41,14 @@ export class CommentsService {
   ): Promise<boolean> {
 
     const result = await this.commentsRepository.setLike(id, user, likeStatus);
+    return result;
+  }
+
+
+  async getById(
+    id,
+  ): Promise<Comment | null> {
+    const result = await this.commentsRepository.getById(id);
     return result;
   }
 

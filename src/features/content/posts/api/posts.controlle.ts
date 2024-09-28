@@ -246,7 +246,6 @@ export class PostsController {
     @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
     @Body() updateModel: PostInBlogCreateModel
   ) {
-    console.log('cho');
     const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const post = await this.postsService.getById(postId);

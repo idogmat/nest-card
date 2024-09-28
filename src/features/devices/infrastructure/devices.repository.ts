@@ -51,7 +51,6 @@ export class DevicesRepository {
       WHERE id != $1 AND "userId" = $2;
       `, [id, userId]);
 
-    console.log(res);
     return res[1];
   };
 

@@ -19,7 +19,6 @@ export class CommentOutputModel {
 // MAPPERS
 
 export const CommentOutputModelMapper = (comment: Comment, _userId?: string): CommentOutputModel => {
-  console.log(comment);
   const outputModel = new CommentOutputModel();
   outputModel.id = comment.id;
   outputModel.content = comment.content;
@@ -31,9 +30,6 @@ export const CommentOutputModelMapper = (comment: Comment, _userId?: string): Co
       likesCount: getLikeCount(comment.extendedLikesInfo, 'Like') || 0,
       dislikesCount: getLikeCount(comment.extendedLikesInfo, 'Dislike') || 0,
       myStatus: getCurrentStatus(comment.extendedLikesInfo, _userId),
-      // likesCount: 0,
-      // dislikesCount: 0,
-      // myStatus: "None",
     };
   outputModel.createdAt = new Date(+comment.createdAt).toISOString();
 
