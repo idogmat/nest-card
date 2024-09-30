@@ -14,6 +14,7 @@ import { CommentsQueryRepository } from "./comments/infrastructure/comments.quer
 import { CustomBlogIdValidation } from "./posts/validate/blogId.validate";
 import { AuthModule } from "../auth/auth.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { SuperAdminController } from "./sa/api/super-admin.controller";
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { TypeOrmModule } from "@nestjs/typeorm";
   controllers: [
     BlogsController,
     PostsController,
-    CommentsController
+    CommentsController,
+    SuperAdminController
   ],
   providers: [
     BlogsService,
