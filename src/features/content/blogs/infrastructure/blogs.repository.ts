@@ -37,7 +37,7 @@ export class BlogsRepository {
       newBlog.name,
       newBlog.description,
       newBlog.websiteUrl,
-      newBlog.createdAt || new Date().getTime(),
+      newBlog.createdAt || new Date().toISOString(),
       newBlog.isMembership || false,
     ]);
     return res[0].id;

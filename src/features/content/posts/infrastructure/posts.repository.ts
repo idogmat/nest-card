@@ -25,7 +25,7 @@ export class PostsRepository {
       newPost.content,
       newPost.shortDescription,
       newPost.blogId,
-      newPost.createdAt || new Date().getTime(),
+      newPost.createdAt || new Date(),
     ]);
     return res[0].id;
   }
@@ -79,7 +79,7 @@ export class PostsRepository {
       user.login,
       id,
       like,
-      new Date().getTime()
+      new Date()
     ]);
     return updated;
   }

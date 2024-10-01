@@ -7,7 +7,7 @@ CREATE TABLE public.user_pg
     email character varying NOT NULL COLLATE "C",
     "passwordHash" character varying NOT NULL,
     "passwordSalt" character varying NOT NULL,
-    "createdAt" numeric NOT NULL,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "confirmationCode" character varying,
     "expirationDate" numeric,
     "isConfirmed" boolean,
@@ -31,8 +31,8 @@ CREATE TABLE public.device_pg
     ip character varying COLLATE "C",
     title character varying COLLATE "C",
     "userId" uuid NOT NULL,
-    "lastActiveDate" numeric NOT NULL,
-    "createdAt" numeric NOT NULL,
+    "lastActiveDate" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY ("userId")
         REFERENCES public.user_pg (id) MATCH SIMPLE
@@ -47,7 +47,7 @@ CREATE TABLE public.blog_pg
     name character varying NOT NULL COLLATE "C",
     description text NOT NULL,
     "websiteUrl" character varying NOT NULL,
-    "createdAt" numeric,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "isMembership" boolean DEFAULT false,
     PRIMARY KEY (id)
 );
@@ -59,7 +59,7 @@ CREATE TABLE public.post_pg
     content character  varying NOT NULL,
     "shortDescription" character varying NOT NULL,
     "blogId" uuid,
-    "createdAt" numeric,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY ("blogId")
         REFERENCES public.blog_pg (id) MATCH SIMPLE
@@ -73,7 +73,7 @@ CREATE TABLE public.comment_pg
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     content text,
     "postId" uuid NOT NULL,
-    "createdAt" numeric,
+    "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "userId" uuid NOT NULL,
     "userLogin" character varying NOT NULL,
     PRIMARY KEY (id),
@@ -91,7 +91,7 @@ CREATE TABLE public.post_like_pg
     "userId" uuid NOT NULL,
     login character varying NOT NULL,
     type character varying NOT NULL,
-    "addedAt" numeric NOT NULL,
+    "addedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE ("userId", "postId"),
     FOREIGN KEY ("postId")
@@ -113,7 +113,7 @@ CREATE TABLE public.comment_like_pg
     "userId" uuid NOT NULL,
     login character varying NOT NULL,
     type character varying NOT NULL,
-    "addedAt" numeric NOT NULL,
+    "addedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     UNIQUE ("userId", "commentId"),
     FOREIGN KEY ("commentId")

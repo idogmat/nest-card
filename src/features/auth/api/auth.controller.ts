@@ -120,7 +120,7 @@ export class AuthController {
     @Req() req,
     @Res() res
   ) {
-    const lastActiveDate = new Date().getTime();
+    const lastActiveDate = new Date();
     await this.devicesService.updateDate(req.user.deviceId, lastActiveDate);
 
     const accessToken = await this.authService.createToken({

@@ -17,7 +17,7 @@ export class BlogsService {
       name: name,
       description: description,
       websiteUrl: websiteUrl,
-      createdAt: new Date().getTime(),
+      createdAt: new Date(),
     };
 
     const createdBlogId: string = await this.blogsRepository.create(newBlog);

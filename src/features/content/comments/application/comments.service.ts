@@ -24,7 +24,7 @@ export class CommentsService {
       content,
       userId,
       userLogin,
-      createdAt: new Date().getTime()
+      createdAt: new Date()
     };
 
     const commentId = await this.commentsRepository.create(newComment);

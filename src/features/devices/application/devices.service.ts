@@ -14,7 +14,7 @@ export class DevicesService {
     ip: string,
     title: string,
     userId: string,
-    lastActiveDate?: number
+    lastActiveDate?: Date
   ): Promise<DeviceDocument> {
 
     const res = await this.dataSource.query(`
@@ -30,8 +30,8 @@ export class DevicesService {
       ip,
       title,
       userId,
-      lastActiveDate || new Date().getTime(),
-      new Date().getTime()
+      lastActiveDate || new Date(),
+      new Date()
     ]);
     const device = await this.devicesRepository.getById(res[0].id);
     return device;

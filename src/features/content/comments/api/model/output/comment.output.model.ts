@@ -31,7 +31,7 @@ export const CommentOutputModelMapper = (comment: Comment, _userId?: string): Co
       dislikesCount: getLikeCount(comment.extendedLikesInfo, 'Dislike') || 0,
       myStatus: getCurrentStatus(comment.extendedLikesInfo, _userId),
     };
-  outputModel.createdAt = new Date(+comment.createdAt).toISOString();
+  outputModel.createdAt = new Date(comment.createdAt).toISOString();
 
   return outputModel;
 };

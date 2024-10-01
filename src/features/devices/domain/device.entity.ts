@@ -12,7 +12,7 @@ export class Device {
   @Prop({ type: String, required: true })
   title: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
+  @Prop({ type: Number, default: new Date() })
   lastActiveDate: number;
 }
 

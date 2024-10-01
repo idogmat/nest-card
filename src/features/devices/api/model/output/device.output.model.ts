@@ -20,7 +20,7 @@ export const DeviceOutputModelMapper = (device: DeviceDBModel): DeviceOutputMode
   outputModel.ip = device.ip;
   outputModel.title = device.title;
   outputModel.deviceId = device.id;
-  outputModel.lastActiveDate = new Date(+device.lastActiveDate).toISOString();
+  outputModel.lastActiveDate = new Date(device.lastActiveDate).toISOString();
 
   return outputModel;
 };

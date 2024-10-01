@@ -31,8 +31,8 @@ export class User {
   @Prop({ type: String, required: true })
   email: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
-  createdAt: number;
+  @Prop({ type: Date, default: new Date() })
+  createdAt: Date;
 
   @Prop({ type: EmailConfirmation, required: false })
   emailConfirmation: EmailConfirmation;

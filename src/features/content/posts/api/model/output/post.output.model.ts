@@ -25,14 +25,14 @@ export const PostOutputModelMapper = (post: PostDocument, _userId?: string): Pos
   outputModel.content = post.content;
   outputModel.blogId = post.blogId;
   outputModel.blogName = post.blogName;
-  outputModel.createdAt = new Date(+post.createdAt).toISOString();
+  outputModel.createdAt = new Date(post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
     likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
     dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,
     myStatus: extendedLikesInfo?.length ? getCurrentStatus(extendedLikesInfo, _userId) : "None",
     newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.map(e => {
       if (e.like === 'Like') {
-        return ({ addedAt: new Date(+e.addedAt).toISOString(), login: e.login, userId: e.userId });
+        return ({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
       }
     })?.filter((_, i) => (i < 3 && _?.addedAt))
       : [],

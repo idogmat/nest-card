@@ -26,7 +26,7 @@ export class UsersRepository {
       newUser.email,
       newUser.passwordHash,
       newUser.passwordSalt,
-      newUser.createdAt || new Date().getTime(),
+      newUser.createdAt || new Date(),
       newUser.emailConfirmation?.confirmationCode || '',
       newUser.emailConfirmation?.expirationDate || null,
       newUser.emailConfirmation?.isConfirmed || false,

@@ -95,7 +95,7 @@ export class AuthService {
   async setConfirm(code: string) {
     const user = await this.usersRepository.findByConfirmCode(code);
     if (!user) return false;
-    if (user.isConfirmed || user.expirationDate < new Date().getTime()) return false;
+    if (user.isConfirmed || user.expirationDate < new Date()) return false;
     await this.setConfirmRegistrationCode(user.id, true);
     return true;
   }

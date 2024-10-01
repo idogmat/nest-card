@@ -23,7 +23,7 @@ export class CommentsRepository {
       `, [
       newComment.content,
       newComment.postId,
-      newComment.createdAt || new Date().getTime(),
+      newComment.createdAt || new Date(),
       newComment.userId,
       newComment.userLogin,
     ]);
@@ -61,7 +61,7 @@ export class CommentsRepository {
       user.login,
       id,
       like,
-      new Date().getTime()
+      new Date()
     ]);
     return updated[0];
   }

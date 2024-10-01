@@ -13,7 +13,7 @@ export class Comment {
   @Prop({ type: String, required: true })
   postId: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
+  @Prop({ type: Number, default: new Date() })
   createdAt: number;
 
   @Prop({ type: String })

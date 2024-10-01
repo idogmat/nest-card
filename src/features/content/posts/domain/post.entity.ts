@@ -19,7 +19,7 @@ export class Post {
   @Prop({ type: String, required: true })
   blogId: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
+  @Prop({ type: Number, default: new Date() })
   createdAt: number;
 
   @Prop({ type: Array, of: { like: String, userId: String, login: String, addedAt: Number }, default: {} })
