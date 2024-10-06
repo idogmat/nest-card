@@ -1,6 +1,6 @@
 import { applyDecorators } from '@nestjs/common';
 import { IsEmail, IsOptional } from 'class-validator';
-import { Trim } from '../transform/trim';
+import { Trim } from '../decorators/transform/trim';
 
 // Объединение декораторов
 // https://docs.nestjs.com/custom-decorators#decorator-composition

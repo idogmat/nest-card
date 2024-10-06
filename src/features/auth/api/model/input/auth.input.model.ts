@@ -1,8 +1,4 @@
 import { IsEmail, IsString, Length, Validate } from "class-validator";
-import CustomCodeExistValidation from "src/common/decorators/validate/custom-ode-exist-validation";
-import CustomEmailExistValidation from "src/common/decorators/validate/custom-email-exist-validation";
-import CustomEmailValidation from "src/common/decorators/validate/custom-email-validation";
-import CustomLoginValidation from "src/common/decorators/validate/custom-login-validation";
 
 export class LoginInputModel {
   @IsString()
@@ -15,12 +11,10 @@ export class LoginInputModel {
 export class CreateUserModel {
   @IsString()
   @Length(3, 10)
-  @Validate(CustomLoginValidation)
   login: string;
 
   @IsString()
   @IsEmail()
-  @Validate(CustomEmailValidation)
   email: string;
 
   @IsString()
@@ -32,7 +26,6 @@ export class CreateUserModel {
 export class EmailRecovery {
 
   @IsEmail()
-  @Validate(CustomEmailExistValidation)
   email: string;
 
 }
@@ -50,7 +43,6 @@ export class SetNewPassword {
 export class ConfirmCode {
 
   @IsString()
-  @Validate(CustomCodeExistValidation)
   code: string;
 
 }

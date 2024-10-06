@@ -10,17 +10,7 @@ import { DeviceModule } from "../devices/device.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
-import CustomEmailValidation from "src/common/decorators/validate/custom-email-validation";
-import CustomLoginValidation from "src/common/decorators/validate/custom-login-validation";
-import CustomEmailExistValidation from "src/common/decorators/validate/custom-email-exist-validation";
-import CustomCodeExistValidation from "src/common/decorators/validate/custom-ode-exist-validation";
 
-const validators: Provider[] = [
-  CustomEmailValidation,
-  CustomLoginValidation,
-  CustomCodeExistValidation,
-  CustomEmailExistValidation,
-];
 
 @Module({
   imports: [UserModule, DeviceModule, CqrsModule, PassportModule],
@@ -32,7 +22,6 @@ const validators: Provider[] = [
     LocalStrategy,
     EmailService,
     AuthLoginUseCase,
-    ...validators,
   ],
   exports: [AuthService, JwtService]
 })
