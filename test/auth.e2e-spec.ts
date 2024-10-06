@@ -46,7 +46,7 @@ describe('auth', () => {
     const { login: loginOrEmail, password } = regUser;
 
     const loginRequest = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ loginOrEmail, password });
 
     expect(loginRequest.status).toBe(200);
@@ -55,7 +55,7 @@ describe('auth', () => {
     const accessToken: string = loginRequest.body?.accessToken.toString();
 
     const authMeRequest = await request(app.getHttpServer())
-      .get('/auth/me')
+      .get('/api/auth/me')
       .set({ Authorization: "Bearer " + accessToken })
       .send({ loginOrEmail, password });
 

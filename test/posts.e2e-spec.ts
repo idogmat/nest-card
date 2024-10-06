@@ -25,11 +25,11 @@ describe('posts', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
     })
       .compile();
+
     const result = await initForTest(moduleFixture, AppModule);
     app = result.app;
     await result.cleadDB();
