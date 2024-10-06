@@ -1,8 +1,8 @@
 import { IsEmail, IsString, Length, Validate } from "class-validator";
-import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
-import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
-import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
-import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
+import CustomCodeExistValidation from "src/common/decorators/validate/custom-ode-exist-validation";
+import CustomEmailExistValidation from "src/common/decorators/validate/custom-email-exist-validation";
+import CustomEmailValidation from "src/common/decorators/validate/custom-email-validation";
+import CustomLoginValidation from "src/common/decorators/validate/custom-login-validation";
 
 export class LoginInputModel {
   @IsString()

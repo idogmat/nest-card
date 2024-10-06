@@ -10,10 +10,10 @@ import { DeviceModule } from "../devices/device.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
-import CustomEmailValidation from "src/common/decorators/validate/is-email-validator";
-import CustomLoginValidation from "src/common/decorators/validate/is-login-validator";
-import CustomEmailExistValidation from "src/common/decorators/validate/is-email-exist-validator";
-import CustomCodeExistValidation from "src/common/decorators/validate/is-code-exist-validator";
+import CustomEmailValidation from "src/common/decorators/validate/custom-email-validation";
+import CustomLoginValidation from "src/common/decorators/validate/custom-login-validation";
+import CustomEmailExistValidation from "src/common/decorators/validate/custom-email-exist-validation";
+import CustomCodeExistValidation from "src/common/decorators/validate/custom-ode-exist-validation";
 
 const validators: Provider[] = [
   CustomEmailValidation,
