@@ -1,35 +1,23 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema, LikeType } from 'src/features/likes/domain/like-info.entity';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Schema()
-export class Comment {
-  @Prop({ type: String, required: true })
+@Entity()
+export class CommentPg {
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   content: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   postId: string;
 
-  @Prop({ type: Number, default: new Date() })
+  @Column()
   createdAt: number;
 
-  @Prop({ type: String })
+  @Column()
   userId: string;
 
-  @Prop({ type: String })
+  @Column()
   userLogin: string;
 
-  @Prop({ type: Like, default: {}, schema: LikeSchema })
-  extendedLikesInfo: { like: LikeType, userId: string, login: string, addedAt: number; }[];
 }
-
-export const CommentSchema = SchemaFactory.createForClass(Comment);
-CommentSchema.loadClass(Comment);
-
-// Types
-export type CommentDocument = HydratedDocument<Comment>;
-
-export type CommentModelType = Model<CommentDocument>;

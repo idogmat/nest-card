@@ -1,4 +1,4 @@
-import { ApiTags } from '@nestjs/swagger';
+import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import {
   BadRequestException,
   Body,
@@ -22,6 +22,7 @@ import {
 } from '../../../base/models/pagination.base.model';
 import { SortingPropertiesType } from '../../../base/types/sorting-properties.type';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
+import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
 
 export const USERS_SORTING_PROPERTIES: SortingPropertiesType<UserOutputModel> =
   ['login', 'email', 'createdAt'];
@@ -75,7 +76,7 @@ export class UsersController {
   @UseGuards(BasicAuthGuard)
   @Delete(':id')
   @HttpCode(204)
-  async delete(@Param('id') id: string) {
+  async delete(@Param('id', new EnhancedParseUUIDPipe()) id: string) {
     const deletingResult: boolean = await this.usersService.delete(id);
 
     if (!deletingResult) {
@@ -85,7 +86,7 @@ export class UsersController {
 
   @UseGuards(BasicAuthGuard)
   @Get(':id')
-  async getById(@Param('id') id: string) {
+  async getById(@Param('id', new EnhancedParseUUIDPipe()) id: string) {
     const createdUser: UserOutputModel | null =
       await this.usersQueryRepository.getById(id);
 

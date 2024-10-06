@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { DeviceDocument } from '../domain/device.entity';
+import { DevicePg } from '../domain/device.entity';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
 
@@ -15,23 +15,22 @@ export class DevicesService {
     title: string,
     userId: string,
     lastActiveDate?: Date
-  ): Promise<DeviceDocument> {
+  ): Promise<DevicePg> {
 
     const res = await this.dataSource.query(`
       INSERT INTO public.device_pg (
       ip,
       title,
       "userId",
-      "lastActiveDate",
-      "createdAt"
+      "lastActiveDate" 
       )
-      VALUES ($1, $2, $3, $4, $5) RETURNING *
+      VALUES ($1, $2, $3, $4) RETURNING *
       `, [
       ip,
       title,
       userId,
       lastActiveDate || new Date(),
-      new Date()
+
     ]);
     const device = await this.devicesRepository.getById(res[0].id);
     return device;

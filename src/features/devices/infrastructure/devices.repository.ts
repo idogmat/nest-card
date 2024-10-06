@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Device, DeviceDocument } from '../domain/device.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { DevicePg } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
@@ -9,7 +9,7 @@ export class DevicesRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async getById(id: string): Promise<DeviceDocument | null> {
+  async getById(id: string): Promise<DevicePg | null> {
     const res = await this.dataSource.query(`
       SELECT *
 	    FROM public.device_pg
@@ -23,7 +23,7 @@ export class DevicesRepository {
     return res[0];
   }
 
-  async findByUserId(userId: string): Promise<DeviceDocument[] | null> {
+  async findByUserId(userId: string): Promise<DevicePg[] | null> {
     const res = await this.dataSource.query(`
       SELECT *
 	    FROM public.device_pg
@@ -68,7 +68,7 @@ export class DevicesRepository {
     return res[0];
   }
 
-  async updateFields(id: string, newModel: Device) {
+  async updateFields(id: string, newModel: DevicePg) {
     const res = await this.dataSource.query(`
       UPDATE public.device_pg
       SET id = $2, title = $3, "lastActiveDate" = $4

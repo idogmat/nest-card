@@ -1,40 +1,31 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-import { LikeType } from 'src/features/likes/domain/like-info.entity';
+import { PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BlogPg } from '../../blogs/domain/blog.entity';
 
-@Schema()
-export class Post {
-  @Prop({ type: String, required: true })
+@Entity()
+export class PostPg {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column()
   title: string;
 
-  @Prop({ type: String, required: true })
-  content: string;
-
-  @Prop({ type: String, required: true })
+  @Column()
   shortDescription: string;
 
-  @Prop({ type: String, required: true })
-  blogName: string;
+  @Column()
+  content: string;
 
-  @Prop({ type: String, required: true })
+  @Column({ type: 'uuid' })
   blogId: string;
 
-  @Prop({ type: Number, default: new Date() })
-  createdAt: number;
+  @Column()
+  createdAt: Date;
 
-  @Prop({ type: Array, of: { like: String, userId: String, login: String, addedAt: Number }, default: {} })
-  extendedLikesInfo: { like: LikeType, userId: string, login: string, addedAt: number; }[];
+  @OneToMany(() => PostLikePg, (like) => like.post)
+  extendedLikesInfo: PostLikePg[];
 
+  @ManyToOne(() => BlogPg, (blog) => blog.posts)
+  blog: BlogPg;
 }
 
-export const PostSchema = SchemaFactory.createForClass(Post);
-PostSchema.loadClass(Post);
-
-// Types
-export type PostDocument = HydratedDocument<Post>;
-
-// type PostModelStaticType = {
-//   createUser: (name: string, description: string, websiteUrl: string) => PostDocument;
-// };
-
-export type PostModelType = Model<PostDocument>; //& UserModelStaticType;

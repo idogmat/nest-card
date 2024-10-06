@@ -15,11 +15,14 @@ import { CustomBlogIdValidation } from "./posts/validate/blogId.validate";
 import { AuthModule } from "../auth/auth.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { SuperAdminController } from "./sa/api/super-admin.controller";
+import { BlogPg } from "./blogs/domain/blog.entity";
+import { PostPg } from "./posts/domain/post.entity";
+import { PostLikePg } from "../likes/domain/post-like-info.entity";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature()
+    TypeOrmModule.forFeature([BlogPg, PostPg, PostLikePg])
   ],
   controllers: [
     BlogsController,

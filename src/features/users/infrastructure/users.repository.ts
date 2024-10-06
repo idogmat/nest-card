@@ -1,15 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { EmailConfirmation, User, UserDocument } from '../domain/user.entity';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { UserAuthInput } from 'src/features/auth/api/model/input/auth.input.model';
+import { UserPg } from '../domain/user.entity';
+import { EmailConfirmation } from '../api/models/input/create-user.input.model';
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(UserPg)
+    private readonly usersRepo: Repository<UserPg>,
   ) { }
 
-  async create(newUser: User): Promise<string> {
+  async create(newUser: UserAuthInput): Promise<string> {
     const res = await this.dataSource.query(`
       INSERT INTO public.user_pg (
       login, email,
@@ -26,15 +30,15 @@ export class UsersRepository {
       newUser.email,
       newUser.passwordHash,
       newUser.passwordSalt,
-      newUser.createdAt || new Date(),
-      newUser.emailConfirmation?.confirmationCode || '',
-      newUser.emailConfirmation?.expirationDate || null,
-      newUser.emailConfirmation?.isConfirmed || false,
+      new Date(),
+      '',
+      null,
+      false,
     ]);
     return res[0].id;
   }
 
-  async getById(id: string): Promise<UserDocument | null> {
+  async getById(id: string): Promise<UserPg | null> {
     const res = await this.dataSource.query(`
       SELECT *
 	    FROM public.user_pg

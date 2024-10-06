@@ -22,11 +22,9 @@ export class UsersQueryRepository {
 	    FROM public.user_pg
       WHERE id = $1
       `, [id]);
-
     if (user[0] === null) {
       return null;
     }
-
     return UserOutputModelMapper(user[0]);
   }
 

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/features/users/domain/user.entity';
 import { randomUUID } from 'crypto';
 import { dateSetter } from 'src/common/utils/dataSetter';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { DevicesService } from 'src/features/devices/application/devices.service';
+import { UserAuthInput } from '../api/model/input/auth.input.model';
 
 
 @Injectable()
@@ -34,7 +34,7 @@ export class AuthService {
 
   async registration(login: string, password: string, email: string) {
     const { passwordHash, passwordSalt } = await this.generatePasswordHash(password);
-    const id = await this.usersRepository.create({ login, email, passwordHash, passwordSalt } as User);
+    const id = await this.usersRepository.create({ login, email, passwordHash, passwordSalt } as UserAuthInput);
     return id;
   }
 
@@ -85,7 +85,7 @@ export class AuthService {
       expirationDate: dateSetter(new Date(), {
         hours: 1,
         minutes: 30,
-      }).getTime(),
+      }),
       isConfirmed: confirmed,
     };
     await this.usersRepository.setConfirmRegistrationCode(id, emailConfirmation);

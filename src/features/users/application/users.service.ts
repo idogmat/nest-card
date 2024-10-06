@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
-import { User } from '../domain/user.entity';
 import bcrypt from 'bcrypt';
+import { UserAuthInput } from 'src/features/auth/api/model/input/auth.input.model';
 
 // Для провайдера всегда необходимо применять декоратор @Injectable() и регистрировать в модуле
 @Injectable()
@@ -19,12 +19,11 @@ export class UsersService {
     const passwordHash = await bcrypt.hash(password, passwordSalt);
 
     const newUser = {
-      login: login,
+      login,
       passwordHash,
       passwordSalt,
       email,
-      createdAt: new Date()
-    } as User;
+    } as UserAuthInput;
 
     const createdUserId: string = await this.usersRepository.create(newUser);
 

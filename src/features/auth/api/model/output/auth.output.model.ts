@@ -1,4 +1,4 @@
-import { UserDocument } from "src/features/users/domain/user.entity";
+import { UserPg } from "src/features/users/domain/user.entity";
 
 export class AuthOutputModel {
   accessToken: string;
@@ -9,7 +9,7 @@ export class AuthMeOutputModel {
   email: string;
   userId: string;
   constructor() { }
-  static getAuthMe(user: UserDocument) {
+  static getAuthMe(user: UserPg) {
     return {
       login: user.login,
       email: user.email,

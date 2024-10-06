@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { Comment } from '../domain/comment.entity';
-import { LikeType } from 'src/features/likes/domain/like-info.entity';
+import { CommentPg } from '../domain/comment.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { CommentCreateModel } from '../api/model/input/create-comment.input.model';
+import { CommentLikePg, LikeType } from 'src/features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsRepository {
@@ -10,7 +11,7 @@ export class CommentsRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async create(newComment: Comment): Promise<string> {
+  async create(newComment: CommentPg): Promise<string> {
     const res = await this.dataSource.query(`
       INSERT INTO public.comment_pg (
       content,
@@ -30,7 +31,7 @@ export class CommentsRepository {
     return res[0].id;
   }
 
-  async getById(id: string): Promise<Comment | null> {
+  async getById(id: string): Promise<CommentPg & CommentLikePg | null> {
 
     const res = await this.dataSource.query(`
       SELECT *
@@ -75,7 +76,7 @@ export class CommentsRepository {
     return res[1] === 1;
   };
 
-  async update(id: string, newModel: Comment) {
+  async update(id: string, newModel: CommentCreateModel) {
     const updated = await this.dataSource.query(`
       UPDATE public.comment_pg
       SET "content" = $2

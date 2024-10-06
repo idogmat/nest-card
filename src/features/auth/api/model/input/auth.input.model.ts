@@ -54,3 +54,10 @@ export class ConfirmCode {
   code: string;
 
 }
+
+export class UserAuthInput {
+  login: string;
+  email: string;
+  passwordHash: string;
+  passwordSalt: string;
+}

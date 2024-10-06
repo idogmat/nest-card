@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Blog } from '../domain/blog.entity';
+import { BlogPg } from '../domain/blog.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 
@@ -9,7 +9,7 @@ export class BlogsRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async getById(id: string): Promise<Blog | null> {
+  async getById(id: string): Promise<BlogPg | null> {
     const res = await this.dataSource.query(`
       SELECT *
 	    FROM public.blog_pg
@@ -23,7 +23,7 @@ export class BlogsRepository {
     return res[0];
   }
 
-  async create(newBlog: Blog): Promise<string> {
+  async create(newBlog: BlogPg): Promise<string> {
     const res = await this.dataSource.query(`
       INSERT INTO public.blog_pg (
       name, 
@@ -43,7 +43,7 @@ export class BlogsRepository {
     return res[0].id;
   }
 
-  async update(id: string, newModel: Blog) {
+  async update(id: string, newModel: BlogPg) {
     const updated = await this.dataSource.query(`
       UPDATE public.blog_pg
       SET name = $2, 

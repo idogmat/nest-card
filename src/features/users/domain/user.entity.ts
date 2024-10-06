@@ -1,70 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { randomUUID } from 'crypto';
-import { HydratedDocument, Model } from 'mongoose';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-
-@Schema({ _id: false })
-export class EmailConfirmation {
-  @Prop({ type: String })
-  confirmationCode: string;
-
-  @Prop({ type: Number })
-  expirationDate: number;
-
-  @Prop({ type: Boolean })
-  isConfirmed: boolean;
-}
-
-
-@Schema()
-export class User {
-  @Prop({ type: String, required: true })
-  login: string;
-
-  @Prop({ type: String, required: true })
-  passwordHash: string;
-
-  @Prop({ type: String, required: true })
-  passwordSalt: string;
-
-  @Prop({ type: String, required: true })
-  email: string;
-
-  @Prop({ type: Date, default: new Date() })
-  createdAt: Date;
-
-  @Prop({ type: EmailConfirmation, required: false })
-  emailConfirmation: EmailConfirmation;
-
-  @Prop({ type: String, reqired: false })
-  recoveryCode: string;
-
-  static createUser(login: string, email: string | null) {
-    const user = new this();
-
-    user.login = login;
-    user.email = email ?? `${randomUUID()}_${login}@it-incubator.io`;
-
-    return user;
-  }
-
-  getLogin() {
-    return this.login;
-  }
-}
-
-export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.loadClass(User);
-
-// Types
-export type UserDocument = HydratedDocument<User>;
-
-// type UserModelStaticType = {
-//   createUser: (name: string, email: string | null) => UserDocument;
-// };
-
-export type UserModelType = Model<UserDocument>; //& UserModelStaticType;
+import { DevicePg } from 'src/features/devices/domain/device.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class UserPg {
@@ -80,15 +16,24 @@ export class UserPg {
   @Column()
   passwordHash: string;
 
-  // @Column()
-  // passwordSalt: string;
+  @Column()
+  passwordSalt: string;
 
   @Column()
-  createdAt: number;
+  createdAt: Date;
 
-  // @Column()
-  // emailConfirmation: EmailConfirmation;
+  @Column()
+  confirmationCode: string;
 
-  // @Column()
-  // recoveryCode: string;
+  @Column({ nullable: true })
+  expirationDate: Date;
+
+  @Column()
+  isConfirmed: boolean;
+
+  @Column({ nullable: true })
+  recoveryCode: string | null;
+
+  @OneToMany(() => DevicePg, (device) => device)
+  divices: DevicePg[];
 }

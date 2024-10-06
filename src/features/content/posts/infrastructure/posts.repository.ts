@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Post } from '../domain/post.entity';
-import { LikeType } from 'src/features/likes/domain/like-info.entity';
+import { PostPg } from '../domain/post.entity';
 import { DataSource } from 'typeorm';
 import { InjectDataSource } from '@nestjs/typeorm';
+import { LikeType } from 'src/features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {
@@ -10,7 +10,7 @@ export class PostsRepository {
     @InjectDataSource() protected dataSource: DataSource
   ) { }
 
-  async create(newPost: Post): Promise<string> {
+  async create(newPost: PostPg): Promise<string> {
     const res = await this.dataSource.query(`
       INSERT INTO public.post_pg (
       title, 
@@ -45,7 +45,7 @@ export class PostsRepository {
     return res[0];
   }
 
-  async update(id: string, newModel: Post) {
+  async update(id: string, newModel: PostPg) {
     const updated = await this.dataSource.query(`
       UPDATE public.post_pg
       SET title = $2, 

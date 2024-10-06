@@ -12,3 +12,12 @@ export class UserCreateModel {
   @IsEmail()
   email: string;
 }
+
+export class EmailConfirmation {
+
+  confirmationCode: string;
+
+  expirationDate: Date;
+
+  isConfirmed: boolean;
+}

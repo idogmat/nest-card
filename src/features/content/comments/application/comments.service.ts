@@ -2,7 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { PostsRepository } from '../../posts/infrastructure/posts.repository';
-import { Comment } from '../domain/comment.entity';
+import { CommentPg } from '../domain/comment.entity';
+import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsService {
@@ -47,7 +48,7 @@ export class CommentsService {
 
   async getById(
     id,
-  ): Promise<Comment | null> {
+  ): Promise<CommentPg & CommentLikePg | null> {
     const result = await this.commentsRepository.getById(id);
     return result;
   }

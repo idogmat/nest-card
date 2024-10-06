@@ -35,8 +35,6 @@ export class CommentsQueryRepository {
     id: string,
     userId?: string
   ): Promise<PaginationOutput<CommentOutputModel>> {
-    const conditions = [];
-    const params = [];
 
     const totalCount = await this.dataSource.query(`
       SELECT COUNT(*)

@@ -1,22 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { PostPg } from '../../posts/domain/post.entity';
 
-@Schema()
-export class Blog {
-  @Prop({ type: String, required: true })
+@Entity()
+export class BlogPg {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column()
   name: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   description: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   websiteUrl: string;
 
-  @Prop({ type: Date, default: new Date() })
+  @Column()
   createdAt: Date;
 
-  @Prop({ type: Boolean, default: false })
+  @Column()
   isMembership: boolean;
+
+  @OneToMany(() => PostPg, (post) => post.blog)
+  posts: PostPg[];
+
+
 
   static createBlog(name: string, description: string, websiteUrl: string) {
     const blog = new this();
@@ -33,14 +41,3 @@ export class Blog {
 
 }
 
-export const BlogSchema = SchemaFactory.createForClass(Blog);
-BlogSchema.loadClass(Blog);
-
-// Types
-export type BlogDocument = HydratedDocument<Blog>;
-
-// type BlogModelStaticType = {
-//   createUser: (name: string, description: string, websiteUrl: string) => BlogDocument;
-// };
-
-export type BlogModelType = Model<BlogDocument>; //& UserModelStaticType;

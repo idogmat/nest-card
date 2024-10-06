@@ -3,9 +3,7 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import 'dotenv/config';
-import { Connection } from 'mongoose';
-import { getConnectionToken } from '@nestjs/mongoose';
-import { deleteAllData } from './utils/delete-all-data';
+import { initForTest } from './utils/ready-clear';
 
 const login = process.env.ADMIN_LOGIN;
 const password = process.env.ADMIN_PASSWORD;
@@ -25,7 +23,6 @@ let blogId = '';
 
 describe('posts', () => {
   let app: INestApplication;
-  let databaseConnection: Connection;
 
   beforeAll(async () => {
 
@@ -33,14 +30,12 @@ describe('posts', () => {
       imports: [AppModule]
     })
       .compile();
-
-    app = await moduleFixture.createNestApplication();
-    databaseConnection = app.get<Connection>(getConnectionToken());
-    await app.init();
+    const result = await initForTest(moduleFixture, AppModule);
+    app = result.app;
+    await result.cleadDB();
   });
 
   afterAll(async () => {
-    await deleteAllData(databaseConnection);
     await app.close();
   });
 
