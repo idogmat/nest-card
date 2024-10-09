@@ -16,46 +16,25 @@ export class DevicesService {
     userId: string,
     lastActiveDate?: Date
   ): Promise<DevicePg> {
-
-    const res = await this.dataSource.query(`
-      INSERT INTO public.device_pg (
-      ip,
-      title,
-      "userId",
-      "lastActiveDate" 
-      )
-      VALUES ($1, $2, $3, $4) RETURNING *
-      `, [
-      ip,
+    const device = await this.devicesRepository.create(ip,
       title,
       userId,
-      lastActiveDate || new Date(),
-
-    ]);
-    const device = await this.devicesRepository.getById(res[0].id);
+      lastActiveDate || new Date());
     return device;
   }
 
   async getById(deviceId: string) {
-    const res = await this.dataSource.query(`
-      SELECT *
-	    FROM public.device_pg
-      WHERE id = $1;
-      `, [deviceId]);
-    return res[0];
+    const device = await this.devicesRepository.getById(deviceId);
+    return device;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
-    const device = await this.dataSource.query(`
-      SELECT *
-	    FROM public.device_pg
-      WHERE id = $1 AND "userId" = $2;
-      `, [id, userId]);
-    if (!device?.[0]) {
+    const device = await this.devicesRepository.getById(id);
+    if (!device) {
       throw new NotFoundException();
     }
-    if (device[0].userId !== userId) throw new ForbiddenException();
-    return this.devicesRepository.delete(id);
+    if (device.userId !== userId) throw new ForbiddenException();
+    return this.devicesRepository.delete(device);
   }
 
   async deleteAll(id: string, userId: string): Promise<void> {

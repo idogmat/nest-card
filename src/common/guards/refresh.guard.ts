@@ -23,7 +23,7 @@ export class RefreshGuard implements CanActivate {
     try {
       res = await this.jwtService.verify(token, { secret: this.configService.get('REFRESH_SECRET_TOKEN') });
       const device = await this.devicesService.getById(res.deviceId);
-      if (device.lastActiveDate != res.lastActiveDate) throw new UnauthorizedException();
+      if (device.lastActiveDate.getTime() != new Date(res.lastActiveDate).getTime()) throw new UnauthorizedException();
     } catch {
       throw new UnauthorizedException();
     }

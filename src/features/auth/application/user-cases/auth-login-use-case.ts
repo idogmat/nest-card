@@ -9,7 +9,6 @@ export class AuthLoginCommand {
     public readonly password: string,
     public readonly device: { ip: string, title: string; }
   ) { }
-  // async execute() { }
 }
 
 @CommandHandler(AuthLoginCommand)
@@ -32,7 +31,6 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
       user.id,
       lastActiveDate
     );
-    console.log(user);
     const accessToken = await this.authService.createToken({
       userId: user.id,
       login: user.login,

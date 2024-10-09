@@ -7,10 +7,10 @@ export class UserPg {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ type: 'varchar', collation: 'C' })
   login: string;
 
-  @Column()
+  @Column({ type: 'varchar', collation: 'C' })
   email: string;
 
   @Column()

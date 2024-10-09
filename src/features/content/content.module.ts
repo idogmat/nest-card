@@ -18,11 +18,13 @@ import { SuperAdminController } from "./sa/api/super-admin.controller";
 import { BlogPg } from "./blogs/domain/blog.entity";
 import { PostPg } from "./posts/domain/post.entity";
 import { PostLikePg } from "../likes/domain/post-like-info.entity";
+import { CommentPg } from "./comments/domain/comment.entity";
+import { CommentLikePg } from "../likes/domain/comment-like-info.entity";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([BlogPg, PostPg, PostLikePg])
+    TypeOrmModule.forFeature([BlogPg, PostPg, PostLikePg, CommentPg, CommentLikePg])
   ],
   controllers: [
     BlogsController,

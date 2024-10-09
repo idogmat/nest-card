@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { CommentPg } from 'src/features/content/comments/domain/comment.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export type LikeType = 'None' | 'Like' | 'Dislike';
 
@@ -32,8 +33,11 @@ export class CommentLikePg {
   userId: string;
 
   @Column()
-  addedAt: number;
+  addedAt: Date;
 
   @Column()
   login: string;
+
+  @ManyToOne(() => CommentPg, (comment) => comment.extendedLikesInfo)
+  comment: CommentPg;
 }

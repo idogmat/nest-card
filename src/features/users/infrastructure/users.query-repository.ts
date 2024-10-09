@@ -7,22 +7,21 @@ import {
   PaginationOutput,
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { UserPg } from '../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(UserPg)
+    private readonly usersRepo: Repository<UserPg>,
   ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
-    const user = await this.dataSource.query(`
-      SELECT *
-	    FROM public.user_pg
-      WHERE id = $1
-      `, [id]);
-    if (user[0] === null) {
+    const user = await this.usersRepo.findBy({ id: id });
+    if (!user?.[0]) {
       return null;
     }
     return UserOutputModelMapper(user[0]);
@@ -70,28 +69,4 @@ export class UsersQueryRepository {
       Number(totalCount[0].count),
     );
   }
-
-  // private async __getResult(
-  //   filter: FilterQuery<User>,
-  //   pagination: PaginationWithSearchLoginAndEmailTerm,
-  // ): Promise<PaginationOutput<UserOutputModel>> {
-  //   const users: UserDBModel = await this.userModel
-  //     .find(filter)
-  //     .sort({
-  //       [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
-  //     })
-  //     .skip(pagination.getSkipItemsCount())
-  //     .limit(pagination.pageSize);
-
-  //   const totalCount = await this.userModel.countDocuments(filter);
-
-  //   const mappedUsers = users.map(UserOutputModelMapper);
-
-  //   return new PaginationOutput<UserOutputModel>(
-  //     mappedUsers,
-  //     pagination.pageNumber,
-  //     pagination.pageSize,
-  //     totalCount,
-  //   );
-  // }
 }

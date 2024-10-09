@@ -33,7 +33,7 @@ export class PostLikePg {
   userId: string;
 
   @Column()
-  addedAt: number;
+  addedAt: Date;
 
   @Column()
   login: string;

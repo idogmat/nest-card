@@ -6,10 +6,10 @@ export class BlogPg {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
-  @Column()
+  @Column({ collation: 'C' })
   name: string;
 
-  @Column()
+  @Column({ collation: 'C' })
   description: string;
 
   @Column()

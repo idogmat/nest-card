@@ -1,29 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { DeviceOutputModel, DeviceOutputModelMapper } from '../api/model/output/device.output.model';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DevicePg } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectRepository(DevicePg)
+    private readonly deviceRepo: Repository<DevicePg>,
   ) { }
 
   async getAll(
     userId: string
   ): Promise<DeviceOutputModel[] | []> {
-    const comments = await this.dataSource.query(`
-      SELECT *
-	    FROM public.device_pg
-      WHERE "userId" = $1
-      ORDER BY "createdAt";
-      `, [userId]);
+    const devices = await this.deviceRepo.createQueryBuilder("d")
+      .where("d.userId = :userId", { userId })
+      .orderBy("d.lastActiveDate")
+      .getMany();
 
-    if (comments === null) {
-      return null;
-    }
-
-    const mappedComments = comments.map(e => DeviceOutputModelMapper(e));
+    const mappedComments = devices.map(e => DeviceOutputModelMapper(e));
     return mappedComments;
   }
 }
