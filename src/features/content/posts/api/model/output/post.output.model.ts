@@ -15,17 +15,17 @@ export class PostOutputModel {
 
 // MAPPERS
 // FIXME поправить мапинг
-export const PostOutputModelMapper = (post: PostPg & { extendedLikesInfo: PostLikePg[]; }, _userId?: string): PostOutputModel => {
+export const PostOutputModelMapper = (post: any, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
   // const extendedLikesInfo = post.extendedLikesInfo?.filter(e => !!e.userId) || [];
-  console.log(post?.extendedLikesInfo);
+  // console.log(post);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
   outputModel.content = post.content;
   outputModel.blogId = post.blogId;
-  // outputModel.blogName = post.blogName;
-  outputModel.createdAt = new Date(post.createdAt).toISOString();
+  outputModel.blogName = post.blogName;
+  outputModel.createdAt = new Date(+post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
     // likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
     // dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,

@@ -20,11 +20,11 @@ export class UsersQueryRepository {
   ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
-    const user = await this.usersRepo.findBy({ id: id });
-    if (!user?.[0]) {
+    const user = await this.usersRepo.findOneBy({ id: id });
+    if (!user) {
       return null;
     }
-    return UserOutputModelMapper(user[0]);
+    return UserOutputModelMapper(user);
   }
 
   async getAll(
@@ -33,40 +33,43 @@ export class UsersQueryRepository {
 
     const conditions = [];
     const params = [];
+    console.log(pagination);
+    const userQueryBuilder = this.usersRepo.createQueryBuilder("u");
+
     if (pagination.searchLoginTerm) {
-      conditions.push(`login ILIKE $${params.length + 1}`);
-      params.push(`%${pagination.searchLoginTerm}%`);
+      conditions.push("u.login ilike :login");
+      params.push({ login: `%${pagination.searchLoginTerm}%` });
     }
-
     if (pagination.searchEmailTerm) {
-      conditions.push(`email ILIKE $${params.length + 1}`);
-      params.push(`%${pagination.searchEmailTerm}%`);
+      conditions.push("u.email ilike :email");
+      params.push({ email: `%${pagination.searchEmailTerm}%` });
     }
 
-    const totalCount = await this.dataSource.query(`
-      SELECT COUNT(*)
-      FROM public.user_pg
-      ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''};
-      `, conditions.length > 0 ? params : []);
-    const users = await this.dataSource.query(`
-      SELECT *
-      FROM public.user_pg
-      ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''}
-      ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2};
-      `,
-      conditions.length > 0
-        ? [...params, pagination.pageSize,
-        (pagination.pageNumber - 1) * pagination.pageSize]
-        : [pagination.pageSize,
-        (pagination.pageNumber - 1) * pagination.pageSize]
-    );
+    if (conditions.length > 0) {
+      conditions.forEach((condition, i) => {
+        if (i === 0)
+          userQueryBuilder.where(condition, params[i]);
+        if (i === 1)
+          userQueryBuilder.andWhere(condition, params[i]);
+      });
+    }
+
+    // console.log(userQueryBuilder.getSql());
+
+    const totalCount = await userQueryBuilder.getCount();
+
+    const users = await userQueryBuilder
+      .orderBy(`u.${pagination.sortBy}`, pagination.sortDirection)
+      .take(pagination.pageSize)
+      .skip((pagination.pageNumber - 1) * pagination.pageSize)
+      .getMany();
+
     const mappedUsers = users.map(UserOutputModelMapper);
     return new PaginationOutput<UserOutputModel>(
       mappedUsers,
       pagination.pageNumber,
       pagination.pageSize,
-      Number(totalCount[0].count),
+      Number(totalCount),
     );
   }
 }

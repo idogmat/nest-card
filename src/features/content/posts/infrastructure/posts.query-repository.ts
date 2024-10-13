@@ -1,13 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { PostPg } from '../domain/post.entity';
+
+const postMap =
+  "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
 
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(PostPg)
+    private readonly postRepo: Repository<PostPg>,
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
@@ -37,30 +43,31 @@ export class PostsQueryRepository {
   }
 
   async getByBlogId(blogId: string, userId?: string): Promise<PostOutputModel | null> {
-    const res = await this.dataSource.query(`
-      SELECT p.*, b.name as "blogName",
-      (SELECT jsonb_agg(json_build_object(
-        'userId', pl."userId",
-        'postId', pl."userId",
-        'login', pl.login,
-        'like', pl.type,
-        'addedAt', pl."addedAt"
-        ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
-	    FROM public.post_pg as p
-      LEFT JOIN public.blog_pg as b
-      ON p."blogId" = b.id
-      LEFT JOIN public.post_like_pg as pl
-      ON p.id = pl."postId"
-      WHERE p."blogId" = $1
-      GROUP BY p.id, b.name
-      `, [blogId]);
+    const post = await this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .leftJoinAndSelect("p.likes", "pl")
+      .select([
+        postMap,
+        "b.name AS \"blogName\"",
+        "jsonb_agg(json_build_object(" +
+        "'userId', pl.userId, " +
+        "'postId', pl.postId, " +
+        "'login', pl.login, " +
+        "'like', pl.type, " +
+        "'addedAt', pl.addedAt" +
+        ")) AS extendedLikesInfo"
+      ])
+      .where("p.blogId = :blogId", { blogId })
+      .groupBy("p.id")
+      .addGroupBy("b.name")
+      .getRawOne();
 
-    console.log(res);
-    if (!res[0]) {
+    console.log(post);
+    if (!post) {
       return null;
     }
 
-    return PostOutputModelMapper(res[0], userId);
+    return PostOutputModelMapper(post, userId);
   }
 
   async getAll(
@@ -71,57 +78,64 @@ export class PostsQueryRepository {
     const conditions = [];
     const params = [];
 
-    if (blogId) {
-      conditions.push(`"blogId" = $${params.length + 1}`);
-      params.push(`${blogId}`);
-    }
+
+    const postQueryBuilder = this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .leftJoinAndSelect("p.extendedLikesInfo", "pl")
+      .select([
+        "p.*",
+        "b.name AS \"blogName\"",
+        "jsonb_agg(json_build_object(" +
+        "'userId', pl.userId, " +
+        "'postId', pl.postId, " +
+        "'login', pl.login, " +
+        "'like', pl.type, " +
+        "'addedAt', pl.addedAt" +
+        ")) AS extendedLikesInfo"
+      ])
+      .groupBy("p.id")
+      .addGroupBy("b.name");
 
     if (pagination.searchNameTerm) {
-      conditions.push(`title ILIKE $${params.length + 1}`);
-      params.push(`%${pagination.searchNameTerm}%`);
+      conditions.push("p.title ilike :title");
+      params.push({ title: `%${pagination.searchNameTerm}%` });
     }
 
+    if (blogId) {
+      conditions.push(`p."blogId" = :blogId`);
+      params.push({ blogId });
+    }
 
-    const totalCount = await this.dataSource.query(`
-      SELECT COUNT(*)
-      FROM public.post_pg as p
-      LEFT JOIN public.blog_pg as b
-      ON b.id = p."blogId"
-      ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''};
-      `, conditions.length > 0 ? params : []);
-    const posts = await this.dataSource.query(`
-        SELECT p.*, b."name" as "blogName", 
-        (SELECT jsonb_agg(json_build_object(
-            'userId', pl."userId",
-            'postId', pl."userId",
-            'login', pl.login,
-            'like', pl.type,
-            'addedAt', pl."addedAt"
-            ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
-        FROM public.post_pg as p
-        LEFT JOIN public.blog_pg as b
-        ON b.id = p."blogId"
-        LEFT JOIN public.post_like_pg as pl
-	      ON p.id = pl."postId"
-        ${conditions.length > 0 ? 'WHERE ' + conditions.join(' OR ') : ''}
-        GROUP BY p.id, b.name
-        ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
-        LIMIT $${params.length + 1} OFFSET $${params.length + 2};
-        `,
-      conditions.length > 0
-        ? [...params, pagination.pageSize,
-        (pagination.pageNumber - 1) * pagination.pageSize]
-        : [pagination.pageSize,
-        (pagination.pageNumber - 1) * pagination.pageSize]
-    );
-    console.log(posts);
+    if (conditions.length > 0) {
+      conditions.forEach((condition, i) => {
+        if (i === 0)
+          postQueryBuilder.where(condition, params[i]);
+        if (i === 1)
+          postQueryBuilder.andWhere(condition, params[i]);
+      });
+    }
+    console.log(pagination, 'pagination');
+    let sortBy = `p.${pagination.sortBy}`;
+    if (pagination.sortBy === "blogName") {
+      sortBy = "b.name";
+    }
+
+    const totalCount = await postQueryBuilder.getCount();
+
+    const posts = await postQueryBuilder
+      .orderBy(`${sortBy}`, pagination.sortDirection)
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
+      .getRawMany();
+
+    console.log(posts.length);
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,
       pagination.pageNumber,
       pagination.pageSize,
-      Number(totalCount[0].count),
-    );;
+      Number(totalCount),
+    );
   }
 
   // private async __getResult(

@@ -1,14 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
 import { DevicePg } from '../domain/device.entity';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
 
 @Injectable()
 export class DevicesService {
   constructor(
-    private readonly devicesRepository: DevicesRepository,
-    @InjectDataSource() protected dataSource: DataSource
+    private readonly devicesRepository: DevicesRepository
   ) { }
   async create(
     ip: string,

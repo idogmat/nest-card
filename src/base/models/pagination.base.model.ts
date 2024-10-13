@@ -30,24 +30,20 @@ export class Pagination {
     this.pageSize = Number(query.pageSize ?? 10);
   }
 
-  public getSortDirectionInNumericFormat(): -1 | 1 {
-    return this.sortDirection === "desc" ? -1 : 1;
-  }
-
   public getSkipItemsCount() {
     return (this.pageNumber - 1) * this.pageSize;
   }
 
   private getSortDirection(query: ParsedQs): SortDirectionType {
-    let sortDirection: SortDirectionType = "desc";
+    let sortDirection: SortDirectionType = "DESC";
 
     switch (query.sortDirection) {
       case "desc": {
-        sortDirection = "desc";
+        sortDirection = "DESC";
         break;
       }
       case "asc": {
-        sortDirection = "asc";
+        sortDirection = "ASC";
         break;
       }
     }
@@ -119,7 +115,7 @@ export class PaginationPostSearchBlogNameTerm extends Pagination {
 }
 // TYPES
 
-export type SortDirectionType = "desc" | "asc";
+export type SortDirectionType = "DESC" | "ASC";
 
 export type PaginationType = {
   searchNameTerm: string | null,
