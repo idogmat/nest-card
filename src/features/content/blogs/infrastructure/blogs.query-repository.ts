@@ -14,17 +14,11 @@ export class BlogsQueryRepository {
   ) { }
 
   async getById(id: string): Promise<BlogOutputModel | null> {
-    const res = await this.dataSource.query(`
-      SELECT *
-	    FROM public.blog_pg
-      WHERE id = $1;
-      `, [id]);
-
-    if (!res[0]) {
+    const user = await this.blogRepo.findOneBy({ id: id });
+    if (!user) {
       throw new NotFoundException();
     }
-
-    return BlogOutputModelMapper(res[0]);
+    return BlogOutputModelMapper(user);
   }
 
   async getAll(

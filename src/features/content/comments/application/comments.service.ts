@@ -3,7 +3,6 @@ import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { CommentPg } from '../domain/comment.entity';
-import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsService {
@@ -39,7 +38,7 @@ export class CommentsService {
     id,
     user,
     likeStatus,
-  ): Promise<boolean> {
+  ): Promise<string> {
 
     const result = await this.commentsRepository.setLike(id, user, likeStatus);
     return result;
@@ -48,7 +47,7 @@ export class CommentsService {
 
   async getById(
     id,
-  ): Promise<CommentPg & CommentLikePg | null> {
+  ): Promise<CommentPg | null> {
     const result = await this.commentsRepository.getById(id);
     return result;
   }

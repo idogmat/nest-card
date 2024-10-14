@@ -50,9 +50,9 @@ export class DevicesRepository {
 
   async updateDate(id: string, lastActiveDate: string) {
     await this.deviceRepo.createQueryBuilder()
-      .update(DevicePg) // Specify that you want to perform an update operation on the Device entity
-      .set({ lastActiveDate }) // Set the new value for lastActiveDate
-      .where("id = :id", { id }) // Condition for updating (matching ID)
+      .update(DevicePg)
+      .set({ lastActiveDate })
+      .where("id = :id", { id })
       .execute();
   }
 

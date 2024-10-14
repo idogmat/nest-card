@@ -49,10 +49,10 @@ export class CommentsController {
     @Body() updateModel: CommentCreateModel,
     @Req() req?
   ) {
-    const comment = await this.commentsQueryRepository.getById(id);
+    const comment = await this.commentsService.getById(id);
     if (!comment) throw new NotFoundException();
 
-    if (comment.commentatorInfo.userId !== req?.user?.userId) {
+    if (comment.userId !== req?.user?.userId) {
       throw new ForbiddenException();
     }
 

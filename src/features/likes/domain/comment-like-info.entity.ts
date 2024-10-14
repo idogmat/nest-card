@@ -24,7 +24,7 @@ export class CommentLikePg {
   id: string;
 
   @Column()
-  type: string;
+  type: LikeType;
 
   @Column()
   commentId: string;

@@ -29,8 +29,8 @@ export class UsersRepository {
   }
 
   async getById(id: string): Promise<UserPg | null> {
-    const user = await this.usersRepo.findBy({ id: id });
-    return user[0];
+    const user = await this.usersRepo.findOneBy({ id: id });
+    return user;
   }
 
   async delete(id: string): Promise<boolean> {

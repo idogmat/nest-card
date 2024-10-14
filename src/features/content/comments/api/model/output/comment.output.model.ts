@@ -18,8 +18,9 @@ export class CommentOutputModel {
 
 // MAPPERS
 
-export const CommentOutputModelMapper = (comment: CommentPg & CommentLikePg, _userId?: string): CommentOutputModel => {
+export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): CommentOutputModel => {
   const outputModel = new CommentOutputModel();
+  const extendedLikesInfo = comment?.extendedLikesInfo?.filter(c => !!c.userId) || [];
   outputModel.id = comment.id;
   outputModel.content = comment.content;
   outputModel.commentatorInfo = {
@@ -27,12 +28,12 @@ export const CommentOutputModelMapper = (comment: CommentPg & CommentLikePg, _us
     userLogin: comment.userLogin
   },
     outputModel.likesInfo = {
-      // likesCount: getLikeCount(comment.extendedLikesInfo, 'Like') || 0,
-      // dislikesCount: getLikeCount(comment.extendedLikesInfo, 'Dislike') || 0,
-      // myStatus: getCurrentStatus(comment.extendedLikesInfo, _userId),
-      likesCount: 0,
-      dislikesCount: 0,
-      myStatus: "None",
+      likesCount: getLikeCount(extendedLikesInfo, 'Like') || 0,
+      dislikesCount: getLikeCount(extendedLikesInfo, 'Dislike') || 0,
+      myStatus: getCurrentStatus(extendedLikesInfo, _userId),
+      // likesCount: 0,
+      // dislikesCount: 0,
+      // myStatus: "None",
     };
   outputModel.createdAt = new Date(comment.createdAt).toISOString();
 
@@ -40,21 +41,21 @@ export const CommentOutputModelMapper = (comment: CommentPg & CommentLikePg, _us
 };
 
 export const getLikeCount = (
-  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  arr: CommentLikePg[],
   type: LikeType
 ): number => {
   let count = 0;
   if (!arr || !arr?.length) return count;
   arr?.forEach((like) => {
-    if (like.like === type) count++;
+    if (like.type === type) count++;
   });
   return count;
 };
 
 export const getCurrentStatus = (
-  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  arr: CommentLikePg[],
   userId: string
 ): LikeType => {
   if (!userId) return "None";
-  return arr?.find(like => like.userId === userId)?.like || "None";
+  return arr?.find(like => like.userId === userId)?.type || "None";
 };

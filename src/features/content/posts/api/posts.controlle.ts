@@ -264,12 +264,16 @@ export class PostsController {
     @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
   ) {
-    const blog = await this.blogsQueryRepository.getById(blogId);
-    if (!blog) throw new NotFoundException();
-    const post = await this.postsService.getById(postId);
-    if (!post) {
-      throw new NotFoundException();
-    }
+    console.log(blogId);
+    console.log(postId);
+    // const blog = await this.blogsQueryRepository.getById(blogId);
+    // console.log(blog);
+    // if (!blog) throw new NotFoundException();
+    // const post = await this.postsService.getById(postId);
+    // console.log(post);
+    // if (!post) {
+    //   throw new NotFoundException();
+    // }
     const deletingResult: boolean = await this.postsService.delete(postId);
 
     if (!deletingResult) {

@@ -1,95 +1,73 @@
 import { Injectable } from '@nestjs/common';
 import { PostPg } from '../domain/post.entity';
-import { DataSource } from 'typeorm';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { LikeType } from 'src/features/likes/domain/post-like-info.entity';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { LikeType, PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectDataSource() protected dataSource: DataSource,
+    @InjectRepository(PostPg)
+    private readonly postRepo: Repository<PostPg>,
+    @InjectRepository(PostLikePg)
+    private readonly postlikeRepo: Repository<PostLikePg>
   ) { }
 
   async create(newPost: PostPg): Promise<string> {
-    const res = await this.dataSource.query(`
-      INSERT INTO public.post_pg (
-      title, 
-      content,
-      "shortDescription",
-      "blogId",
-      "createdAt"
-      )
-      VALUES ($1,$2,$3,$4,$5) RETURNING id;
-      `, [
-      newPost.title,
-      newPost.content,
-      newPost.shortDescription,
-      newPost.blogId,
-      newPost.createdAt || new Date(),
-    ]);
-    return res[0].id;
+    const post = this.postRepo.create({
+      title: newPost.title,
+      content: newPost.content,
+      shortDescription: newPost.shortDescription,
+      blogId: newPost.blogId,
+      createdAt: newPost.createdAt || new Date(),
+    });
+
+    const savedPost = await this.postRepo.save(post);
+    return savedPost.id;
   }
 
   async getById(id: string) {
-
-    const res = await this.dataSource.query(`
-      SELECT *
-	    FROM public.post_pg
-      WHERE id = $1;
-      `, [id]);
-
-    if (!res[0]) {
-      return null;
-    }
-
-    return res[0];
+    const post = await this.postRepo.findOneBy({ id: id });
+    return post;
   }
 
   async update(id: string, newModel: PostPg) {
-    const updated = await this.dataSource.query(`
-      UPDATE public.post_pg
-      SET title = $2, 
-      "content" = $3,
-      "shortDescription" = $4
-      WHERE id = $1 RETURNING *;
-      `, [
-      id,
-      newModel.title,
-      newModel.content,
-      newModel.shortDescription
-    ]);
-    return updated[0];
+    const updated = await this.postRepo.createQueryBuilder()
+      .update(PostPg)
+      .set({
+        title: newModel.title,
+        content: newModel.content,
+        shortDescription: newModel.shortDescription
+      })
+      .where("id = :id", { id })
+      .returning("*")
+      .execute();
+    return updated.raw[0];
   }
 
   async setLike(id: string, user: { userId: string, login: string; }, like: LikeType) {
-    const updated = await this.dataSource.query(`
-      INSERT INTO public.post_like_pg (
-      "userId",
-      "login",
-      "postId",
-      "type",
-      "addedAt"
-      )
-      VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT ("userId", "postId")
-      DO UPDATE SET "type" = $4, "addedAt" = $5, "login" = $2
-      RETURNING id;
-      `, [
-      user.userId,
-      user.login,
-      id,
-      like,
-      new Date()
-    ]);
-    return updated;
+    const postLike = await this.postlikeRepo.findOneBy({ postId: id, userId: user.userId });
+    if (postLike) {
+      postLike.type = like;
+      postLike.addedAt = new Date();
+      await this.postlikeRepo.save(postLike);
+      return postLike.id;
+    } else {
+      const createPostLike = this.postlikeRepo.create({
+        login: user.login,
+        postId: id,
+        userId: user.userId,
+        type: like,
+        addedAt: new Date(),
+      });
+      const savedPostLike = await this.postlikeRepo.save(createPostLike);
+      return savedPostLike.id;
+    }
   }
 
   async delete(id: string): Promise<boolean> {
-    const res = await this.dataSource.query(`
-      DELETE FROM public.post_pg
-      WHERE id = $1;
-      `, [id]);
-
-    return res[1] === 1;
+    const post = await this.postRepo.delete({ id: id });
+    return post.affected === 1;
   };
 }

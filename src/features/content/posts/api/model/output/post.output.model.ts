@@ -15,10 +15,10 @@ export class PostOutputModel {
 
 // MAPPERS
 // FIXME поправить мапинг
-export const PostOutputModelMapper = (post: any, _userId?: string): PostOutputModel => {
+export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-  // const extendedLikesInfo = post.extendedLikesInfo?.filter(e => !!e.userId) || [];
-  // console.log(post);
+  const extendedLikesInfo = post?.extendedLikesInfo?.filter(e => !!e.userId) || [];
+  console.log(post.extendedLikesInfo);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -27,40 +27,40 @@ export const PostOutputModelMapper = (post: any, _userId?: string): PostOutputMo
   outputModel.blogName = post.blogName;
   outputModel.createdAt = new Date(+post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
-    // likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
-    // dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,
-    // myStatus: extendedLikesInfo?.length ? getCurrentStatus(extendedLikesInfo, _userId) : "None",
-    // newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.map(e => {
-    //   if (e.like === 'Like') {
-    //     return ({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
-    //   }
-    // })?.filter((_, i) => (i < 3 && _?.addedAt))
-    //   : [],
-    likesCount: 0,
-    dislikesCount: 0,
-    myStatus: "None",
-    newestLikes: [],
+    likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
+    dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,
+    myStatus: extendedLikesInfo?.length ? getCurrentStatus(extendedLikesInfo, _userId) : "None",
+    newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.map(e => {
+      if (e.type === 'Like') {
+        return ({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
+      }
+    })?.filter((_, i) => (i < 3 && _?.addedAt))
+      : [],
+    // likesCount: 0,
+    // dislikesCount: 0,
+    // myStatus: "None",
+    // newestLikes: [],
   };
 
   return outputModel;
 };
 
 export const getLikeCount = (
-  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  arr: PostLikePg[],
   type: LikeType
 ): number => {
   let count = 0;
   if (!arr || !arr?.length) return count;
   arr.forEach((like) => {
-    if (like.like === type) count++;
+    if (like.type === type) count++;
   });
   return count;
 };
 
 export const getCurrentStatus = (
-  arr: { like: LikeType; userId: string; login: string; addedAt: number; }[],
+  arr: PostLikePg[],
   userId: string
 ): LikeType => {
   if (!userId) return "None";
-  return arr?.find(like => like.userId === userId)?.like || "None";
+  return arr?.find(like => like.userId === userId)?.type || "None";
 };

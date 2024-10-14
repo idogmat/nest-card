@@ -4,6 +4,7 @@ import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post
 import { DataSource, Repository } from 'typeorm';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PostPg } from '../domain/post.entity';
+import { PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
 
 const postMap =
   "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
@@ -17,46 +18,53 @@ export class PostsQueryRepository {
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
-    const res = await this.dataSource.query(`
-      SELECT p.*, b.name as "blogName",
-      (SELECT jsonb_agg(json_build_object(
-        'userId', pl."userId",
-        'postId', pl."userId",
-        'login', pl.login,
-        'like', pl.type,
-        'addedAt', pl."addedAt"
-        ) ORDER BY pl."addedAt" DESC)) AS "extendedLikesInfo"
-	    FROM public.post_pg as p
-      LEFT JOIN public.blog_pg as b
-      ON p."blogId" = b.id
-      LEFT JOIN public.post_like_pg as pl
-      ON p.id = pl."postId"
-      WHERE p.id = $1
-      GROUP BY p.id, b.name
-      `, [postId]);
+    const post = await this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .select([
+        postMap,
+        "b.name AS \"blogName\"",
+      ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          "))")
+          .from(PostLikePg, "pl")
+          .where("pl.postId = p.id");
+      }, "extendedLikesInfo")
+      .where("p.id = :postId", { postId })
+      .groupBy("p.id")
+      .addGroupBy("b.name")
+      .getRawOne();
 
-    if (!res[0]) {
+    if (!post) {
       return null;
     }
 
-    return PostOutputModelMapper(res[0], userId);
+    return PostOutputModelMapper(post, userId);
   }
 
   async getByBlogId(blogId: string, userId?: string): Promise<PostOutputModel | null> {
     const post = await this.postRepo.createQueryBuilder("p")
       .leftJoinAndSelect("p.blog", "b")
-      .leftJoinAndSelect("p.likes", "pl")
       .select([
         postMap,
         "b.name AS \"blogName\"",
-        "jsonb_agg(json_build_object(" +
-        "'userId', pl.userId, " +
-        "'postId', pl.postId, " +
-        "'login', pl.login, " +
-        "'like', pl.type, " +
-        "'addedAt', pl.addedAt" +
-        ")) AS extendedLikesInfo"
       ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          "))")
+          .from(PostLikePg, "pl")
+          .where("pl.postId = p.id");
+      }, "extendedLikesInfo")
       .where("p.blogId = :blogId", { blogId })
       .groupBy("p.id")
       .addGroupBy("b.name")
@@ -81,18 +89,21 @@ export class PostsQueryRepository {
 
     const postQueryBuilder = this.postRepo.createQueryBuilder("p")
       .leftJoinAndSelect("p.blog", "b")
-      .leftJoinAndSelect("p.extendedLikesInfo", "pl")
       .select([
         "p.*",
         "b.name AS \"blogName\"",
-        "jsonb_agg(json_build_object(" +
-        "'userId', pl.userId, " +
-        "'postId', pl.postId, " +
-        "'login', pl.login, " +
-        "'like', pl.type, " +
-        "'addedAt', pl.addedAt" +
-        ")) AS extendedLikesInfo"
       ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          "))")
+          .from(PostLikePg, "pl")
+          .where("pl.postId = p.id");
+      }, "extendedLikesInfo")
       .groupBy("p.id")
       .addGroupBy("b.name");
 
@@ -114,7 +125,7 @@ export class PostsQueryRepository {
           postQueryBuilder.andWhere(condition, params[i]);
       });
     }
-    console.log(pagination, 'pagination');
+
     let sortBy = `p.${pagination.sortBy}`;
     if (pagination.sortBy === "blogName") {
       sortBy = "b.name";
@@ -128,7 +139,9 @@ export class PostsQueryRepository {
       .offset((pagination.pageNumber - 1) * pagination.pageSize)
       .getRawMany();
 
-    console.log(posts.length);
+
+    // console.log(posts);
+
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,

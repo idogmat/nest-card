@@ -24,7 +24,7 @@ export class PostLikePg {
   id: string;
 
   @Column()
-  type: string;
+  type: LikeType;
 
   @Column({ type: 'uuid' })
   postId: string;
