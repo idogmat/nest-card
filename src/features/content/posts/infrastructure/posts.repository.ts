@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PostPg } from '../domain/post.entity';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { LikeType, PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(PostPg)
     private readonly postRepo: Repository<PostPg>,
     @InjectRepository(PostLikePg)

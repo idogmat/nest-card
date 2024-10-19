@@ -21,7 +21,6 @@ import {
 import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { PostOutputModel } from './model/output/post.output.model';
-import { PostCreateModel } from './model/input/create-post.input.model';
 import { PostsService } from '../application/posts.service';
 import { PostUpdateModel } from './model/input/update-post.input.model';
 import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
@@ -33,7 +32,6 @@ import { CommentsService } from '../../comments/application/comments.service';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
-import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
 import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
@@ -76,25 +74,7 @@ export class PostsController {
     return posts;
   }
 
-  // SA
-  @UseGuards(AuthGetGuard)
-  @Get('sa/posts')
-  async getAllSa(
-    @Query() query: any,
-    @Req() req?
-  ) {
 
-    const pagination: PaginationWithSearchBlogNameTerm =
-      new PaginationWithSearchBlogNameTerm(
-        query,
-        POSTS_SORTING_PROPERTIES,
-      );
-
-    const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, '', req?.user?.userId);
-
-    return posts;
-  }
 
   @UseGuards(AuthGetGuard)
   @Get('posts/:id')
@@ -110,23 +90,6 @@ export class PostsController {
     }
 
     return post;
-  }
-  // SA
-  @UseGuards(BasicAuthGuard)
-  @Post('sa/posts')
-  async create(@Body() createModel: PostCreateModel) {
-    const blog = await this.blogsQueryRepository.getById(createModel?.blogId);
-    if (!blog) throw new NotFoundException();
-    const { blogId, content, shortDescription, title } = createModel;
-
-    const createdPostId = await this.postsService.create(
-      blogId, content, shortDescription, title,
-    );
-
-    const createdPost: PostOutputModel | null =
-      await this.postsQueryRepository.getById(createdPostId);
-
-    return createdPost;
   }
 
   @UseGuards(AuthGetGuard)
@@ -167,6 +130,8 @@ export class PostsController {
     return createdComment;
   }
 
+
+  // like SA?
   @UseGuards(BasicAuthGuard)
   @Put('posts/:id')
   @HttpCode(204)
@@ -183,6 +148,8 @@ export class PostsController {
     }
   }
 
+
+  // like SA?
   @UseGuards(BasicAuthGuard)
   @Delete('posts/:id')
   @HttpCode(204)
@@ -215,69 +182,5 @@ export class PostsController {
       req.user,
       like.likeStatus,
     );
-  }
-
-
-  @UseGuards(AuthGetGuard)
-  @Get('sa/blogs/:blogId/posts/:postId')
-  async getByIdSa(
-    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
-    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
-    @Req() req?
-  ) {
-    const blog = await this.blogsQueryRepository.getById(blogId);
-    if (!blog) throw new NotFoundException();
-    const post: PostOutputModel =
-      await this.postsQueryRepository.getById(postId, req?.user?.userId);
-
-    if (!post) {
-      throw new NotFoundException();
-    }
-
-    return post;
-  }
-
-  // SA
-  @UseGuards(BasicAuthGuard)
-  @Put('sa/blogs/:blogId/posts/:postId')
-  @HttpCode(204)
-  async updateSa(
-    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
-    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
-    @Body() updateModel: PostInBlogCreateModel
-  ) {
-    const blog = await this.blogsQueryRepository.getById(blogId);
-    if (!blog) throw new NotFoundException();
-    const post = await this.postsService.getById(postId);
-    if (!post) throw new NotFoundException();
-    const updatedResult = await this.postsService.update(postId, updateModel);
-
-    if (!updatedResult) {
-      throw new NotFoundException(`User with id ${postId} not found`);
-    }
-  }
-  // SA
-  @UseGuards(BasicAuthGuard)
-  @Delete('sa/blogs/:blogId/posts/:postId')
-  @HttpCode(204)
-  async deleteSa(
-    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
-    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
-  ) {
-    console.log(blogId);
-    console.log(postId);
-    // const blog = await this.blogsQueryRepository.getById(blogId);
-    // console.log(blog);
-    // if (!blog) throw new NotFoundException();
-    // const post = await this.postsService.getById(postId);
-    // console.log(post);
-    // if (!post) {
-    //   throw new NotFoundException();
-    // }
-    const deletingResult: boolean = await this.postsService.delete(postId);
-
-    if (!deletingResult) {
-      throw new NotFoundException(`User with id ${postId} not found`);
-    }
   }
 }

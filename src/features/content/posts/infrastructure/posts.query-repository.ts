@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { PostPg } from '../domain/post.entity';
 import { PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
 
@@ -12,7 +12,6 @@ const postMap =
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(PostPg)
     private readonly postRepo: Repository<PostPg>,
   ) { }
@@ -31,7 +30,7 @@ export class PostsQueryRepository {
           "'type', pl.type, " +
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
-          "))")
+          ") ORDER BY pl.addedAt DESC )")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
@@ -61,7 +60,7 @@ export class PostsQueryRepository {
           "'type', pl.type, " +
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
-          "))")
+          ") ORDER BY pl.addedAt DESC )")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
@@ -100,7 +99,7 @@ export class PostsQueryRepository {
           "'type', pl.type, " +
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
-          "))")
+          ") ORDER BY pl.addedAt DESC )")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
@@ -150,29 +149,4 @@ export class PostsQueryRepository {
       Number(totalCount),
     );
   }
-
-  // private async __getResult(
-  //   filter: FilterQuery<Post>,
-  //   pagination: PaginationWithSearchBlogNameTerm,
-  //   userId?: string
-  // ): Promise<PaginationOutput<PostOutputModel>> {
-  //   const posts = await this.postModel
-  //     .find(filter)
-  //     .sort({
-  //       [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
-  //     })
-  //     .skip(pagination.getSkipItemsCount())
-  //     .limit(pagination.pageSize);
-
-  //   const totalCount = await this.postModel.countDocuments(filter);
-
-  //   const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
-
-  //   return new PaginationOutput<PostOutputModel>(
-  //     mappedPosts,
-  //     pagination.pageNumber,
-  //     pagination.pageSize,
-  //     totalCount,
-  //   );
-  // }
 }

@@ -1,14 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlogOutputModel, BlogOutputModelMapper } from '../api/model/output/blog.output.model';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { BlogPg } from '../domain/blog.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(BlogPg)
     private readonly blogRepo: Repository<BlogPg>,
   ) { }

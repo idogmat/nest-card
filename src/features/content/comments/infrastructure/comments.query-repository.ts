@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
-import { DataSource, Repository } from 'typeorm';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CommentPg } from '../domain/comment.entity';
 import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(CommentPg)
     private readonly commentRepo: Repository<CommentPg>,
     @InjectRepository(CommentLikePg)

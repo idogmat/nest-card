@@ -17,8 +17,8 @@ export class PostOutputModel {
 // FIXME поправить мапинг
 export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-  const extendedLikesInfo = post?.extendedLikesInfo?.filter(e => !!e.userId) || [];
-  console.log(post.extendedLikesInfo);
+  const extendedLikesInfo = post?.extendedLikesInfo?.filter(e => !!e?.userId) || [];
+  console.log(extendedLikesInfo);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -30,16 +30,13 @@ export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _use
     likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
     dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,
     myStatus: extendedLikesInfo?.length ? getCurrentStatus(extendedLikesInfo, _userId) : "None",
-    newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.map(e => {
-      if (e.type === 'Like') {
-        return ({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
+    newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.reduce((acc, e) => {
+      if (e?.type === 'Like' && acc.length < 3) {
+        acc.push({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
       }
-    })?.filter((_, i) => (i < 3 && _?.addedAt))
+      return acc;
+    }, [])
       : [],
-    // likesCount: 0,
-    // dislikesCount: 0,
-    // myStatus: "None",
-    // newestLikes: [],
   };
 
   return outputModel;

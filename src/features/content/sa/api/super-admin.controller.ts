@@ -80,19 +80,19 @@ export class SuperAdminController {
   }
 
   @UseGuards(BasicAuthGuard)
-  @Post('blogs/:id/posts')
+  @Post('blogs/:blogId/posts')
   async createPost(
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Body() createModel: PostInBlogCreateModel
   ) {
     const { content, shortDescription, title } = createModel;
 
     const blog: BlogOutputModel =
-      await this.blogsQueryRepository.getById(id);
+      await this.blogsQueryRepository.getById(blogId);
 
     if (!blog) throw new NotFoundException();
     const createdPostId = await this.postsService.create(
-      id, content, shortDescription, title,
+      blogId, content, shortDescription, title,
     );
 
     if (!createdPostId) throw new NotFoundException();
@@ -102,16 +102,73 @@ export class SuperAdminController {
     return createdPost;
   }
 
+  @UseGuards(BasicAuthGuard)
+  @Get('blogs/:blogId/posts/:postId')
+  async getByIdSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+  ) {
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post: PostOutputModel =
+      await this.postsQueryRepository.getById(postId);
+
+    if (!post) {
+      throw new NotFoundException();
+    }
+
+    return post;
+  }
 
   // SA
   @UseGuards(BasicAuthGuard)
-  @Get('blogs/:id/posts')
+  @Put('blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async updateSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+    @Body() updateModel: PostInBlogCreateModel
+  ) {
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post = await this.postsService.getById(postId);
+    if (!post) throw new NotFoundException();
+    const updatedResult = await this.postsService.update(postId, updateModel);
+
+    if (!updatedResult) {
+      throw new NotFoundException(`User with id ${postId} not found`);
+    }
+  }
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Delete('blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async deleteSa(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+  ) {
+    const blog = await this.blogsQueryRepository.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const post = await this.postsService.getById(postId);
+    if (!post) {
+      throw new NotFoundException();
+    }
+    const deletingResult: boolean = await this.postsService.delete(postId);
+
+    if (!deletingResult) {
+      throw new NotFoundException(`User with id ${postId} not found`);
+    }
+  }
+
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Get('blogs/:blogId/posts')
   async getPostsSa(
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Query() query: any,
     @Req() req?
   ) {
-    const blog = await this.blogsQueryRepository.getById(id);
+    const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
@@ -120,7 +177,7 @@ export class SuperAdminController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, id, req?.user?.userId);
+      await this.postsQueryRepository.getAll(pagination, blogId, req?.user?.userId);
 
     return posts;
   }
@@ -143,16 +200,16 @@ export class SuperAdminController {
 
   // SA
   @UseGuards(BasicAuthGuard)
-  @Delete('blogs/:id')
+  @Delete('blogs/:blogId')
   @HttpCode(204)
   async delete(
     // @Request() req,
-    @Param('id', new EnhancedParseUUIDPipe()) id: string
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string
   ) {
-    const deletingResult: boolean = await this.blogsService.delete(id);
+    const deletingResult: boolean = await this.blogsService.delete(blogId);
 
     if (!deletingResult) {
-      throw new NotFoundException(`Blog with id ${id} not found`);
+      throw new NotFoundException(`Blog with id ${blogId} not found`);
     }
   }
 }

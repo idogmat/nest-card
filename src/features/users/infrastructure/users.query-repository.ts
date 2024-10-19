@@ -7,14 +7,13 @@ import {
   PaginationOutput,
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { UserPg } from '../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(UserPg)
     private readonly usersRepo: Repository<UserPg>,
   ) { }

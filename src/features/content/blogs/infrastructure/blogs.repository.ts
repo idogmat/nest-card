@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { BlogPg } from '../domain/blog.entity';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource,
     @InjectRepository(BlogPg)
     private readonly blogRepo: Repository<BlogPg>,
   ) { }
