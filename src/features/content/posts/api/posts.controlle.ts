@@ -2,7 +2,6 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
-  Delete,
   Get,
   HttpCode,
   NotFoundException,
@@ -22,8 +21,6 @@ import { SortingPropertiesType } from '../../../../base/types/sorting-properties
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { PostOutputModel } from './model/output/post.output.model';
 import { PostsService } from '../application/posts.service';
-import { PostUpdateModel } from './model/input/update-post.input.model';
-import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
 import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
