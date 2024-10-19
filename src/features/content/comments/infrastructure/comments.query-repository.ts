@@ -21,13 +21,14 @@ export class CommentsQueryRepository {
         "c.*",
       ])
       .addSelect((subQuery) => {
-        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+        return subQuery.select("COALESCE(" +
+          "jsonb_agg(jsonb_build_object(" +
           "'userId', cl.userId, " +
           "'commentId', cl.commentId, " +
           "'type', cl.type, " +
           "'login', cl.login, " +
           "'addedAt', cl.addedAt" +
-          "))")
+          ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
           .from(CommentLikePg, "cl")
           .where("cl.commentId = c.id");
       }, "extendedLikesInfo")
@@ -51,13 +52,14 @@ export class CommentsQueryRepository {
         "c.*",
       ])
       .addSelect((subQuery) => {
-        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+        return subQuery.select("COALESCE(" +
+          "jsonb_agg(jsonb_build_object(" +
           "'userId', cl.userId, " +
           "'commentId', cl.commentId, " +
           "'type', cl.type, " +
           "'login', cl.login, " +
           "'addedAt', cl.addedAt" +
-          "))")
+          ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
           .from(CommentLikePg, "cl")
           .where("cl.commentId = c.id");
       }, "extendedLikesInfo")

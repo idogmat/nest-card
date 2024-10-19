@@ -29,6 +29,7 @@ const env = getConfiguration();
     //   database: 'test',
     //   autoLoadEntities: true,
     //   synchronize: true,
+    //   logging: true
     // }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {

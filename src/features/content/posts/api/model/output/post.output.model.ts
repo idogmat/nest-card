@@ -17,8 +17,6 @@ export class PostOutputModel {
 // FIXME поправить мапинг
 export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-  const extendedLikesInfo = post?.extendedLikesInfo?.filter(e => !!e?.userId) || [];
-  console.log(extendedLikesInfo);
   outputModel.id = post.id;
   outputModel.title = post.title;
   outputModel.shortDescription = post.shortDescription;
@@ -27,10 +25,10 @@ export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _use
   outputModel.blogName = post.blogName;
   outputModel.createdAt = new Date(+post.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
-    likesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Like') : 0,
-    dislikesCount: extendedLikesInfo?.length ? getLikeCount(extendedLikesInfo, 'Dislike') : 0,
-    myStatus: extendedLikesInfo?.length ? getCurrentStatus(extendedLikesInfo, _userId) : "None",
-    newestLikes: extendedLikesInfo?.length ? extendedLikesInfo?.reduce((acc, e) => {
+    likesCount: post?.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Like') : 0,
+    dislikesCount: post?.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Dislike') : 0,
+    myStatus: post?.extendedLikesInfo?.length ? getCurrentStatus(post?.extendedLikesInfo, _userId) : "None",
+    newestLikes: post?.extendedLikesInfo?.length ? post?.extendedLikesInfo?.reduce((acc, e) => {
       if (e?.type === 'Like' && acc.length < 3) {
         acc.push({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
       }

@@ -99,12 +99,13 @@ describe('blogs', () => {
       .put(`/api/sa/blogs/${result.body.id}`)
       .auth(login, password, { type: "basic" })
       .send({
+        ...newBlog,
         name: "yep",
       });
     expect(blogUpdated.status).toBe(204);
 
     const blog = await request(app.getHttpServer())
-      .get(`/api/sa/blogs/${result.body.id}`)
+      .get(`/api/blogs/${result.body.id}`)
       .send();
     expect(blog.status).toBe(200);
     expect(blog.body.name).toBe('yep');

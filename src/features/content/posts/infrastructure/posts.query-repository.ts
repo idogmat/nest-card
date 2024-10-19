@@ -54,13 +54,15 @@ export class PostsQueryRepository {
         "b.name AS \"blogName\"",
       ])
       .addSelect((subQuery) => {
-        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+        return subQuery.select("COALESCE" +
+          "(jsonb_agg(jsonb_build_object(" +
           "'userId', pl.userId, " +
           "'postId', pl.postId, " +
           "'type', pl.type, " +
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
-          ") ORDER BY pl.addedAt DESC )")
+          ") ORDER BY pl.addedAt DESC ) " +
+          "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
@@ -93,13 +95,15 @@ export class PostsQueryRepository {
         "b.name AS \"blogName\"",
       ])
       .addSelect((subQuery) => {
-        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+        return subQuery.select("COALESCE" +
+          "(jsonb_agg(jsonb_build_object(" +
           "'userId', pl.userId, " +
           "'postId', pl.postId, " +
           "'type', pl.type, " +
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
-          ") ORDER BY pl.addedAt DESC )")
+          ") ORDER BY pl.addedAt DESC ) " +
+          "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
@@ -139,7 +143,7 @@ export class PostsQueryRepository {
       .getRawMany();
 
 
-    // console.log(posts);
+    console.log(posts);
 
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
     return new PaginationOutput<PostOutputModel>(

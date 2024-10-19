@@ -20,7 +20,6 @@ export class CommentOutputModel {
 
 export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): CommentOutputModel => {
   const outputModel = new CommentOutputModel();
-  const extendedLikesInfo = comment?.extendedLikesInfo?.filter(c => !!c.userId) || [];
   outputModel.id = comment.id;
   outputModel.content = comment.content;
   outputModel.commentatorInfo = {
@@ -28,12 +27,9 @@ export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): 
     userLogin: comment.userLogin
   },
     outputModel.likesInfo = {
-      likesCount: getLikeCount(extendedLikesInfo, 'Like') || 0,
-      dislikesCount: getLikeCount(extendedLikesInfo, 'Dislike') || 0,
-      myStatus: getCurrentStatus(extendedLikesInfo, _userId),
-      // likesCount: 0,
-      // dislikesCount: 0,
-      // myStatus: "None",
+      likesCount: getLikeCount(comment?.extendedLikesInfo, 'Like') || 0,
+      dislikesCount: getLikeCount(comment?.extendedLikesInfo, 'Dislike') || 0,
+      myStatus: getCurrentStatus(comment?.extendedLikesInfo, _userId),
     };
   outputModel.createdAt = new Date(comment.createdAt).toISOString();
 

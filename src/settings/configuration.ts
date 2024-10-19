@@ -28,6 +28,7 @@ export const getConfiguration = () => {
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: true,
+      logging: true
     }
   };
 };

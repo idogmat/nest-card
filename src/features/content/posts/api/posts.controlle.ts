@@ -130,41 +130,6 @@ export class PostsController {
     return createdComment;
   }
 
-
-  // like SA?
-  @UseGuards(BasicAuthGuard)
-  @Put('posts/:id')
-  @HttpCode(204)
-  async update(
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
-    @Body() updateModel: PostUpdateModel
-  ) {
-    const post = await this.postsService.getById(id);
-    if (!post) throw new NotFoundException();
-    const updatedResult = await this.postsService.update(id, updateModel);
-
-    if (!updatedResult) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-  }
-
-
-  // like SA?
-  @UseGuards(BasicAuthGuard)
-  @Delete('posts/:id')
-  @HttpCode(204)
-  async delete(@Param('id', new EnhancedParseUUIDPipe()) id: string) {
-    const post = await this.postsService.getById(id);
-    if (!post) {
-      throw new NotFoundException();
-    }
-    const deletingResult: boolean = await this.postsService.delete(id);
-
-    if (!deletingResult) {
-      throw new NotFoundException(`User with id ${id} not found`);
-    }
-  }
-
   @UseGuards(JwtAuthGuard)
   @Put('posts/:id/like-status')
   @HttpCode(204)
