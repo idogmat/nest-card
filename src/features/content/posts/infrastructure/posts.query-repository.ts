@@ -35,8 +35,6 @@ export class PostsQueryRepository {
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
       .where("p.id = :postId", { postId })
-      .groupBy("p.id")
-      .addGroupBy("b.name")
       .getRawOne();
 
     if (!post) {
@@ -67,8 +65,6 @@ export class PostsQueryRepository {
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
       .where("p.blogId = :blogId", { blogId })
-      .groupBy("p.id")
-      .addGroupBy("b.name")
       .getRawOne();
 
     console.log(post);
@@ -78,6 +74,19 @@ export class PostsQueryRepository {
 
     return PostOutputModelMapper(post, userId);
   }
+
+  // const postQueryBuilder = this.postRepo.find({
+  //   relations: {
+  //     blog: true,
+  //     extendedLiksInfo: true
+  //   },
+  //   order: {
+  //     [sortBy]: sortDirection,
+  //     blog: {
+  //       'name': 
+  //     }
+  //   }
+  // });
 
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
@@ -106,9 +115,8 @@ export class PostsQueryRepository {
           "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
           .from(PostLikePg, "pl")
           .where("pl.postId = p.id");
-      }, "extendedLikesInfo")
-      .groupBy("p.id")
-      .addGroupBy("b.name");
+      }, "extendedLikesInfo");
+
 
     if (pagination.searchNameTerm) {
       conditions.push("p.title ilike :title");

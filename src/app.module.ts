@@ -10,6 +10,7 @@ import { DeviceModule } from './features/devices/device.module';
 import { ContentModule } from './features/content/content.module';
 import { TestModule } from './features/testing/testing.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { QuizModule } from './features/quiz/quiz.module';
 
 const env = getConfiguration();
 @Module({
@@ -17,6 +18,7 @@ const env = getConfiguration();
   imports: [
     AuthModule,
     UserModule,
+    QuizModule,
     DeviceModule,
     ContentModule,
     TestModule,

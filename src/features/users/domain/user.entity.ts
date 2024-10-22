@@ -1,5 +1,6 @@
 
 import { DevicePg } from 'src/features/devices/domain/device.entity';
+import { PlayerProgress } from 'src/features/quiz/domain/player.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -36,4 +37,7 @@ export class UserPg {
 
   @OneToMany(() => DevicePg, (device) => device)
   divices: DevicePg[];
+
+  @OneToMany(() => PlayerProgress, (player) => player.playerAccount)
+  player: PlayerProgress[];
 }
