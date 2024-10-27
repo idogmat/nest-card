@@ -48,7 +48,6 @@ export class QuizGameRepository {
           .getQuery();
         return 'game.id IN ' + subQuery;
       }).orderBy(`game."createdAt"`, `ASC`).getOne();
-    console.log(result, 'result');
     return result;
   }
 
@@ -88,7 +87,6 @@ export class QuizGameRepository {
         .andWhere(`game.id = :id`, { id: games[0].id })
         .set({ status: GameStatus.Active })
         .execute();
-
 
       await queryRunner.commitTransaction();
     } catch (e) {
