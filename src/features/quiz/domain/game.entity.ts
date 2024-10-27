@@ -2,7 +2,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { PlayerProgress } from "./player.entity";
 import { QuestionOfTheGame } from "./questionsForGame.entity";
 
-enum GameStatus {
+export enum GameStatus {
   Finished,
   Active,
   PendingSecondUser
@@ -15,6 +15,9 @@ export class Game {
 
   @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PendingSecondUser })
   status: GameStatus;
+
+  @Column({ type: 'timestamp' })
+  createdAt: Date;
 
   @OneToMany(() => PlayerProgress, (playerProgress) => playerProgress.game)
   playersProgresses: PlayerProgress[];

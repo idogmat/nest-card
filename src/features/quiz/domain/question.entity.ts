@@ -1,5 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Game } from "./game.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { QuestionOfTheGame } from "./questionsForGame.entity";
 
 // Учебная таблица, в которой пока нет всех нужных полей
@@ -10,6 +9,12 @@ export class Question {
 
   @Column()
   public body: string;
+
+  @Column()
+  public createdAt: Date;
+
+  @Column()
+  public updatedAt: Date;
 
   @Column("text", { array: true })
   public correctAnswers: string[];

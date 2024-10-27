@@ -1,5 +1,5 @@
 import { UserPg } from "src/features/users/domain/user.entity";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Game } from "./game.entity";
 // @ManyToOne(() => UserPg, (user) => user)
 // @Column()
@@ -8,13 +8,19 @@ import { Game } from "./game.entity";
 @Entity()
 export class PlayerProgress {
   @PrimaryGeneratedColumn('uuid')
-  public id: string;
+  id: string;
 
-  @ManyToOne(() => UserPg, (user) => user.player)
-  playerAccount: UserPg;
+  @Column({ type: 'uuid' })
+  playerAccountId: string;
 
   @Column({ type: 'uuid' })
   gameId: string;
+
+  @Column({ type: 'timestamp' })
+  createdAt: Date;
+
+  @ManyToOne(() => UserPg, (user) => user.player)
+  playerAccount: UserPg;
 
   @ManyToOne(() => Game, (game) => game.playersProgresses)
   game: Game;

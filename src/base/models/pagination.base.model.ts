@@ -113,6 +113,35 @@ export class PaginationPostSearchBlogNameTerm extends Pagination {
     this.searchBlogNameTerm = query.searchBlogNameTerm?.toString() || null;
   }
 }
+
+export class PaginationQuestionBodySearchTerm extends Pagination {
+  public readonly bodySearchTerm: string | null;
+  public readonly publishedStatus: boolean | null;
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.bodySearchTerm = query.bodySearchTerm?.toString() || null;
+    this.publishedStatus = this.getPublishedType(query);
+  }
+
+  private getPublishedType(query: ParsedQs): boolean | null {
+    let result = null;
+    console.log(query.publishedStatus);
+    switch (query.publishedStatus) {
+      case "published": {
+        result = true;
+        break;
+      }
+      case "notPublished": {
+        result = false;
+        break;
+      }
+      default:
+        break;
+    }
+    return result;
+  }
+}
 // TYPES
 
 export type SortDirectionType = "DESC" | "ASC";

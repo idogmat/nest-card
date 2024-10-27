@@ -26,18 +26,29 @@ export class QuizRepository {
     return model;
   }
 
-  async deleteQueation(device: Question): Promise<boolean> {
+  async deleteQuestion(device: Question): Promise<boolean> {
     const result = await this.questionRepo.remove(device);
+    console.log(result);
     return !!result;
   };
 
 
-  async updateQuestion(id: string, newModel: Question) {
+  async updateQuestion(id: string, newModel: Partial<Question>) {
     await this.questionRepo.createQueryBuilder()
       .update(Question)
       .set({
         body: newModel.body,
         correctAnswers: newModel.correctAnswers,
+      })
+      .where("id = :id", { id })
+      .execute();
+  }
+
+  async updatePublished(id: string, publushed: { published: boolean; }) {
+    await this.questionRepo.createQueryBuilder()
+      .update(Question)
+      .set({
+        published: publushed.published,
       })
       .where("id = :id", { id })
       .execute();
