@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Equal, LessThan, Not, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
@@ -6,6 +6,8 @@ import { QuestionInputModel } from '../model/input/question.input.model';
 import { UserPg } from 'src/features/users/domain/user.entity';
 import { Game, GameStatus } from '../domain/game.entity';
 import { PlayerProgress } from '../domain/player.entity';
+import { NotFoundError } from 'rxjs';
+import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
 
 @Injectable()
 export class QuizGameRepository {
@@ -16,6 +18,10 @@ export class QuizGameRepository {
     private readonly gameRepo: Repository<Game>,
     @InjectRepository(PlayerProgress)
     private readonly playerRepo: Repository<PlayerProgress>,
+    @InjectRepository(Question)
+    private readonly questionsRepo: Repository<Question>,
+    @InjectRepository(QuestionOfTheGame)
+    private readonly questionsOfTheGameRepo: Repository<QuestionOfTheGame>,
   ) { }
 
   async createGame(userId: string): Promise<string | null> {
@@ -51,7 +57,25 @@ export class QuizGameRepository {
     return result;
   }
 
-  async findGame(userId: string): Promise<any> {
+  async findPair(userId: string): Promise<any> {
+    const currentGame = await this.gameRepo
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
+      .where(qb => {
+        const subQuery = qb.subQuery()
+          .select('playerProgress.gameId')
+          .from('PlayerProgress', 'playerProgress')
+          .where('playerProgress.playerAccountId = :excludedPlayerAccountId', { excludedPlayerAccountId: userId })
+          .groupBy('playerProgress.gameId')
+          .getQuery();
+        return 'game.id IN ' + subQuery;
+      }).where(`game.status = :status`, { status: GameStatus.PendingSecondUser })
+      .orWhere(`game.status = :status`, { status: GameStatus.Active })
+      .orderBy(`game."createdAt"`, `ASC`).getOne();
+    // throw err if user have active game
+    console.log(currentGame, 'currentGame');
+    console.log(userId, 'userId');
+    if (currentGame && currentGame.playersProgresses.find(p => p?.playerAccountId === userId)?.id) throw new ForbiddenException();
     let gameId = null;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -77,9 +101,18 @@ export class QuizGameRepository {
         return null;
       }
 
-      gameId = games?.[0].id;
+      gameId = games[0].id;
       const player = this.playerRepo.create({ gameId: games[0].id, playerAccountId: userId, createdAt: new Date() });
       await queryRunner.manager.save(player);
+
+      const questions = await this.questionsRepo
+        .createQueryBuilder('q')
+        .where(`q.published = :published`, { published: true })
+        .orderBy(`RANDOM()`)
+        .limit(5)
+        .getMany();
+      const orderedQuestions = questions.map((q, i) => ({ questionId: q.id, gameId, order: i }));
+      await this.questionsOfTheGameRepo.insert(orderedQuestions);
 
       await this.gameRepo
         .createQueryBuilder('game')
@@ -87,6 +120,7 @@ export class QuizGameRepository {
         .andWhere(`game.id = :id`, { id: games[0].id })
         .set({ status: GameStatus.Active })
         .execute();
+
 
       await queryRunner.commitTransaction();
     } catch (e) {
@@ -101,9 +135,7 @@ export class QuizGameRepository {
         const subQuery = qb.subQuery()
           .select('playerProgress.gameId')
           .from('PlayerProgress', 'playerProgress')
-          .where('playerProgress.playerAccountId != :excludedPlayerAccountId', { excludedPlayerAccountId: userId })
           .groupBy('playerProgress.gameId')
-          .having('COUNT(playerProgress.id) < :maxPlayers', { maxPlayers: 1 })
           .getQuery();
         return 'game.id IN ' + subQuery;
       })
@@ -114,6 +146,23 @@ export class QuizGameRepository {
     return game;
   }
 
+  async findGame(userId: string): Promise<any> {
+    const currentGame = await this.gameRepo
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
+      .where(qb => {
+        const subQuery = qb.subQuery()
+          .select('playerProgress.gameId')
+          .from('PlayerProgress', 'playerProgress')
+          .where('playerProgress.playerAccountId = :excludedPlayerAccountId', { excludedPlayerAccountId: userId })
+          .groupBy('playerProgress.gameId')
+          .getQuery();
+        return 'game.id IN ' + subQuery;
+      }).orderBy(`game."createdAt"`, `ASC`).getOne();
+
+    if (!currentGame) throw new NotFoundException();
+    return currentGame;
+  }
   // async deleteQuestion(device: Question): Promise<boolean> {
   //   const result = await this.questionRepo.remove(device);
   //   console.log(result);

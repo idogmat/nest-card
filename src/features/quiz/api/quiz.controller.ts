@@ -21,7 +21,6 @@ export class QuizController {
     private readonly quizGameService: QuizGameService,
   ) { }
 
-  // SA
   @UseGuards(JwtAuthGuard)
   @Post('/pair-game-quiz/pairs/connection')
   async getPair(@Req() req) {
@@ -32,31 +31,24 @@ export class QuizController {
     return pairGame;
   }
 
-  // @UseGuards(BasicAuthGuard)
-  // @Get('/sa/quiz/questions')
-  // async getQuestions(
-  //   @Query() query: any,
-  // ) {
-  //   const pagination: PaginationQuestionBodySearchTerm =
-  //     new PaginationQuestionBodySearchTerm(
-  //       query,
-  //       QUESTIONS_SORTING_PROPERTIES,
-  //     );
+  @UseGuards(JwtAuthGuard)
+  @Get('/pair-game-quiz/pairs/my-current')
+  async getCurrentGame(@Req() req) {
+    console.log('ok');
+    const pairGame = await this.quizGameService.getCurrentGame(req.user.userId);
+    // if (!pairGame) throw new UnauthorizedException();
 
-  //   const questions: PaginationOutput<QuestionOutputModel> =
-  //     await this.quizQueryRepository.getAll(pagination);
+    return pairGame;
+  }
 
-  //   return questions;
-  // }
-
-  // @UseGuards(BasicAuthGuard)
-  // @Delete('/sa/quiz/questions/:id')
-  // @HttpCode(204)
-  // async deleteQuestions(
-  //   @Param('id') id: string,
-  // ) {
-  //   await this.quizService.delete(id);
-  // }
+  @UseGuards(JwtAuthGuard)
+  @Delete('/pair-game-quiz/pairs/my-current/answers')
+  @HttpCode(204)
+  async deleteQuestions(
+    @Req() req,
+  ) {
+    const pairGame = await this.quizGameService.getCurrentGame(req.user.userId);
+  }
 
   // @UseGuards(BasicAuthGuard)
   // @Put('/sa/quiz/questions/:id/publish')

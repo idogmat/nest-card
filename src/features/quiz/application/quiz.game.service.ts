@@ -8,12 +8,22 @@ export class QuizGameService {
   ) { }
 
   async getPair(userId: string): Promise<string> {
-    const game = await this.quizGameRepository.findGame(userId);
+    const game = await this.quizGameRepository.findPair(userId);
     if (game) {
       return game;
     } else {
       const createdGame = await this.quizGameRepository.createGame(userId);
       return createdGame;
     }
+  }
+
+  async getCurrentGame(userId: string): Promise<string> {
+    const game = await this.quizGameRepository.findGame(userId);
+    // if (game) {
+    return game;
+    // } else {
+    //   const createdGame = await this.quizGameRepository.createGame(userId);
+    //   return createdGame;
+    // }
   }
 }

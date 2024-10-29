@@ -27,4 +27,13 @@ export class TestingController {
     await this.dataSource.query(`TRUNCATE TABLE comment_like_pg CASCADE`);
     return;
   }
+
+  @Delete('/game')
+  @HttpCode(204)
+  async deleteGame() {
+    await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
+    return;
+  }
 }

@@ -22,6 +22,6 @@ export class Question {
   @Column({ type: 'boolean', default: false })
   published: boolean;
 
-  @OneToMany(() => QuestionOfTheGame, (q) => q.questions)
+  @OneToMany(() => QuestionOfTheGame, (q) => q.question)
   questions: QuestionOfTheGame;
 }
