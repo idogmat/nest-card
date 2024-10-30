@@ -1,10 +1,8 @@
 import { UserPg } from "src/features/users/domain/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Game } from "./game.entity";
-// @ManyToOne(() => UserPg, (user) => user)
-// @Column()
-// playerAccount: UserPg;
-// Учебная таблица, в которой пока нет всех нужных полей
+import { PlayerAnswer } from "./playerAnswer.entity";
+
 @Entity()
 export class PlayerProgress {
   @PrimaryGeneratedColumn('uuid')
@@ -24,4 +22,7 @@ export class PlayerProgress {
 
   @ManyToOne(() => Game, (game) => game.playersProgresses)
   game: Game;
+
+  @OneToMany(() => PlayerAnswer, (p) => p)
+  answers: PlayerAnswer;
 }

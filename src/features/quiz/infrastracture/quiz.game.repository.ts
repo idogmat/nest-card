@@ -2,12 +2,10 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Equal, LessThan, Not, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
-import { QuestionInputModel } from '../model/input/question.input.model';
-import { UserPg } from 'src/features/users/domain/user.entity';
 import { Game, GameStatus } from '../domain/game.entity';
 import { PlayerProgress } from '../domain/player.entity';
-import { NotFoundError } from 'rxjs';
 import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
+import { PlayerAnswer } from '../domain/playerAnswer.entity';
 
 @Injectable()
 export class QuizGameRepository {
@@ -22,6 +20,8 @@ export class QuizGameRepository {
     private readonly questionsRepo: Repository<Question>,
     @InjectRepository(QuestionOfTheGame)
     private readonly questionsOfTheGameRepo: Repository<QuestionOfTheGame>,
+    @InjectRepository(PlayerAnswer)
+    private readonly playerAnswerRepo: Repository<PlayerAnswer>,
   ) { }
 
   async createGame(userId: string): Promise<string | null> {
@@ -162,6 +162,42 @@ export class QuizGameRepository {
 
     if (!currentGame) throw new NotFoundException();
     return currentGame;
+  }
+
+  async setAnswer(userId: string, answer: string): Promise<any> {
+    const queryGetGames = this.gameRepo
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
+      .leftJoinAndSelect('game.questions', 'questions')
+      .where(qb => {
+        const subQuery = qb.subQuery()
+          .select('playerProgress.gameId')
+          .from('PlayerProgress', 'playerProgress')
+          .where('playerProgress.playerAccountId != :excludedPlayerAccountId', { excludedPlayerAccountId: userId })
+          .groupBy('playerProgress.gameId')
+          .getQuery();
+        return 'game.id IN ' + subQuery;
+      }).where(`game.status = :status`, { status: GameStatus.Active });
+
+    const game = await queryGetGames.orderBy(`game."createdAt"`, `ASC`).getOne();
+    // console.log(game);
+    if (!game) throw new ForbiddenException();
+    const processCheck = game.playersProgresses.find(p => (p.playerAccountId === userId)).id;
+    if (!processCheck) throw new ForbiddenException();
+    // console.log(playerCheck);
+    console.log(game.questions);
+    const answers = await this.playerAnswerRepo.find({ where: { processId: processCheck } });
+    console.log(game.questions[answers.length]);
+    const question = game.questions[answers.length];
+    if (!question) throw new ForbiddenException();
+    const model = this.playerAnswerRepo.create({
+      answer,
+      createdAt: new Date(),
+      processId: processCheck,
+      order: answers.length,
+      questionId: question.id
+    });
+    await this.playerAnswerRepo.save(model);
   }
   // async deleteQuestion(device: Question): Promise<boolean> {
   //   const result = await this.questionRepo.remove(device);

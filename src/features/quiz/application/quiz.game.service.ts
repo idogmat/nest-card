@@ -19,11 +19,11 @@ export class QuizGameService {
 
   async getCurrentGame(userId: string): Promise<string> {
     const game = await this.quizGameRepository.findGame(userId);
-    // if (game) {
     return game;
-    // } else {
-    //   const createdGame = await this.quizGameRepository.createGame(userId);
-    //   return createdGame;
-    // }
+  }
+
+  async setAnswer(userId: string, answer: string): Promise<string> {
+    const settedAnswer = await this.quizGameRepository.setAnswer(userId, answer);
+    return settedAnswer;
   }
 }

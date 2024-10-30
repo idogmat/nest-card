@@ -12,9 +12,10 @@ import { QuizSuperAdminController } from "./api/quiz.sa.controller";
 import { QuizController } from "./api/quiz.controller";
 import { QuizGameService } from "./application/quiz.game.service";
 import { QuizGameRepository } from "./infrastracture/quiz.game.repository";
+import { PlayerAnswer } from "./domain/playerAnswer.entity";
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([Game, PlayerProgress, QuestionOfTheGame, Question])],
+  imports: [UserModule, TypeOrmModule.forFeature([Game, PlayerProgress, QuestionOfTheGame, Question, PlayerAnswer])],
   controllers: [QuizSuperAdminController, QuizController],
   providers: [QuizService, QuizGameService, QuizRepository, QuizGameRepository, QuizQueryRepository],
   exports: []

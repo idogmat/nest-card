@@ -34,6 +34,7 @@ export class TestingController {
     await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
     return;
   }
 }

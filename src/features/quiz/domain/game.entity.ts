@@ -22,6 +22,6 @@ export class Game {
   @OneToMany(() => PlayerProgress, (playerProgress) => playerProgress.game)
   playersProgresses: PlayerProgress[];
 
-  @OneToMany(() => QuestionOfTheGame, (question) => question.game)
+  @OneToMany(() => QuestionOfTheGame, (q) => q.game)
   questions: QuestionOfTheGame[];
 }

@@ -16,7 +16,7 @@ export class QuestionOfTheGame {
   @Column({ type: 'uuid' })
   gameId: string;
 
-  @ManyToOne(() => Game, (q) => q.questions)
+  @ManyToOne(() => Game, (q) => q)
   game: Game; // игра, которой принадлежит этот вопрос
 
   @Column()
