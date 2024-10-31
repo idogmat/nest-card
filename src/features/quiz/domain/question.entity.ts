@@ -23,5 +23,5 @@ export class Question {
   published: boolean;
 
   @OneToMany(() => QuestionOfTheGame, (q) => q.question)
-  questions: QuestionOfTheGame;
+  questions: QuestionOfTheGame[];
 }

@@ -11,7 +11,7 @@ export class QuestionOfTheGame {
   questionId: string;
 
   @ManyToOne(() => Question, (q) => q.questions)
-  question: Question; // сам вопрос
+  question: Question;
 
   @Column({ type: 'uuid' })
   gameId: string;

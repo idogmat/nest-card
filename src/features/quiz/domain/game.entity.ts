@@ -19,6 +19,12 @@ export class Game {
   @Column({ type: 'timestamp' })
   createdAt: Date;
 
+  @Column({ type: 'timestamp', nullable: true })
+  startGameDate: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  finishGameDate: Date | null;
+
   @OneToMany(() => PlayerProgress, (playerProgress) => playerProgress.game)
   playersProgresses: PlayerProgress[];
 

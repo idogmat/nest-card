@@ -10,6 +10,9 @@ export class PlayerAnswer {
   answer: string;
 
   @Column()
+  answerStatus: string;
+
+  @Column()
   order: number;
 
   @Column({ type: 'uuid' })

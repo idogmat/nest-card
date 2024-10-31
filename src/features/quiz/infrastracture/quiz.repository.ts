@@ -39,6 +39,7 @@ export class QuizRepository {
       .set({
         body: newModel.body,
         correctAnswers: newModel.correctAnswers,
+        updatedAt: new Date()
       })
       .where("id = :id", { id })
       .execute();
@@ -49,6 +50,7 @@ export class QuizRepository {
       .update(Question)
       .set({
         published: publushed.published,
+        updatedAt: new Date()
       })
       .where("id = :id", { id })
       .execute();

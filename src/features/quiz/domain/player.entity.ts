@@ -17,12 +17,15 @@ export class PlayerProgress {
   @Column({ type: 'timestamp' })
   createdAt: Date;
 
+  @Column({ default: 0 })
+  score: number;
+
   @ManyToOne(() => UserPg, (user) => user.player)
   playerAccount: UserPg;
 
   @ManyToOne(() => Game, (game) => game.playersProgresses)
   game: Game;
 
-  @OneToMany(() => PlayerAnswer, (p) => p)
-  answers: PlayerAnswer;
+  @OneToMany(() => PlayerAnswer, (p) => p.process)
+  answers: PlayerAnswer[];
 }

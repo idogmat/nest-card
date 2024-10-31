@@ -6,6 +6,7 @@ import { Game, GameStatus } from '../domain/game.entity';
 import { PlayerProgress } from '../domain/player.entity';
 import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
 import { PlayerAnswer } from '../domain/playerAnswer.entity';
+import { GameOutputModelMapper } from '../model/output/game.output.model';
 
 @Injectable()
 export class QuizGameRepository {
@@ -150,6 +151,9 @@ export class QuizGameRepository {
     const currentGame = await this.gameRepo
       .createQueryBuilder('game')
       .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
+      .leftJoinAndSelect('game.questions', 'questions')
+      .leftJoinAndSelect('questions.question', 'gameQuestion')
+      .leftJoinAndSelect('playerProgress.answers', 'answers')
       .where(qb => {
         const subQuery = qb.subQuery()
           .select('playerProgress.gameId')
@@ -158,10 +162,14 @@ export class QuizGameRepository {
           .groupBy('playerProgress.gameId')
           .getQuery();
         return 'game.id IN ' + subQuery;
-      }).orderBy(`game."createdAt"`, `ASC`).getOne();
+      })
+      .orderBy('playerProgress.createdAt', 'ASC')
+      .addOrderBy('answers.order', 'ASC').getOne();
 
     if (!currentGame) throw new NotFoundException();
-    return currentGame;
+
+    return GameOutputModelMapper(currentGame);
+    // return currentGame;
   }
 
   async setAnswer(userId: string, answer: string): Promise<any> {
@@ -187,11 +195,26 @@ export class QuizGameRepository {
     // console.log(playerCheck);
     console.log(game.questions);
     const answers = await this.playerAnswerRepo.find({ where: { processId: processCheck } });
-    console.log(game.questions[answers.length]);
-    const question = game.questions[answers.length];
+    console.log(answers, 'anwsers');
+    const question = game.questions.find(q => q.order === answers.length);
     if (!question) throw new ForbiddenException();
+    const questionForGetAnswer = await this.questionsRepo.findOneBy({ id: question.questionId });
+    console.log(questionForGetAnswer, 'questionForGetAnswer');
+    const currentAnswers = questionForGetAnswer.correctAnswers.includes(answer) ? 'Correct' : 'Incorrect';
+    console.log(currentAnswers, 'currentAnswers');
+    if (currentAnswers === 'Correct') {
+      await this.playerRepo.createQueryBuilder()
+        .update(PlayerProgress)
+        .set({
+          score: () => "score + 1"
+        })
+        .where("id = :processCheck", { processCheck })
+        .returning("*")
+        .execute();
+    }
     const model = this.playerAnswerRepo.create({
       answer,
+      answerStatus: currentAnswers,
       createdAt: new Date(),
       processId: processCheck,
       order: answers.length,
@@ -199,31 +222,4 @@ export class QuizGameRepository {
     });
     await this.playerAnswerRepo.save(model);
   }
-  // async deleteQuestion(device: Question): Promise<boolean> {
-  //   const result = await this.questionRepo.remove(device);
-  //   console.log(result);
-  //   return !!result;
-  // };
-
-
-  // async updateQuestion(id: string, newModel: Partial<Question>) {
-  //   await this.questionRepo.createQueryBuilder()
-  //     .update(Question)
-  //     .set({
-  //       body: newModel.body,
-  //       correctAnswers: newModel.correctAnswers,
-  //     })
-  //     .where("id = :id", { id })
-  //     .execute();
-  // }
-
-  // async updatePublished(id: string, publushed: { published: boolean; }) {
-  //   await this.questionRepo.createQueryBuilder()
-  //     .update(Question)
-  //     .set({
-  //       published: publushed.published,
-  //     })
-  //     .where("id = :id", { id })
-  //     .execute();
-  // }
 }
