@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { QuizGameRepository } from "../infrastracture/quiz.game.repository";
+import { AuthUser } from "../quiz.module";
 
 @Injectable()
 export class QuizGameService {
@@ -7,23 +8,28 @@ export class QuizGameService {
     private readonly quizGameRepository: QuizGameRepository
   ) { }
 
-  async getPair(userId: string): Promise<string> {
-    const game = await this.quizGameRepository.findPair(userId);
+  async getPair(user: AuthUser): Promise<string> {
+    const game = await this.quizGameRepository.findPair(user);
     if (game) {
       return game;
     } else {
-      const createdGame = await this.quizGameRepository.createGame(userId);
+      const createdGame = await this.quizGameRepository.createGame(user);
       return createdGame;
     }
   }
 
-  async getCurrentGame(userId: string): Promise<string> {
-    const game = await this.quizGameRepository.findGame(userId);
+  async getCurrentGame(user: AuthUser): Promise<string> {
+    const game = await this.quizGameRepository.findGame(user);
     return game;
   }
 
-  async setAnswer(userId: string, answer: string): Promise<string> {
-    const settedAnswer = await this.quizGameRepository.setAnswer(userId, answer);
+  async getGameById(id: string, user: AuthUser): Promise<string> {
+    const game = await this.quizGameRepository.getGameById(id, user);
+    return game;
+  }
+
+  async setAnswer(user: AuthUser, answer: string): Promise<string> {
+    const settedAnswer = await this.quizGameRepository.setAnswer(user, answer);
     return settedAnswer;
   }
 }

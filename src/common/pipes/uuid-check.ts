@@ -1,8 +1,8 @@
 import { ArgumentMetadata, ParseUUIDPipe } from "@nestjs/common";
 
 export class EnhancedParseUUIDPipe extends ParseUUIDPipe {
-  constructor() {
-    super({ errorHttpStatusCode: 404, version: '4' });
+  constructor(type: number = 404) {
+    super({ errorHttpStatusCode: type, version: '4' });
   }
   async transform(value: string, metadata: ArgumentMetadata): Promise<string> {
     try {

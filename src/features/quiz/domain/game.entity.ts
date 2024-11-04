@@ -3,9 +3,9 @@ import { PlayerProgress } from "./player.entity";
 import { QuestionOfTheGame } from "./questionsForGame.entity";
 
 export enum GameStatus {
-  Finished,
+  PendingSecondPlayer,
   Active,
-  PendingSecondUser
+  Finished,
 }
 
 @Entity()
@@ -13,7 +13,7 @@ export class Game {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PendingSecondUser })
+  @Column({ type: 'enum', enum: GameStatus, default: GameStatus.PendingSecondPlayer })
   status: GameStatus;
 
   @Column({ type: 'timestamp' })

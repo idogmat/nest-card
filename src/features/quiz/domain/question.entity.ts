@@ -7,13 +7,13 @@ export class Question {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
-  @Column()
+  @Column({ type: 'text', collation: 'C' })
   public body: string;
 
-  @Column()
+  @Column({ type: 'timestamp' })
   public createdAt: Date;
 
-  @Column()
+  @Column({ type: 'timestamp', nullable: true })
   public updatedAt: Date;
 
   @Column("text", { array: true })

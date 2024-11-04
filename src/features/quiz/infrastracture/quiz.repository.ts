@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
 import { QuestionInputModel } from '../model/input/question.input.model';
+import { QuestionOutput } from '../model/output/question.output';
 
 @Injectable()
 export class QuizRepository {
@@ -11,11 +12,12 @@ export class QuizRepository {
     private readonly questionRepo: Repository<Question>,
   ) { }
 
-  async createQuestion(question: QuestionInputModel): Promise<string | null> {
+  async createQuestion(question: QuestionInputModel): Promise<QuestionOutput | null> {
     const model = this.questionRepo.create(question);
 
-    const savedDevice = await this.questionRepo.save(model);
-    return savedDevice.id;
+    const savedQuestion = await this.questionRepo.save(model);
+    // const result = { body: savedQuestion.body, correctAnswers: savedQuestion.correctAnswers };
+    return savedQuestion;
   }
 
   async getQuestionById(id: string): Promise<Question | null> {

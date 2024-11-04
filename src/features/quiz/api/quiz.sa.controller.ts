@@ -12,7 +12,7 @@ import { EnhancedParseUUIDPipe } from "src/common/pipes/uuid-check";
 import { QuestionPublishedModel } from "../model/input/question.published.model";
 
 export const QUESTIONS_SORTING_PROPERTIES: SortingPropertiesType<Question> =
-  ['updatedAt', 'createdAt'];
+  ['updatedAt', 'createdAt', 'body'];
 
 @ApiTags('Quiz')
 @Controller('/sa/quiz')
@@ -53,7 +53,7 @@ export class QuizSuperAdminController {
   @Delete('/questions/:id')
   @HttpCode(204)
   async deleteQuestions(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
   ) {
     await this.quizService.delete(id);
   }

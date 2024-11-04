@@ -25,6 +25,12 @@ export class TestingController {
     await this.dataSource.query(`TRUNCATE TABLE post_like_pg CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE comment_pg CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE comment_like_pg CASCADE`);
+
+    await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE question CASCADE`);
     return;
   }
 
@@ -35,6 +41,7 @@ export class TestingController {
     await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
     await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
+    // await this.dataSource.query(`TRUNCATE TABLE question CASCADE`);
     return;
   }
 }

@@ -11,6 +11,9 @@ export class PlayerProgress {
   @Column({ type: 'uuid' })
   playerAccountId: string;
 
+  @Column()
+  login: string;
+
   @Column({ type: 'uuid' })
   gameId: string;
 

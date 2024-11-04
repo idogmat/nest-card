@@ -41,6 +41,8 @@ export class QuizQueryRepository {
     const totalCount = await questionQueryBuilder.getCount();
     const questions = await questionQueryBuilder
       .orderBy(`q.${pagination.sortBy}`, pagination.sortDirection)
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
 
     const mappedQuestions = questions.map(e => QuestionOutputModelMapper(e));

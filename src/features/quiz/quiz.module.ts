@@ -14,6 +14,12 @@ import { QuizGameService } from "./application/quiz.game.service";
 import { QuizGameRepository } from "./infrastracture/quiz.game.repository";
 import { PlayerAnswer } from "./domain/playerAnswer.entity";
 
+export interface AuthUser {
+  userId: string;
+  login: string;
+  deviceId: string;
+}
+
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([Game, PlayerProgress, QuestionOfTheGame, Question, PlayerAnswer])],
   controllers: [QuizSuperAdminController, QuizController],

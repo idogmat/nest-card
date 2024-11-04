@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { QuestionInputModel } from "../model/input/question.input.model";
 import { QuizRepository } from "../infrastracture/quiz.repository";
 import { Question } from "../domain/question.entity";
+import { QuestionOutput } from "../model/output/question.output";
 
 @Injectable()
 export class QuizService {
@@ -9,16 +10,15 @@ export class QuizService {
     private readonly quizRepository: QuizRepository
   ) { }
 
-  async createQuestion(model: QuestionInputModel): Promise<string> {
+  async createQuestion(model: QuestionInputModel): Promise<QuestionOutput> {
     const question = {
       ...model,
       published: false,
       createdAt: new Date(),
-      updatedAt: new Date(),
     };
-    const createdUserId: string = await this.quizRepository.createQuestion(question);
+    const createdQuestion: QuestionOutput = await this.quizRepository.createQuestion(question);
 
-    return createdUserId;
+    return createdQuestion;
   }
 
   async delete(id: string): Promise<boolean> {
