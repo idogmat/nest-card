@@ -29,9 +29,9 @@ export class GameOutputModel {
   };
   questions: IQuestions[];
   status: GameStatus;
-  pairCreatedDate: Date;
-  startGameDate: Date | null;
-  finishGameDate: Date | null;
+  pairCreatedDate: string;
+  startGameDate: string | null;
+  finishGameDate: string | null;
 }
 
 export const GameOutputModelMapper = (g: Game): GameOutputModel => {
@@ -40,7 +40,7 @@ export const GameOutputModelMapper = (g: Game): GameOutputModel => {
   outputModel.firstPlayerProgress = {
     answers: g.playersProgresses[0]?.answers?.map(a => ({
       questionId: a.questionId,
-      addedAt: a.createdAt,
+      addedAt: new Date(a.createdAt).toISOString(),
       answerStatus: a.answerStatus
     })) || [],
     player: {
@@ -55,7 +55,7 @@ export const GameOutputModelMapper = (g: Game): GameOutputModel => {
       ? {
         answers: g.playersProgresses?.[1]?.answers?.map(a => ({
           questionId: a.questionId,
-          addedAt: a.createdAt,
+          addedAt: new Date(a.createdAt).toISOString(),
           answerStatus: a.answerStatus
         })) || [],
         player: {
@@ -70,9 +70,9 @@ export const GameOutputModelMapper = (g: Game): GameOutputModel => {
     g.questions?.length
       ? g.questions?.map(q => ({ id: q.id, body: q.question.body }))
       : null;
-  outputModel.pairCreatedDate = g.createdAt;
-  outputModel.startGameDate = g.startGameDate;
-  outputModel.finishGameDate = g.finishGameDate;
+  outputModel.pairCreatedDate = new Date(g.createdAt).toISOString();
+  outputModel.startGameDate = g.startGameDate ? new Date(g.startGameDate).toISOString() : null;
+  outputModel.finishGameDate = g.finishGameDate ? new Date(g.finishGameDate).toISOString() : null;
 
   return outputModel;
 };

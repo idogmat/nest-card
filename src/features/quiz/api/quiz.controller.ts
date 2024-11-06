@@ -30,6 +30,7 @@ export class QuizController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Get('/pair-game-quiz/pairs/my-current')
   async getCurrentGame(@Req() req) {
     console.log('ok');
@@ -40,6 +41,7 @@ export class QuizController {
   }
 
   @UseGuards(JwtAuthGuard)
+
   @Get('/pair-game-quiz/pairs/:id')
   async getGameById(
     @Req() req,
@@ -53,8 +55,9 @@ export class QuizController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @HttpCode(200)
   @Post('/pair-game-quiz/pairs/my-current/answers')
-  async deleteQuestions(
+  async aetAnswer(
     @Req() req,
     @Body() answer: AnswerInputModel
   ) {
