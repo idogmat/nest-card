@@ -16,7 +16,6 @@ import { AnswerOutputModelMapper } from '../model/output/answer.output.model';
 export class QuizGameRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
-
     @InjectRepository(Game)
     private readonly gameRepo: Repository<Game>,
     @InjectRepository(PlayerProgress)

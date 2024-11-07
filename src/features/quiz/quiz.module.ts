@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common";
-import { UserModule } from "../users/users.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Game } from "./domain/game.entity";
 import { PlayerProgress } from "./domain/player.entity";
@@ -13,6 +12,9 @@ import { QuizController } from "./api/quiz.controller";
 import { QuizGameService } from "./application/quiz.game.service";
 import { QuizGameRepository } from "./infrastracture/quiz.game.repository";
 import { PlayerAnswer } from "./domain/playerAnswer.entity";
+import { CqrsModule } from "@nestjs/cqrs";
+import { GetGamePairUseCase } from "./application/game-case/game.find-pair.use-case";
+import { CreateGamePairUseCase } from "./application/game-case/game.create-pair.use-case";
 
 export interface AuthUser {
   userId: string;
@@ -21,9 +23,29 @@ export interface AuthUser {
 }
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([Game, PlayerProgress, QuestionOfTheGame, Question, PlayerAnswer])],
-  controllers: [QuizSuperAdminController, QuizController],
-  providers: [QuizService, QuizGameService, QuizRepository, QuizGameRepository, QuizQueryRepository],
+  imports: [
+    CqrsModule,
+    TypeOrmModule.forFeature([
+      Game,
+      PlayerProgress,
+      QuestionOfTheGame,
+      Question,
+      PlayerAnswer
+    ])
+  ],
+  controllers: [
+    QuizSuperAdminController,
+    QuizController
+  ],
+  providers: [
+    QuizService,
+    QuizGameService,
+    QuizRepository,
+    QuizGameRepository,
+    QuizQueryRepository,
+    GetGamePairUseCase,
+    CreateGamePairUseCase
+  ],
   exports: []
 })
 export class QuizModule { }
