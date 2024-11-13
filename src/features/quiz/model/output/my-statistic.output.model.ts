@@ -14,6 +14,7 @@ export const MyStatisticMapper = (statistic: any): MyStatistic => {
   outputModel.avgScores = statistic?.avgScores || 0;
   outputModel.gamesCount = statistic?.gamesCount || 0;
   outputModel.winsCount = statistic?.winsCount || 0;
+  outputModel.drawsCount = statistic?.drawsCount || 0;
   outputModel.lossesCount = statistic?.lossesCount || 0;
   return outputModel;
 };

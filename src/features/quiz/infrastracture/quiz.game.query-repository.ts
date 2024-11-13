@@ -138,23 +138,23 @@ export class QuizGameQueryRepository {
       .getMany();
     // console.log(games);
     const checkedGames = games.reduce((acc, g) => {
-      if (g.finishGameDate && g.status === GameStatus.Finished) {
-        const { our, opponent } = g.playersProgresses.reduce((players, p) => {
-          if (p.playerAccountId === user.userId) {
-            players.our = p.score;
-          } else {
-            players.opponent = p.score;
-          }
-          return players;
-        }, { our: 0, opponent: 0 });
-        if (our - opponent > 0) {
-          acc.win++;
-        } else if (our - opponent < 0) {
-          acc.lose++;
+      const { our, opponent } = g.playersProgresses.reduce((players, p) => {
+        if (p.playerAccountId === user.userId) {
+          players.our = p.score;
+        } else {
+          players.opponent = p.score;
         }
+        return players;
+      }, { our: 0, opponent: 0 });
+      if (our - opponent > 0) {
+        acc.win++;
+      } else if (our - opponent < 0) {
+        acc.lose++;
+      } else {
+        acc.draw++;
       }
       return acc;
-    }, { win: 0, lose: 0 });
+    }, { win: 0, lose: 0, draw: 0 });
     const players = await this.playerRepo
       .createQueryBuilder('playerProgress')
       .select('AVG("playerProgress".score)', 'average')
@@ -164,12 +164,12 @@ export class QuizGameQueryRepository {
     // console.log(players);
     const result = {
       sumScore: Number(players.sum),
-      avgScores: (parseFloat(players.average)).toFixed(2),
+      avgScores: parseFloat(Number(players.average).toFixed(2)),
       gamesCount: games.length,
       winsCount: checkedGames.win,
       lossesCount: checkedGames.lose,
+      drawsCount: checkedGames.draw,
     };
-
     return MyStatisticMapper(result);
   }
 }

@@ -236,9 +236,11 @@ export class QuizGameRepository {
             .getQuery();
           return 'game.id IN ' + subQuery;
         }).andWhere(`game.status = :active`,
-          { active: GameStatus.Active });
+          { active: GameStatus.Active })
+        .orderBy(`game."createdAt"`, `ASC`)
+        .addOrderBy(`answers."createdAt"`, `ASC`);
 
-      const game = await queryGetGames.orderBy(`game."createdAt"`, `ASC`).getOne();
+      const game = await queryGetGames.getOne();
       console.log(game, 'game');
       if (!game) throw new ForbiddenException();
       const processCheck = game.playersProgresses.find(p => (p.playerAccountId === user.userId));
@@ -272,9 +274,7 @@ export class QuizGameRepository {
 
         const additionalMarkOwner = opponent.score
           ? opponent
-          : processCheck.score + Number(currentAnswers === 'Correct')
-            ? processCheck
-            : null;
+          : null;
 
         if (additionalMarkOwner) {
 
@@ -289,8 +289,6 @@ export class QuizGameRepository {
         }
         finished = true;
 
-
-
         if (finished) {
           await this.gameRepo.createQueryBuilder()
             .update(Game)
@@ -302,9 +300,6 @@ export class QuizGameRepository {
             .execute();
         }
       }
-
-
-
 
       const model = this.playerAnswerRepo.create({
         answer,
