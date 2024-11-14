@@ -10,6 +10,7 @@ import { PlayerAnswer } from '../domain/playerAnswer.entity';
 import { GameOutputModel, GameOutputModelMapper } from '../model/output/game.output.model';
 import { AuthUser } from '../quiz.module';
 import { MyStatistic, MyStatisticMapper } from '../model/output/my-statistic.output.model';
+import { groupBy } from 'rxjs';
 
 @Injectable()
 export class QuizGameQueryRepository {
@@ -163,13 +164,85 @@ export class QuizGameQueryRepository {
       .getRawOne();
     // console.log(players);
     const result = {
-      sumScore: Number(players.sum),
-      avgScores: parseFloat(Number(players.average).toFixed(2)),
+      sumScore: players.sum,
+      avgScores: players.average,
       gamesCount: games.length,
       winsCount: checkedGames.win,
       lossesCount: checkedGames.lose,
       drawsCount: checkedGames.draw,
     };
     return MyStatisticMapper(result);
+  }
+
+  async getAllStatistic(
+    pagination: Pagination,
+    user: AuthUser
+  ): Promise<PaginationOutput<MyStatistic>> {
+    const conditions = [];
+    const params = [];
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const queryGetScores = await queryRunner.manager
+      .createQueryBuilder(Game, 'g')
+      .leftJoin(`g.playersProgresses`, 'pp')
+      .select([
+        `AVG(pp.score) AS "avgScores"`,
+        `SUM(pp.score) AS "sumScore"`,
+        `COUNT(g.id) AS "gamesCount"`,
+        `SUM(
+          CASE 
+            WHEN pp.score > (
+            SELECT MAX(inner_pp.score)
+            FROM player_progress inner_pp
+            WHERE inner_pp."gameId" = g.id
+            AND inner_pp."playerAccountId" <> pp."playerAccountId"
+          ) THEN 1
+          ELSE 0
+          END
+        ) AS "winsCount"`,
+        `SUM(
+          CASE 
+            WHEN pp.score < (
+            SELECT MIN(inner_pp.score)
+            FROM player_progress inner_pp
+            WHERE inner_pp."gameId" = g.id
+            AND inner_pp."playerAccountId" <> pp."playerAccountId"
+          ) THEN 1
+          ELSE 0
+          END
+        ) AS "lossesCount"`,
+        `SUM(
+          CASE 
+            WHEN pp.score = (
+            SELECT MIN(inner_pp.score)
+            FROM player_progress inner_pp
+            WHERE inner_pp."gameId" = g.id
+            AND inner_pp."playerAccountId" <> pp."playerAccountId"
+          ) THEN 1
+          ELSE 0
+          END
+        ) AS "drawsCount"`,
+        `json_build_object(
+          'id', pp."playerAccountId",
+          'login', (SELECT u.login FROM user_pg u where pp."playerAccountId" = u.id)
+        ) as player`,
+      ])
+      .groupBy("pp.playerAccountId");
+
+
+    const scores = await queryGetScores.getRawMany();
+
+    console.log(scores, 'scores');
+
+    scores.map(e => console.log(e.result));
+    // scores.map(e => console.log(e));
+
+    const mappedGames = scores.map(e => MyStatisticMapper(e));
+    return new PaginationOutput<MyStatistic>(
+      mappedGames,
+      pagination.pageNumber,
+      pagination.pageSize,
+      Number(scores.length),
+    );
   }
 }

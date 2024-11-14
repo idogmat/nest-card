@@ -71,7 +71,23 @@ export class QuizController {
       await this.quizGameQueryRepository.getMyStatistic(req.user);
 
     return statistic;
+  }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('/pair-game-quiz/users/top')
+  async allMyStatistic(
+    @Req() req,
+    @Query() query: any,
+  ) {
+    const pagination: Pagination =
+      new Pagination(
+        query,
+        GAME_SORTING_PROPERTIES,
+      );
+    const statistic: any =
+      await this.quizGameQueryRepository.getAllStatistic(pagination, req.user);
+
+    return statistic;
   }
 
   @UseGuards(JwtAuthGuard)

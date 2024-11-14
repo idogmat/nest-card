@@ -126,7 +126,6 @@ export class PaginationQuestionBodySearchTerm extends Pagination {
 
   private getPublishedType(query: ParsedQs): boolean | null {
     let result = null;
-    console.log(query.publishedStatus);
     switch (query.publishedStatus) {
       case "published": {
         result = true;
@@ -141,6 +140,35 @@ export class PaginationQuestionBodySearchTerm extends Pagination {
     }
     return result;
   }
+}
+
+export class PaginationAllStatistic extends Pagination {
+  public readonly sort: string | null;
+  public readonly destination: string | null;
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.sort = query.sort?.toString() || null;
+    this.destination = query.destination?.toString() || null;
+  }
+  // private getSort(query: ParsedQs): boolean | null {
+  //   let sort = 'avgScores';
+  //   let destination = 'desc'
+  //   console.log(query.publishedStatus);
+  //   switch (query.publishedStatus) {
+  //     case "published": {
+  //       result = true;
+  //       break;
+  //     }
+  //     case "notPublished": {
+  //       result = false;
+  //       break;
+  //     }
+  //     default:
+  //       break;
+  //   }
+  //   return result;
+  // }
 }
 // TYPES
 
