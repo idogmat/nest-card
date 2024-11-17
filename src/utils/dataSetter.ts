@@ -1,4 +1,4 @@
-function dateSetter(
+export function dateSetter(
   date: Date,
   { hours = 0, minutes = 0, seconds = 0 },
 ) {
@@ -8,5 +8,3 @@ function dateSetter(
   newDate.setSeconds(newDate.getSeconds() + seconds);
   return newDate;
 };
-
-export default dateSetter;

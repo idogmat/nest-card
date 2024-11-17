@@ -4,7 +4,7 @@ import { UsersRepository } from "src/features/users/infrastructure/users.reposit
 
 @ValidatorConstraint({ name: 'login-not-exist', async: true })
 @Injectable()
-export default class CustomLoginValidation implements ValidatorConstraintInterface {
+export class CustomLoginValidation implements ValidatorConstraintInterface {
   constructor(private readonly usersRepository: UsersRepository) { }
 
   async validate(value: string): Promise<boolean> {
