@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query, UnauthorizedException, UseGuards } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
-import { BasicAuthGuard } from "src/common/guards/basic-auth.guard";
+import { BasicAuthGuard } from "src/utils/guards/basic-auth.guard";
 import { QuestionInputModel } from "../model/input/question.input.model";
 import { QuizService } from "../application/quiz.service";
 import { PaginationQuestionBodySearchTerm, PaginationOutput } from "src/base/models/pagination.base.model";
@@ -8,7 +8,7 @@ import { SortingPropertiesType } from "src/base/types/sorting-properties.type";
 import { Question } from "../domain/question.entity";
 import { QuestionOutputModel } from "../model/output/question.output.model";
 import { QuizQueryRepository } from "../infrastracture/quiz.query-repository";
-import { EnhancedParseUUIDPipe } from "src/common/pipes/uuid-check";
+import { EnhancedParseUUIDPipe } from "src/utils/pipes/uuid-check";
 import { QuestionPublishedModel } from "../model/input/question.published.model";
 
 export const QUESTIONS_SORTING_PROPERTIES: SortingPropertiesType<Question> =

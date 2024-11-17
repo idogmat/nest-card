@@ -1,5 +1,5 @@
 import { IsString, Length, Validate } from "class-validator";
-import { Trim } from "src/common/decorators/transform/trim";
+import { Trim } from "src/utils/decorators/transform/trim";
 import { CustomBlogIdValidation } from "../../../validate/blogId.validate";
 
 export class PostUpdateModel {

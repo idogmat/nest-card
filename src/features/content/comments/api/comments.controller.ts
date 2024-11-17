@@ -17,9 +17,9 @@ import { CommentsQueryRepository } from '../infrastructure/comments.query-reposi
 import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
 import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
 import { CommentsService } from '../application/comments.service';
-import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
+import { AuthGetGuard } from 'src/utils/guards/auth-get.guard';
 import { CommentCreateModel } from './model/input/create-comment.input.model';
-import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
+import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
 
 @ApiTags('Comments')
 @Controller('comments')

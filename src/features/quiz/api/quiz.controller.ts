@@ -5,7 +5,7 @@ import { Question } from "../domain/question.entity";
 import { QuizGameService } from "../application/quiz.game.service";
 import { JwtAuthGuard } from "src/features/auth/guards/jwt-auth.guard";
 import { AnswerInputModel } from "../model/input/answer.input.model";
-import { EnhancedParseUUIDPipe } from "src/common/pipes/uuid-check";
+import { EnhancedParseUUIDPipe } from "src/utils/pipes/uuid-check";
 import { CommandBus } from "@nestjs/cqrs";
 import { CreateGamePairCommand } from "../application/game-case/game.create-pair.use-case";
 import { GetGamePairCommand } from "../application/game-case/game.find-pair.use-case";

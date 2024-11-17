@@ -1,5 +1,5 @@
 import { IsString, IsUrl, Length } from "class-validator";
-import { Trim } from "src/common/decorators/transform/trim";
+import { Trim } from "src/utils/decorators/transform/trim";
 
 export class BlogCreateModel {
   @IsString()

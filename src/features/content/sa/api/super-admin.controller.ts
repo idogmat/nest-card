@@ -18,11 +18,11 @@ import {
   PaginationWithSearchBlogNameTerm,
 } from '../../../../base/models/pagination.base.model';
 import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
-import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
+import { BasicAuthGuard } from 'src/utils/guards/basic-auth.guard';
 import { PostsService } from '../../posts/application/posts.service';
 import { PostOutputModel } from '../../posts/api/model/output/post.output.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
-import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
+import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
 import { BlogOutputModel } from '../../blogs/api/model/output/blog.output.model';
 import { BlogsService } from '../../blogs/application/blogs.service';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';

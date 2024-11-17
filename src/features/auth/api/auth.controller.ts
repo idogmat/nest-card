@@ -21,7 +21,7 @@ import { Request, Response } from 'express';
 import { AuthLoginCommand } from '../application/user-cases/auth-login-use-case';
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { RefreshGuard } from 'src/common/guards/refresh.guard';
+import { RefreshGuard } from 'src/utils/guards/refresh.guard';
 import { DevicesService } from 'src/features/devices/application/devices.service';
 
 @ApiTags('Auth')

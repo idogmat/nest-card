@@ -4,9 +4,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { HttpExceptionFilter } from '../common/exception-filters/http-exception-filter';
+import { HttpExceptionFilter } from '../utils/exception-filters/http-exception-filter';
 import { appSettings } from './app-settings';
-import { LoggingInterceptor } from '../common/interceptors/logging.interceptor';
+import { LoggingInterceptor } from '../utils/interceptors/logging.interceptor';
 
 // Префикс нашего приложения (https://site.com/api)
 
