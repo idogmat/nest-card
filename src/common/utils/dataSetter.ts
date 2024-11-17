@@ -1,4 +1,4 @@
-export const dateSetter = (
+const dateSetter = (
   date: Date,
   { hours = 0, minutes = 0, seconds = 0 },
 ) => {
@@ -8,3 +8,5 @@ export const dateSetter = (
   newDate.setSeconds(newDate.getSeconds() + seconds);
   return newDate;
 };
+
+export default dateSetter;

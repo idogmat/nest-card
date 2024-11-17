@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
-import { dateSetter } from 'src/common/utils/dataSetter';
+import dateSetter from 'src/common/utils/dataSetter';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { UserAuthInput } from '../api/model/input/auth.input.model';
