@@ -11,26 +11,26 @@ import { PostsRepository } from "./posts/infrastructure/posts.repository";
 import { PostsQueryRepository } from "./posts/infrastructure/posts.query-repository";
 import { CommentsRepository } from "./comments/infrastructure/comments.repository";
 import { CommentsQueryRepository } from "./comments/infrastructure/comments.query-repository";
-import { MongooseModule } from "@nestjs/mongoose";
-import { Blog, BlogSchema } from "./blogs/domain/blog.entity";
-import { Comment, CommentSchema } from "./comments/domain/comment.entity";
-import { Post, PostSchema } from "./posts/domain/post.entity";
 import { CustomBlogIdValidation } from "./posts/validate/blogId.validate";
 import { AuthModule } from "../auth/auth.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { SuperAdminController } from "./sa/api/super-admin.controller";
+import { BlogPg } from "./blogs/domain/blog.entity";
+import { PostPg } from "./posts/domain/post.entity";
+import { PostLikePg } from "../likes/domain/post-like-info.entity";
+import { CommentPg } from "./comments/domain/comment.entity";
+import { CommentLikePg } from "../likes/domain/comment-like-info.entity";
 
 @Module({
   imports: [
     AuthModule,
-    MongooseModule.forFeature([
-      { name: Blog.name, schema: BlogSchema },
-      { name: Post.name, schema: PostSchema },
-      { name: Comment.name, schema: CommentSchema },
-    ]),
+    TypeOrmModule.forFeature([BlogPg, PostPg, PostLikePg, CommentPg, CommentLikePg])
   ],
   controllers: [
     BlogsController,
     PostsController,
-    CommentsController
+    CommentsController,
+    SuperAdminController
   ],
   providers: [
     BlogsService,

@@ -1,38 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
-import { Like, LikeSchema } from 'src/features/likes/domain/like-info.entity';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { PostPg } from '../../posts/domain/post.entity';
+import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
 
-@Schema({ _id: false })
-export class CommentatorInfo {
-  @Prop({ type: String })
-  userId: string;
+@Entity()
+export class CommentPg {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Prop({ type: String })
-  userLogin: string;
-}
-
-@Schema()
-export class Comment {
-  @Prop({ type: String, required: true })
+  @Column({ collation: 'C' })
   content: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   postId: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
-  createdAt: number;
+  @Column()
+  createdAt: Date;
 
-  @Prop({ type: CommentatorInfo, default: {} })
-  commentatorInfo: CommentatorInfo;
+  @Column()
+  userId: string;
 
-  @Prop({ type: Like, default: {}, schema: LikeSchema })
-  extendedLikesInfo: Like;
+  @Column()
+  userLogin: string;
+
+  @ManyToOne(() => PostPg, (post) => post.comments)
+  post: PostPg;
+
+  @OneToMany(() => CommentLikePg, (like) => like.comment)
+  extendedLikesInfo: CommentLikePg[];
 }
-
-export const CommentSchema = SchemaFactory.createForClass(Comment);
-CommentSchema.loadClass(Comment);
-
-// Types
-export type CommentDocument = HydratedDocument<Comment>;
-
-export type CommentModelType = Model<CommentDocument>;

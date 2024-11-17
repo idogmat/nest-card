@@ -9,7 +9,6 @@ export class AuthLoginCommand {
     public readonly password: string,
     public readonly device: { ip: string, title: string; }
   ) { }
-  // async execute() { }
 }
 
 @CommandHandler(AuthLoginCommand)
@@ -21,27 +20,25 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
   ) { }
 
   async execute(command: AuthLoginCommand): Promise<boolean | { accessToken: string, refreshToken: string; }> {
-    console.log(command);
     const user = await this.usersService.findByLoginOrEmail(command.loginOrEmail);
     if (!user) return false;
     const passwordHash = await this.authService.hashPassword(command.password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
-    const lastActiveDate = new Date().getTime();
-    console.log(lastActiveDate);
+    const lastActiveDate = new Date();
     const device = await this.devicesService.create(
       command.device.ip,
       command.device.title,
-      user._id.toString(),
+      user.id,
       lastActiveDate
     );
     const accessToken = await this.authService.createToken({
-      userId: user._id.toString(),
+      userId: user.id,
       login: user.login,
       deviceId: device.id,
       lastActiveDate: lastActiveDate
     });
     const refreshToken = await this.authService.createRefreshToken({
-      userId: user._id.toString(),
+      userId: user.id,
       login: user.login,
       deviceId: device.id,
       lastActiveDate: lastActiveDate

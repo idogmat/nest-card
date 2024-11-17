@@ -1,11 +1,9 @@
-import { getConnectionToken } from '@nestjs/mongoose';
 import { Test, TestingModuleBuilder } from '@nestjs/testing';
-import { Connection } from 'mongoose';
 import { AppModule } from '../../src/app.module';
 import { appSettings } from '../../src/settings/app-settings';
 import { applyAppSettings } from '../../src/settings/apply-app-setting';
 import { UsersTestManager } from './routes/users-test-manager';
-import { deleteAllData } from './delete-all-data';
+import { DataSource } from 'typeorm';
 
 export const initSettings = async (
   //передаем callback, который получает ModuleBuilder, если хотим изменить настройку тестового модуля
@@ -28,16 +26,29 @@ export const initSettings = async (
 
   await app.init();
 
-  const databaseConnection = app.get<Connection>(getConnectionToken());
+  const dataSource = await app.resolve(DataSource);
+  const cleadDB = await dataSource.query(`
+    CREATE OR REPLACE FUNCTION truncate_tables(username IN VARCHAR) RETURNS void AS $$
+    DECLARE
+        statements CURSOR FOR
+            SELECT tablename FROM pg_tables
+            WHERE tableowner = username AND schemaname = 'public';
+    BEGIN
+        FOR stmt IN statements LOOP
+            EXECUTE 'TRUNCATE TABLE ' || quote_ident(stmt.tablename) || ' CASCADE;';
+        END LOOP;
+    END;
+    $$ LANGUAGE plpgsql;
+    SELECT truncate_tables('MYUSER');
+    `);
+
   const httpServer = app.getHttpServer();
   const userTestManager = new UsersTestManager(app);
   // const authTestManager = new AuthTestManager(app);
-  await deleteAllData(databaseConnection);
 
   //TODO:переписать через setState
   return {
     app,
-    databaseConnection,
     httpServer,
     userTestManager,
     // authTestManager

@@ -19,9 +19,16 @@ export const getConfiguration = () => {
     REFRESH_SECRET_TOKEN_EXPIRATION: process.env.REFRESH_SECRET_TOKEN_EXPIRATION,
     THROTTLER_TTL: Number(process.env.THROTTLER_TTL),
     THROTTLER_LIMIT: Number(process.env.THROTTLER_LIMIT),
-    MONGO_CONNECTION_URI:
-      process.env.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest',
-    MONGO_CONNECTION_URI_FOR_TESTS:
-      process.env.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test',
+    DB: {
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      autoLoadEntities: true,
+      synchronize: true,
+      logging: true
+    }
   };
 };

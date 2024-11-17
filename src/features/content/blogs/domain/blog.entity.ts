@@ -1,22 +1,30 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument, Model } from 'mongoose';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { PostPg } from '../../posts/domain/post.entity';
 
-@Schema()
-export class Blog {
-  @Prop({ type: String, required: true })
+@Entity()
+export class BlogPg {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
+
+  @Column({ collation: 'C' })
   name: string;
 
-  @Prop({ type: String, required: true })
+  @Column({ collation: 'C' })
   description: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   websiteUrl: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
-  createdAt: number;
+  @Column()
+  createdAt: Date;
 
-  @Prop({ type: Boolean, default: false })
+  @Column()
   isMembership: boolean;
+
+  @OneToMany(() => PostPg, (post) => post.blog)
+  posts: PostPg[];
+
+
 
   static createBlog(name: string, description: string, websiteUrl: string) {
     const blog = new this();
@@ -24,7 +32,7 @@ export class Blog {
     blog.name = name;
     blog.description = description;
     blog.websiteUrl = websiteUrl;
-    blog.createdAt = new Date().getTime();
+    blog.createdAt = new Date();
     blog.isMembership = false;
 
     return blog;
@@ -33,14 +41,3 @@ export class Blog {
 
 }
 
-export const BlogSchema = SchemaFactory.createForClass(Blog);
-BlogSchema.loadClass(Blog);
-
-// Types
-export type BlogDocument = HydratedDocument<Blog>;
-
-// type BlogModelStaticType = {
-//   createUser: (name: string, description: string, websiteUrl: string) => BlogDocument;
-// };
-
-export type BlogModelType = Model<BlogDocument>; //& UserModelStaticType;

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { AppSettings, appSettings } from './settings/app-settings';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -10,6 +9,8 @@ import { UserModule } from './features/users/users.module';
 import { DeviceModule } from './features/devices/device.module';
 import { ContentModule } from './features/content/content.module';
 import { TestModule } from './features/testing/testing.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { QuizModule } from './features/quiz/quiz.module';
 
 const env = getConfiguration();
 @Module({
@@ -17,9 +18,27 @@ const env = getConfiguration();
   imports: [
     AuthModule,
     UserModule,
+    QuizModule,
     DeviceModule,
     ContentModule,
     TestModule,
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: '127.0.0.1',
+    //   port: 5433,
+    //   username: 'postgres',
+    //   password: 'postgres',
+    //   database: 'test',
+    //   autoLoadEntities: true,
+    //   synchronize: true,
+    //   logging: true
+    // }),
+    TypeOrmModule.forRootAsync({
+      useFactory: (configService: ConfigService) => {
+        return configService.get('DB');
+      },
+      inject: [ConfigService]
+    }),
     ThrottlerModule.forRoot([{
       ttl: env.THROTTLER_TTL,
       limit: env.THROTTLER_LIMIT,
@@ -28,15 +47,6 @@ const env = getConfiguration();
       isGlobal: true,
       envFilePath: '.env',
       load: [getConfiguration]
-    }),
-    MongooseModule.forRootAsync({
-      useFactory: (configService: ConfigService) => {
-        const uri = configService.get('ENV') === 'TESTING'
-          ? configService.get('MONGO_CONNECTION_URI_FOR_TESTS')
-          : configService.get('MONGO_CONNECTION_URI');
-        return { uri };
-      },
-      inject: [ConfigService]
     }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => {

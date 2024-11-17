@@ -49,6 +49,16 @@ class APISettings {
   public readonly REFRESH_SECRET_TOKEN_EXPIRATION: string;
   public readonly THROTTLER_TTL: number;
   public readonly THROTTLER_LIMIT: number;
+  public readonly DB: {
+    type: string,
+    DB_HOST: string,
+    DB_PORT: number,
+    DB_USER: string,
+    DB_PASSWORD: string,
+    DB_NAME: string,
+    autoLoadEntities: boolean,
+    synchronize: boolean,
+  };
 
   // Database
   public readonly MONGO_CONNECTION_URI: string;
@@ -67,10 +77,16 @@ class APISettings {
     this.THROTTLER_TTL = this.getNumberOrDefault(this.envVariables.THROTTLER_TTL, 10000);
     this.THROTTLER_LIMIT = this.getNumberOrDefault(this.envVariables.THROTTLER_LIMIT, 5);
     // Database
-    this.MONGO_CONNECTION_URI =
-      envVariables.MONGO_CONNECTION_URI ?? 'mongodb://localhost/nest';
-    this.MONGO_CONNECTION_URI_FOR_TESTS =
-      envVariables.MONGO_CONNECTION_URI_FOR_TESTS ?? 'mongodb://localhost/test';
+    this.DB = {
+      type: 'postgres',
+      DB_HOST: process.env.DB_HOST,
+      DB_PORT: Number(process.env.DB_PORT),
+      DB_USER: process.env.DB_USER,
+      DB_PASSWORD: process.env.DB_PASSWORD,
+      DB_NAME: process.env.DB_NAME,
+      autoLoadEntities: true,
+      synchronize: true,
+    };
   }
 
   private getNumberOrDefault(value: string, defaultValue: number): number {

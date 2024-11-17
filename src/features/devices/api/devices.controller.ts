@@ -2,6 +2,7 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -12,7 +13,6 @@ import {
 import { DevicesQueryRepository } from '../infrastructure/devices.query-repository';
 import { DeviceOutputModel } from './model/output/device.output.model';
 import { DevicesService } from '../application/devices.service';
-import { isValidObjectId } from 'mongoose';
 import { RefreshGuard } from 'src/common/guards/refresh.guard';
 
 @ApiTags('Devices')
@@ -40,8 +40,11 @@ export class DevicesController {
     @Param('id') id: string,
     @Req() req,
   ) {
-    if (!isValidObjectId(id)) throw new NotFoundException();
+    const founded = await this.devicesService.getById(id);
+    if (!founded) throw new NotFoundException();
+    if (founded?.userId !== req.user.userId) throw new ForbiddenException();
     const device = await this.devicesService.delete(id, req.user.userId);
+
     if (!device) {
       throw new NotFoundException();
     }

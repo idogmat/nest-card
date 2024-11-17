@@ -1,5 +1,5 @@
-import { LikeType } from "src/features/likes/domain/like-info.entity";
-import { CommentDocument } from "../../../domain/comment.entity";
+import { CommentLikePg, LikeType } from "src/features/likes/domain/comment-like-info.entity";
+import { CommentPg } from "../../../domain/comment.entity";
 
 export class CommentOutputModel {
   id: string;
@@ -18,29 +18,40 @@ export class CommentOutputModel {
 
 // MAPPERS
 
-export const CommentOutputModelMapper = (comment: CommentDocument, userId?: string): CommentOutputModel => {
+export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): CommentOutputModel => {
   const outputModel = new CommentOutputModel();
   outputModel.id = comment.id;
   outputModel.content = comment.content;
-  outputModel.commentatorInfo = comment.commentatorInfo;
-  outputModel.likesInfo = {
-    likesCount: getLikeCount(comment.extendedLikesInfo?.additionalLikes, 'Like') || 0,
-    dislikesCount: getLikeCount(comment.extendedLikesInfo?.additionalLikes, 'Dislike') || 0,
-    myStatus: getCurrentStatus(comment.extendedLikesInfo.additionalLikes, userId),
-  };
+  outputModel.commentatorInfo = {
+    userId: comment.userId,
+    userLogin: comment.userLogin
+  },
+    outputModel.likesInfo = {
+      likesCount: getLikeCount(comment?.extendedLikesInfo, 'Like') || 0,
+      dislikesCount: getLikeCount(comment?.extendedLikesInfo, 'Dislike') || 0,
+      myStatus: getCurrentStatus(comment?.extendedLikesInfo, _userId),
+    };
   outputModel.createdAt = new Date(comment.createdAt).toISOString();
 
   return outputModel;
 };
 
-export const getLikeCount = (map: Map<string, string>, type: LikeType) => {
+export const getLikeCount = (
+  arr: CommentLikePg[],
+  type: LikeType
+): number => {
   let count = 0;
-  map.forEach((like) => {
-    if (like === type) count++;
+  if (!arr || !arr?.length) return count;
+  arr?.forEach((like) => {
+    if (like.type === type) count++;
   });
   return count;
 };
 
-export const getCurrentStatus = (map: Map<string, LikeType>, userId: string): LikeType => {
-  return map.get(userId) || "None";
+export const getCurrentStatus = (
+  arr: CommentLikePg[],
+  userId: string
+): LikeType => {
+  if (!userId) return "None";
+  return arr?.find(like => like.userId === userId)?.type || "None";
 };

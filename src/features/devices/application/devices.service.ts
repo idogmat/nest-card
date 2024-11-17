@@ -1,34 +1,28 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
-import { InjectModel } from '@nestjs/mongoose';
+import { DevicePg } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesService {
   constructor(
-    private readonly devicesRepository: DevicesRepository,
-    @InjectModel(Device.name) private DeviceModel: DeviceModelType
+    private readonly devicesRepository: DevicesRepository
   ) { }
   async create(
     ip: string,
     title: string,
     userId: string,
-    lastActiveDate?: number
-  ): Promise<DeviceDocument> {
-    const newDevice: any = {
-      ip,
+    lastActiveDate?: Date
+  ): Promise<DevicePg> {
+    const device = await this.devicesRepository.create(ip,
       title,
       userId,
-      lastActiveDate: lastActiveDate || new Date().getTime()
-    };
-    const model = await new this.DeviceModel(newDevice);
-    const deviceId = await this.devicesRepository.save(model);
-    const device = await this.devicesRepository.getById(deviceId);
+      lastActiveDate || new Date());
     return device;
   }
 
   async getById(deviceId: string) {
-    return await this.devicesRepository.getById(deviceId);
+    const device = await this.devicesRepository.getById(deviceId);
+    return device;
   }
 
   async delete(id: string, userId: string): Promise<boolean> {
@@ -37,7 +31,7 @@ export class DevicesService {
       throw new NotFoundException();
     }
     if (device.userId !== userId) throw new ForbiddenException();
-    return this.devicesRepository.delete(id);
+    return this.devicesRepository.delete(device);
   }
 
   async deleteAll(id: string, userId: string): Promise<void> {
@@ -60,9 +54,5 @@ export class DevicesService {
 
     await this.devicesRepository.updateFields(id, updateModel);
     return true;
-  }
-
-  async _clear() {
-    await this.devicesRepository._clear();
   }
 }

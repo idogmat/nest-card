@@ -1,67 +1,72 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Post, PostModelType } from '../domain/post.entity';
-import { LikeType } from 'src/features/likes/domain/like-info.entity';
-import { isValidObjectId } from 'mongoose';
+import { PostPg } from '../domain/post.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { LikeType, PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {
-  constructor(@InjectModel(Post.name) private PostModel: PostModelType) { }
+  constructor(
+    @InjectRepository(PostPg)
+    private readonly postRepo: Repository<PostPg>,
+    @InjectRepository(PostLikePg)
+    private readonly postlikeRepo: Repository<PostLikePg>
+  ) { }
 
-  async create(newPost: Post): Promise<string> {
-    const model = new this.PostModel({ ...newPost, createdAt: new Date() });
-    await model.save();
-    return model._id.toString();
+  async create(newPost: PostPg): Promise<string> {
+    const post = this.postRepo.create({
+      title: newPost.title,
+      content: newPost.content,
+      shortDescription: newPost.shortDescription,
+      blogId: newPost.blogId,
+      createdAt: newPost.createdAt || new Date(),
+    });
+
+    const savedPost = await this.postRepo.save(post);
+    return savedPost.id;
   }
 
   async getById(id: string) {
-
-    if (!isValidObjectId(id)) return null;
-    const model = await this.PostModel.findById(id);
-
-    return model;
+    const post = await this.postRepo.findOneBy({ id: id });
+    return post;
   }
 
-  async update(id: string, newModel: Post) {
-    const model = await this.PostModel.findByIdAndUpdate({ _id: id }, { ...newModel });
-    return model;
+  async update(id: string, newModel: PostPg) {
+    const updated = await this.postRepo.createQueryBuilder()
+      .update(PostPg)
+      .set({
+        title: newModel.title,
+        content: newModel.content,
+        shortDescription: newModel.shortDescription
+      })
+      .where("id = :id", { id })
+      .returning("*")
+      .execute();
+    return updated.raw[0];
   }
 
   async setLike(id: string, user: { userId: string, login: string; }, like: LikeType) {
-    const model = await this.PostModel.findById(id);
-    if (!model) return false;
-    let index = -1;
-    if (like === "Like") {
-      model.extendedLikesInfo.newestLikes.forEach((el, i) => {
-        if (el.userId === user.userId) {
-          index = i;
-        }
-      });
-      if (index === -1) {
-        model.extendedLikesInfo.newestLikes.unshift({
-          userId: user.userId,
-          login: user?.login || "",
-          addedAt: new Date().toISOString(),
-        });
-      }
+    const postLike = await this.postlikeRepo.findOneBy({ postId: id, userId: user.userId });
+    if (postLike) {
+      postLike.type = like;
+      postLike.addedAt = new Date();
+      await this.postlikeRepo.save(postLike);
+      return postLike.id;
     } else {
-      model.extendedLikesInfo.newestLikes.forEach((el, i) => {
-        if (el.userId === user.userId) {
-          index = i;
-        }
-        if (index !== -1) {
-          model.extendedLikesInfo.newestLikes.splice(index, 1);
-        }
+      const createPostLike = this.postlikeRepo.create({
+        login: user.login,
+        postId: id,
+        userId: user.userId,
+        type: like,
+        addedAt: new Date(),
       });
+      const savedPostLike = await this.postlikeRepo.save(createPostLike);
+      return savedPostLike.id;
     }
-    model.extendedLikesInfo.additionalLikes.set(user.userId, like);
-    await model.save();
-    return true;
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.PostModel.deleteOne({ _id: id });
-
-    return deletingResult.deletedCount === 1;
+    const post = await this.postRepo.delete({ id: id });
+    return post.affected === 1;
   };
 }

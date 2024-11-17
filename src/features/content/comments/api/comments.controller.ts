@@ -19,6 +19,7 @@ import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input
 import { CommentsService } from '../application/comments.service';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
 import { CommentCreateModel } from './model/input/create-comment.input.model';
+import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -31,7 +32,7 @@ export class CommentsController {
   @UseGuards(AuthGetGuard)
   @Get(':id')
   async getById(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Req() req?
   ) {
     const comment: CommentOutputModel =
@@ -44,14 +45,14 @@ export class CommentsController {
   @Put(':id')
   @HttpCode(204)
   async update(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() updateModel: CommentCreateModel,
     @Req() req?
   ) {
-    const comment = await this.commentsQueryRepository.getById(id);
+    const comment = await this.commentsService.getById(id);
     if (!comment) throw new NotFoundException();
 
-    if (comment.commentatorInfo.userId !== req?.user?.userId) {
+    if (comment.userId !== req?.user?.userId) {
       throw new ForbiddenException();
     }
 
@@ -67,10 +68,10 @@ export class CommentsController {
   @HttpCode(204)
   async setLikeStatus(
     @Req() req,
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Body() like: LikeSetModel
   ) {
-    const comment = await this.commentsQueryRepository.getById(req.params.id);
+    const comment = await this.commentsService.getById(id);
     if (!comment) throw new NotFoundException();
     await this.commentsService.setLike(
       id,
@@ -83,15 +84,15 @@ export class CommentsController {
   @Delete(':id')
   @HttpCode(204)
   async delete(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Req() req,
   ) {
-    const comment = await this.commentsQueryRepository.getById(id);
+    const comment = await this.commentsService.getById(id);
     if (!comment) {
       throw new NotFoundException();
     }
 
-    if (comment.commentatorInfo.userId !== req?.user?.userId) {
+    if (comment.userId !== req?.user?.userId) {
       throw new ForbiddenException();
     }
     const deletingResult: boolean = await this.commentsService.delete(id);

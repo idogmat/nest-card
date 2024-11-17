@@ -1,22 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceModelType } from '../domain/device.entity';
 import { DeviceOutputModel, DeviceOutputModelMapper } from '../api/model/output/device.output.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DevicePg } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
-  constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) { }
+  constructor(
+    @InjectRepository(DevicePg)
+    private readonly deviceRepo: Repository<DevicePg>,
+  ) { }
 
   async getAll(
     userId: string
   ): Promise<DeviceOutputModel[] | []> {
-    const comments = await this.DeviceModel
-      .find({ userId })
-      .sort({
-        createdAt: 1,
-      });
+    const devices = await this.deviceRepo.createQueryBuilder("d")
+      .where("d.userId = :userId", { userId })
+      .orderBy("d.lastActiveDate")
+      .getMany();
 
-    const mappedComments = comments.map(e => DeviceOutputModelMapper(e));
+    const mappedComments = devices.map(e => DeviceOutputModelMapper(e));
     return mappedComments;
   }
 }

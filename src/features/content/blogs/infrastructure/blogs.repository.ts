@@ -1,38 +1,51 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/blog.entity';
-import { isValidObjectId } from 'mongoose';
+import { BlogPg } from '../domain/blog.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
-  constructor(@InjectModel(Blog.name) private BlogModel: BlogModelType) { }
+  constructor(
+    @InjectRepository(BlogPg)
+    private readonly blogRepo: Repository<BlogPg>,
+  ) { }
 
-  async getById(id: string): Promise<Blog | null> {
-
-    if (!isValidObjectId(id)) return null;
-    const blog = await this.BlogModel.findById(id);
-    if (blog === null) {
+  async getById(id: string): Promise<BlogPg | null> {
+    const user = await this.blogRepo.findOneBy({ id: id });
+    if (!user) {
       return null;
     }
-    console.log(blog);
-
-    return blog;
+    return user;
   }
 
-  async create(newBlog: Blog): Promise<string> {
-    const model = await new this.BlogModel({ ...newBlog, createdAt: new Date() });
-    await model.save();
-    return model._id.toString();
+  async create(newBlog: BlogPg): Promise<string> {
+    const blog = this.blogRepo.create({
+      name: newBlog.name,
+      description: newBlog.description,
+      websiteUrl: newBlog.websiteUrl,
+      createdAt: newBlog.createdAt || new Date().toISOString(),
+      isMembership: newBlog.isMembership || false,
+    });
+    const savedBlog = await this.blogRepo.save(blog);
+    return savedBlog.id;
   }
 
-  async update(id: string, newModel: Blog) {
-    const result = await this.BlogModel.findByIdAndUpdate({ _id: id }, { ...newModel });
-    return result;
+  async update(id: string, newModel: BlogPg) {
+    const updated = await this.blogRepo.createQueryBuilder()
+      .update(BlogPg)
+      .set({
+        name: newModel.name,
+        description: newModel.description,
+        websiteUrl: newModel.websiteUrl
+      })
+      .where("id = :id", { id })
+      .returning("*")
+      .execute();
+    return updated.raw;
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.BlogModel.deleteOne({ _id: id });
-
-    return deletingResult.deletedCount === 1;
+    const blog = await this.blogRepo.delete({ id: id });
+    return blog.affected === 1;
   }
 }

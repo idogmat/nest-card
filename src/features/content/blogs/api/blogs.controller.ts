@@ -1,14 +1,9 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
   NotFoundException,
   Param,
-  Post,
-  Put,
   Query,
   Req,
   UseGuards,
@@ -19,15 +14,11 @@ import {
 } from '../../../../base/models/pagination.base.model';
 import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
 import { BlogOutputModel } from './model/output/blog.output.model';
-import { BlogCreateModel } from './model/input/create-blog.input.model';
-import { BlogsService } from '../application/blogs.service';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import { PostInBlogCreateModel } from './model/input/create-post.input.model';
-import { BasicAuthGuard } from 'src/common/guards/basic-auth.guard';
 import { AuthGetGuard } from 'src/common/guards/auth-get.guard';
-import { PostsService } from '../../posts/application/posts.service';
 import { PostOutputModel } from '../../posts/api/model/output/post.output.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
+import { EnhancedParseUUIDPipe } from 'src/common/pipes/uuid-check';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -39,8 +30,6 @@ export const BLOGS_SORTING_PROPERTIES: SortingPropertiesType<BlogOutputModel> =
 @Controller('blogs')
 export class BlogsController {
   constructor(
-    private readonly blogsService: BlogsService,
-    private readonly postsService: PostsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
   ) { }
@@ -63,7 +52,7 @@ export class BlogsController {
 
   @Get(':id')
   async getById(
-    @Param('id') id: string,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
   ) {
 
     const blog: BlogOutputModel =
@@ -74,49 +63,14 @@ export class BlogsController {
     return blog;
   }
 
-  @UseGuards(BasicAuthGuard)
-  @Post()
-  async create(@Body() createModel: BlogCreateModel) {
-    const { name, description, websiteUrl } = createModel;
-
-    const createdBlogId = await this.blogsService.create(
-      name, description, websiteUrl
-    );
-
-    const createdBlog: BlogOutputModel | null =
-      await this.blogsQueryRepository.getById(createdBlogId);
-
-    return createdBlog;
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Post(':id/posts')
-  async createPost(
-    @Param('id') id: string,
-    @Body() createModel: PostInBlogCreateModel
-  ) {
-    const { content, shortDescription, title } = createModel;
-
-    const blog = await this.getById(id);
-
-    const createdPostId = await this.postsService.create(
-      id, blog.name, content, shortDescription, title,
-    );
-
-    const createdPost: PostOutputModel | null =
-      await this.postsQueryRepository.getById(createdPostId);
-
-    return createdPost;
-  }
-
   @UseGuards(AuthGetGuard)
-  @Get(':id/posts')
+  @Get(':blogId/posts')
   async getPosts(
-    @Param('id') id: string,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Query() query: any,
     @Req() req?
   ) {
-    const blog = await this.blogsQueryRepository.getById(id);
+    const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
@@ -125,37 +79,8 @@ export class BlogsController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, id, req?.user?.userId);
+      await this.postsQueryRepository.getAll(pagination, blogId, req?.user?.userId);
 
     return posts;
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Put(':id')
-  @HttpCode(204)
-  async update(
-    // @Request() req,
-    @Param('id') id: string,
-    @Body() updateModel: BlogCreateModel
-  ) {
-    const updatedResult = await this.blogsService.update(id, updateModel);
-
-    if (!updatedResult) {
-      throw new NotFoundException(`Blog with id ${id} not found`);
-    }
-  }
-
-  @UseGuards(BasicAuthGuard)
-  @Delete(':id')
-  @HttpCode(204)
-  async delete(
-    // @Request() req,
-    @Param('id') id: string
-  ) {
-    const deletingResult: boolean = await this.blogsService.delete(id);
-
-    if (!deletingResult) {
-      throw new NotFoundException(`Blog with id ${id} not found`);
-    }
   }
 }

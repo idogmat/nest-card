@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/features/users/domain/user.entity';
 import { randomUUID } from 'crypto';
 import { dateSetter } from 'src/common/utils/dataSetter';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
-import { DevicesService } from 'src/features/devices/application/devices.service';
+import { UserAuthInput } from '../api/model/input/auth.input.model';
 
 
 @Injectable()
@@ -15,7 +14,6 @@ export class AuthService {
     private readonly usersRepository: UsersRepository,
     private jwtService: JwtService,
     private configService: ConfigService,
-    private devicesService: DevicesService,
   ) { }
 
   async generatePasswordHash(password: string): Promise<{ passwordHash, passwordSalt; }> {
@@ -34,7 +32,7 @@ export class AuthService {
 
   async registration(login: string, password: string, email: string) {
     const { passwordHash, passwordSalt } = await this.generatePasswordHash(password);
-    const id = await this.usersRepository.create({ login, email, passwordHash, passwordSalt } as User);
+    const id = await this.usersRepository.create({ login, email, passwordHash, passwordSalt } as UserAuthInput);
     return id;
   }
 
@@ -95,7 +93,7 @@ export class AuthService {
   async setConfirm(code: string) {
     const user = await this.usersRepository.findByConfirmCode(code);
     if (!user) return false;
-    if (user.emailConfirmation.isConfirmed || user.emailConfirmation.expirationDate < new Date()) return false;
+    if (user.isConfirmed || user.expirationDate < new Date()) return false;
     await this.setConfirmRegistrationCode(user.id, true);
     return true;
   }
@@ -111,10 +109,5 @@ export class AuthService {
   }
   async getById(id: string) {
     return await this.usersRepository.getById(id);
-  }
-
-  async _clearDb() {
-    await this.usersRepository._clear();
-    await this.devicesService._clear();
   }
 }

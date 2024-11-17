@@ -30,24 +30,20 @@ export class Pagination {
     this.pageSize = Number(query.pageSize ?? 10);
   }
 
-  public getSortDirectionInNumericFormat(): -1 | 1 {
-    return this.sortDirection === "desc" ? -1 : 1;
-  }
-
   public getSkipItemsCount() {
     return (this.pageNumber - 1) * this.pageSize;
   }
 
   private getSortDirection(query: ParsedQs): SortDirectionType {
-    let sortDirection: SortDirectionType = "desc";
+    let sortDirection: SortDirectionType = "DESC";
 
     switch (query.sortDirection) {
       case "desc": {
-        sortDirection = "desc";
+        sortDirection = "DESC";
         break;
       }
       case "asc": {
-        sortDirection = "asc";
+        sortDirection = "ASC";
         break;
       }
     }
@@ -105,9 +101,87 @@ export class PaginationWithSearchBlogNameTerm extends Pagination {
     this.searchNameTerm = query.searchNameTerm?.toString() || null;
   }
 }
+
+export class PaginationPostSearchBlogNameTerm extends Pagination {
+  public readonly searchTitleTerm: string | null;
+  public readonly searchBlogNameTerm: string | null;
+
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.searchTitleTerm = query.searchNameTerm?.toString() || null;
+    this.searchBlogNameTerm = query.searchBlogNameTerm?.toString() || null;
+  }
+}
+
+export class PaginationQuestionBodySearchTerm extends Pagination {
+  public readonly bodySearchTerm: string | null;
+  public readonly publishedStatus: boolean | null;
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.bodySearchTerm = query.bodySearchTerm?.toString() || null;
+    this.publishedStatus = this.getPublishedType(query);
+  }
+
+  private getPublishedType(query: ParsedQs): boolean | null {
+    let result = null;
+    switch (query.publishedStatus) {
+      case "published": {
+        result = true;
+        break;
+      }
+      case "notPublished": {
+        result = false;
+        break;
+      }
+      default:
+        break;
+    }
+    return result;
+  }
+}
+
+export class PaginationAllStatistic extends Pagination {
+  public readonly sort: (string | ParsedQs)[];
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.sort = this.getSort(query);
+  }
+  private getSort(query: ParsedQs): (string | ParsedQs)[] {
+    const sortFields = [
+      "sumScore",
+      "avgScores",
+      "gamesCount",
+      "winsCount",
+      "drawsCount",
+      "lossesCount"
+    ];
+
+    const destination = ['asc', 'desc'];
+
+    if (Array.isArray(query?.sort)) {
+      const sort = query.sort.map(e => e?.split(' '));
+      const result = sort.reduce((acc: string[][], e: string[]) => {
+        if (sortFields.includes(e[0]) &&
+          destination.includes(e[1])) {
+          acc.push(e);
+        }
+        return acc;
+      }, [] as (string | ParsedQs)[]);
+      return result;
+    } else {
+      const result = (query.sort as string)?.split(' ') || ['', ''];
+      if (sortFields.includes(result[0]) && destination.includes(result[1])) {
+        return [result] as any;
+      }
+    }
+  }
+}
 // TYPES
 
-export type SortDirectionType = "desc" | "asc";
+export type SortDirectionType = "DESC" | "ASC";
 
 export type PaginationType = {
   searchNameTerm: string | null,

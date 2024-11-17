@@ -80,7 +80,6 @@ export class AuthController {
 
     const user = await this.authService.findByRecoveryCode(recoveryCode);
     if (!user) throw new BadRequestException();
-
     await this.authService.setNewPssword(user.id, newPassword, user.passwordSalt);
   }
 
@@ -97,7 +96,6 @@ export class AuthController {
   @Post('/registration')
   @HttpCode(204)
   async registration(@Body() createModel: CreateUserModel) {
-    // console.log('render');
     const { login, password, email } = createModel;
     const user = await this.authService.findByLoginAndEmail(login, email);
     if (user) throw new BadRequestException();
@@ -122,7 +120,7 @@ export class AuthController {
     @Req() req,
     @Res() res
   ) {
-    const lastActiveDate = new Date().getTime();
+    const lastActiveDate = new Date();
     await this.devicesService.updateDate(req.user.deviceId, lastActiveDate);
 
     const accessToken = await this.authService.createToken({

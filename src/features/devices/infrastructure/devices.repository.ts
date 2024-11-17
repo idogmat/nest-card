@@ -1,54 +1,70 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Device, DeviceDocument, DeviceModelType } from '../domain/device.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { DevicePg } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
-  constructor(@InjectModel(Device.name) private DeviceModel: DeviceModelType) { }
+  constructor(
+    @InjectRepository(DevicePg)
+    private readonly deviceRepo: Repository<DevicePg>,
+  ) { }
 
-  async save(model: DeviceDocument): Promise<string> {
-    await model.save();
-    return model.id;
+  async create(ip: string,
+    title: string,
+    userId: string,
+    lastActiveDate?: Date): Promise<DevicePg | null> {
+    const device = this.deviceRepo.create({
+      ip,
+      title,
+      userId,
+      lastActiveDate: lastActiveDate || new Date(),
+    });
+
+    const savedDevice = await this.deviceRepo.save(device);
+    return savedDevice;
   }
 
-  async getById(id: string): Promise<DeviceDocument | null> {
-    const device = await this.DeviceModel.findById(id);
+  async getById(id: string): Promise<DevicePg | null> {
+    const device = await this.deviceRepo.findOneBy({ id: id });
+    if (!device) {
+      return null;
+    }
     return device;
   }
 
-  async findByUserId(userId: string): Promise<DeviceDocument[] | null> {
-    const devices = await this.DeviceModel.find({ userId });
-
-    return devices;
-  }
-
-  async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.DeviceModel.deleteOne({ _id: id });
-
-    return deletingResult.deletedCount === 1;
+  async delete(device: DevicePg): Promise<boolean> {
+    const result = await this.deviceRepo.remove(device);
+    return !!result;
   };
 
-  async deleteAll(id: string, userId: string): Promise<void> {
-    await this.DeviceModel.deleteMany({ userId, _id: { $ne: id } });
+  async deleteAll(id: string, userId: string): Promise<boolean> {
+    const result = await this.deviceRepo.createQueryBuilder()
+      .delete()
+      .from(DevicePg)
+      .where("id != :id", { id })
+      .andWhere("userId = :userId", { userId })
+      .execute();
+    return !!result.affected;
   };
 
   async updateDate(id: string, lastActiveDate: string) {
-    const model = await this.DeviceModel.findByIdAndUpdate(id, { lastActiveDate }, { returnDocument: 'after' });
-    return model;
+    await this.deviceRepo.createQueryBuilder()
+      .update(DevicePg)
+      .set({ lastActiveDate })
+      .where("id = :id", { id })
+      .execute();
   }
 
-  async updateFields(id: string, newModel: Device) {
-    const model = await this.DeviceModel.findByIdAndUpdate(id,
-      {
-        ip: newModel.ip,
+  async updateFields(id: string, newModel: DevicePg) {
+    await this.deviceRepo.createQueryBuilder()
+      .update(DevicePg)
+      .set({
+        id: newModel.ip,
         title: newModel.title,
         lastActiveDate: newModel.lastActiveDate
-      },
-      { returnDocument: 'after' });
-    return model;
-  }
-
-  async _clear() {
-    await this.DeviceModel.deleteMany({});
+      })
+      .where("id = :id", { id })
+      .execute();
   }
 }

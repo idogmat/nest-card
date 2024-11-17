@@ -1,66 +1,43 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { randomUUID } from 'crypto';
-import { HydratedDocument, Model } from 'mongoose';
 
+import { DevicePg } from 'src/features/devices/domain/device.entity';
+import { PlayerProgress } from 'src/features/quiz/domain/player.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-@Schema({ _id: false })
-export class EmailConfirmation {
-  @Prop({ type: String })
-  confirmationCode: string;
+@Entity()
+export class UserPg {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-  @Prop({ type: Date })
-  expirationDate: Date;
-
-  @Prop({ type: Boolean })
-  isConfirmed: boolean;
-}
-
-
-@Schema()
-export class User {
-  @Prop({ type: String, required: true })
+  @Column({ type: 'varchar', collation: 'C' })
   login: string;
 
-  @Prop({ type: String, required: true })
-  passwordHash: string;
-
-  @Prop({ type: String, required: true })
-  passwordSalt: string;
-
-  @Prop({ type: String, required: true })
+  @Column({ type: 'varchar', collation: 'C' })
   email: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
-  createdAt: number;
+  @Column()
+  passwordHash: string;
 
-  @Prop({ type: EmailConfirmation, required: false })
-  emailConfirmation: EmailConfirmation;
+  @Column()
+  passwordSalt: string;
 
-  @Prop({ type: String, reqired: false })
-  recoveryCode: string;
+  @Column()
+  createdAt: Date;
 
-  static createUser(login: string, email: string | null) {
-    const user = new this();
+  @Column()
+  confirmationCode: string;
 
-    user.login = login;
-    user.email = email ?? `${randomUUID()}_${login}@it-incubator.io`;
+  @Column({ nullable: true })
+  expirationDate: Date;
 
-    return user;
-  }
+  @Column()
+  isConfirmed: boolean;
 
-  getLogin() {
-    return this.login;
-  }
+  @Column({ nullable: true })
+  recoveryCode: string | null;
+
+  @OneToMany(() => DevicePg, (device) => device)
+  divices: DevicePg[];
+
+  @OneToMany(() => PlayerProgress, (player) => player.playerAccount)
+  player: PlayerProgress[];
 }
-
-export const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.loadClass(User);
-
-// Types
-export type UserDocument = HydratedDocument<User>;
-
-// type UserModelStaticType = {
-//   createUser: (name: string, email: string | null) => UserDocument;
-// };
-
-export type UserModelType = Model<UserDocument>; //& UserModelStaticType;

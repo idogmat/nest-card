@@ -1,25 +1,23 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { HydratedDocument, Model } from "mongoose";
+import { UserPg } from "src/features/users/domain/user.entity";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
-@Schema({ _id: true })
-export class Device {
-  @Prop({ type: String, required: true })
+@Entity()
+export class DevicePg {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ type: 'uuid' })
   userId: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   ip: string;
 
-  @Prop({ type: String, required: true })
+  @Column()
   title: string;
 
-  @Prop({ type: Number, default: new Date().getTime() })
-  lastActiveDate: number;
+  @Column()
+  lastActiveDate: Date;
+
+  @ManyToOne(() => UserPg, (user) => user.divices)
+  user: UserPg;
 }
-
-export const DeviceSchema = SchemaFactory.createForClass(Device);
-DeviceSchema.loadClass(Device);
-
-// Types
-export type DeviceDocument = HydratedDocument<Device>;
-
-export type DeviceModelType = Model<DeviceDocument>;

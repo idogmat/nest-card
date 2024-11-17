@@ -1,67 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Blog, BlogModelType } from '../domain/blog.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { BlogOutputModel, BlogOutputModelMapper } from '../api/model/output/blog.output.model';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
-import { FilterQuery, isValidObjectId } from 'mongoose';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BlogPg } from '../domain/blog.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
-  constructor(@InjectModel(Blog.name) private blogModel: BlogModelType) { }
+  constructor(
+    @InjectRepository(BlogPg)
+    private readonly blogRepo: Repository<BlogPg>,
+  ) { }
 
   async getById(id: string): Promise<BlogOutputModel | null> {
-
-    if (!isValidObjectId(id)) return null;
-    const blog = await this.blogModel.findById(id);
-    if (blog === null) {
-      return null;
+    const user = await this.blogRepo.findOneBy({ id: id });
+    if (!user) {
+      throw new NotFoundException();
     }
-    console.log(blog);
-
-    return BlogOutputModelMapper(blog);
+    return BlogOutputModelMapper(user);
   }
 
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
   ): Promise<PaginationOutput<BlogOutputModel>> {
-    const filters: FilterQuery<Blog>[] = [];
-
+    const conditions = [];
+    const params = [];
     if (pagination.searchNameTerm) {
-      filters.push({
-        name: { $regex: pagination.searchNameTerm, $options: 'i' },
-      });
+      conditions.push("b.name ilike :name");
+      params.push({ name: `%${pagination.searchNameTerm}%` });
     }
 
-    const filter: FilterQuery<Blog> = {};
+    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b");
 
-    if (filters.length > 0) {
-      filter.$or = filters;
+    if (conditions.length > 0) {
+      conditions.forEach((condition, i) => blogQueryBuilder.where(condition, params[i]));
     }
+    // const sql = blogsQueryBuilder.getSql();
 
-    return await this.__getResult(filter, pagination);
-  }
+    const totalCount = await blogQueryBuilder.getCount();
 
-  private async __getResult(
-    filter: FilterQuery<Blog>,
-    pagination: PaginationWithSearchBlogNameTerm,
-  ): Promise<PaginationOutput<BlogOutputModel>> {
-    const blogs = await this.blogModel
-      .find(filter)
-      .sort({
-        [pagination.sortBy]: pagination.getSortDirectionInNumericFormat(),
-      })
-      .skip(pagination.getSkipItemsCount())
-      .limit(pagination.pageSize);
+    const blogs = await blogQueryBuilder
+      .orderBy(`b.${pagination.sortBy}`, pagination.sortDirection)
+      .take(pagination.pageSize)
+      .skip((pagination.pageNumber - 1) * pagination.pageSize)
+      .getMany();
 
-    const totalCount = await this.blogModel.countDocuments(filter);
-
-    const mappedPosts = blogs.map(BlogOutputModelMapper);
+    const mappedBlogs = blogs.map(BlogOutputModelMapper);
 
     return new PaginationOutput<BlogOutputModel>(
-      mappedPosts,
+      mappedBlogs,
       pagination.pageNumber,
       pagination.pageSize,
-      totalCount,
+      Number(totalCount),
     );
   }
 }

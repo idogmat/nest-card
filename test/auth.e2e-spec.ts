@@ -2,25 +2,23 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
-import { EmailService } from 'src/features/auth/application/email.service';
-import { EmailTestManager } from './utils/routes/auth-test-manager';
+import { initForTest } from './utils/ready-clear';
 
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
 describe('auth', () => {
-  let app: INestApplication;
+  let app: INestApplication | null;
 
   beforeAll(async () => {
 
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
     })
-      .overrideProvider(EmailService)
-      .useClass(EmailTestManager)
       .compile();
 
-    app = await moduleFixture.createNestApplication();
-    await app.init();
+    const result = await initForTest(moduleFixture, AppModule);
+    app = result.app;
+    await result.cleadDB();
   });
 
   afterAll(async () => {
@@ -29,14 +27,15 @@ describe('auth', () => {
 
   it('should create user', async () => {
     const result = await request(app.getHttpServer())
-      .post('/auth/registration')
+      .post('/api/auth/registration')
       .send(regUser);
+    console.log(result.body);
     expect(result.status).toBe(204);
 
     const { login: loginOrEmail, password } = regUser;
 
     const loginRequest = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ loginOrEmail, password });
     expect(loginRequest.status).toBe(200);
     expect(loginRequest.body).toHaveProperty('accessToken');
@@ -47,7 +46,7 @@ describe('auth', () => {
     const { login: loginOrEmail, password } = regUser;
 
     const loginRequest = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ loginOrEmail, password });
 
     expect(loginRequest.status).toBe(200);
@@ -56,7 +55,7 @@ describe('auth', () => {
     const accessToken: string = loginRequest.body?.accessToken.toString();
 
     const authMeRequest = await request(app.getHttpServer())
-      .get('/auth/me')
+      .get('/api/auth/me')
       .set({ Authorization: "Bearer " + accessToken })
       .send({ loginOrEmail, password });
 

@@ -1,90 +1,119 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { EmailConfirmation, User, UserDocument, UserModelType } from '../domain/user.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserAuthInput } from 'src/features/auth/api/model/input/auth.input.model';
+import { UserPg } from '../domain/user.entity';
+import { EmailConfirmation } from '../api/models/input/create-user.input.model';
 
 @Injectable()
 export class UsersRepository {
-  constructor(@InjectModel(User.name) private UserModel: UserModelType) { }
+  constructor(
+    @InjectRepository(UserPg)
+    private readonly usersRepo: Repository<UserPg>,
+  ) { }
 
-  async create(newUser: User): Promise<string> {
-    const model = await this.UserModel.create(newUser);
-    await model.save();
-    return model.id;
+  async create(newUser: UserAuthInput): Promise<string> {
+    const user = this.usersRepo.create({
+      login: newUser.login,
+      email: newUser.email,
+      passwordHash: newUser.passwordHash,
+      passwordSalt: newUser.passwordSalt,
+      createdAt: new Date(),
+      confirmationCode: '',
+      expirationDate: null,
+      isConfirmed: false,
+    });
+
+    const savedUser = await this.usersRepo.save(user);
+    return savedUser.id;
   }
 
-  async getById(id: string): Promise<UserDocument | null> {
-    const user = await this.UserModel.findById(id);
-
-    if (user === null) {
-      return null;
-    }
-
+  async getById(id: string): Promise<UserPg | null> {
+    const user = await this.usersRepo.findOneBy({ id: id });
     return user;
   }
 
   async delete(id: string): Promise<boolean> {
-    const deletingResult = await this.UserModel.deleteOne({ _id: id });
-
-    return deletingResult.deletedCount === 1;
+    const user = await this.usersRepo.delete({ id: id });
+    return user.affected === 1;
   }
 
   async findByLoginOrEmail(loginOrEmail: string) {
-    const model = await this.UserModel.findOne({
-      $or: [{ email: loginOrEmail }, { login: loginOrEmail }],
-    });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.login = :loginOrEmail", { loginOrEmail })
+      .orWhere("u.email = :loginOrEmail", { loginOrEmail })
+      .getOne();
+    return user;
   }
 
   async findByLoginAndEmail(login: string, email: string) {
-    const model = await this.UserModel.findOne({
-      $or: [{ email: email }, { login: login }],
-    });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.login = :login", { login })
+      .andWhere("u.email = :email", { email })
+      .getOne();
+
+    return user;
   }
 
   async findByLogin(login: string) {
-    const model = await this.UserModel.findOne({ login: login });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.login = :login", { login })
+      .getOne();
+    return user;
   }
 
   async findByEmail(email: string) {
-    const model = await this.UserModel.findOne({ email: email });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.email = :email", { email })
+      .getOne();
+    return user;
   }
 
   async setRecoveryCode(id: string, recoveryCode: string) {
-    const model = await this.UserModel.findById(id);
-    model.recoveryCode = recoveryCode;
-    model.save();
-    return model;
+    const updated = await this.usersRepo.createQueryBuilder()
+      .update(UserPg)
+      .set({ recoveryCode })
+      .where("id = :id", { id })
+      .returning("*")
+      .execute();
+    return updated.raw;
   }
 
   async findByRecoveryCode(recoveryCode: string) {
-    const model = await this.UserModel.findOne({ recoveryCode: recoveryCode });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.recoveryCode = :recoveryCode", { recoveryCode })
+      .getOne();
+    return user;
   }
 
   async findByConfirmCode(confirmationCode: string) {
-    const model = await this.UserModel.findOne({ 'emailConfirmation.confirmationCode': confirmationCode });
-    return model;
+    const user = await this.usersRepo.createQueryBuilder("u")
+      .where("u.confirmationCode = :confirmationCode", { confirmationCode })
+      .getOne();
+    return user;
   }
 
   async setNewPassword(id: string, passwordHash: string) {
-    const user = await this.UserModel.findById(id);
-    user.passwordHash = passwordHash;
-    user.recoveryCode = null;
-    user.save();
+    const updated = await this.usersRepo.createQueryBuilder()
+      .update(UserPg)
+      .set({ passwordHash })
+      .where("id = :id", { id })
+      .returning("*")
+      .execute();
+    return updated.raw;
   }
 
   async setConfirmRegistrationCode(id: string, emailConfirmation: EmailConfirmation) {
-    const model = await this.UserModel.findById(id);
-    model.emailConfirmation = emailConfirmation;
-    model.save();
-    return model;
+    const updated = await this.usersRepo.createQueryBuilder()
+      .update(UserPg)
+      .set({
+        confirmationCode: emailConfirmation.confirmationCode,
+        expirationDate: emailConfirmation.expirationDate,
+        isConfirmed: emailConfirmation.isConfirmed
+      })
+      .where("id = :id", { id })
+      .returning("id")
+      .execute();
+    return updated.raw;
   }
-
-  async _clear() {
-    await this.UserModel.deleteMany({});
-  }
-
 }

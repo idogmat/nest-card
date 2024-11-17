@@ -9,7 +9,6 @@ export class PostsService {
 
   async create(
     blogId: string,
-    blogName: string,
     content: string,
     shortDescription: string,
     title: string
@@ -17,7 +16,6 @@ export class PostsService {
 
     const newPost: any = {
       blogId,
-      blogName,
       content,
       shortDescription,
       title
@@ -41,17 +39,17 @@ export class PostsService {
     id,
     user,
     likeStatus,
-  ): Promise<boolean> {
+  ): Promise<string> {
 
     const result = await this.postsRepository.setLike(id, user, likeStatus);
     return result;
   }
 
   async getById(id: string) {
-    return this.postsRepository.getById(id);
+    return await this.postsRepository.getById(id);
   }
 
   async delete(id: string): Promise<boolean> {
-    return this.postsRepository.delete(id);
+    return await this.postsRepository.delete(id);
   }
 }
