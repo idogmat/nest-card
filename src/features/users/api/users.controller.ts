@@ -21,8 +21,8 @@ import {
   PaginationWithSearchLoginAndEmailTerm,
 } from '../../../base/models/pagination.base.model';
 import { SortingPropertiesType } from '../../../base/types/sorting-properties.type';
-import { BasicAuthGuard } from 'src/utils/guards/basic-auth.guard';
-import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
+import { BasicAuthGuard } from '../../../utils/guards/basic-auth.guard';
+import { EnhancedParseUUIDPipe } from '../../../utils/pipes/uuid-check';
 
 export const USERS_SORTING_PROPERTIES: SortingPropertiesType<UserOutputModel> =
   ['login', 'email', 'createdAt'];

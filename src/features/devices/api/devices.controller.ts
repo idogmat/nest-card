@@ -13,7 +13,7 @@ import {
 import { DevicesQueryRepository } from '../infrastructure/devices.query-repository';
 import { DeviceOutputModel } from './model/output/device.output.model';
 import { DevicesService } from '../application/devices.service';
-import { RefreshGuard } from 'src/utils/guards/refresh.guard';
+import { RefreshGuard } from '../../../utils/guards/refresh.guard';
 
 @ApiTags('Devices')
 @Controller('security/devices')

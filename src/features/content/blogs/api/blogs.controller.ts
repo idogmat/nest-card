@@ -15,10 +15,10 @@ import {
 import { SortingPropertiesType } from '../../../../base/types/sorting-properties.type';
 import { BlogOutputModel } from './model/output/blog.output.model';
 import { BlogsQueryRepository } from '../infrastructure/blogs.query-repository';
-import { AuthGetGuard } from 'src/utils/guards/auth-get.guard';
+import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { PostOutputModel } from '../../posts/api/model/output/post.output.model';
 import { PostsQueryRepository } from '../../posts/infrastructure/posts.query-repository';
-import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
+import { EnhancedParseUUIDPipe } from '../../../../utils/pipes/uuid-check';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];

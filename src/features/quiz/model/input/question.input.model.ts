@@ -1,5 +1,5 @@
 import { IsArray, IsString, Length } from "class-validator";
-import { Trim } from "src/utils/decorators/transform/trim";
+import { Trim } from "../../../../utils/decorators/transform/trim";
 
 export class QuestionInputModel {
   @IsString()
