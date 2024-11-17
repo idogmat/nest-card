@@ -1,4 +1,4 @@
-import { Module, Provider } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { AuthController } from "./api/auth.controller";
 import { AuthService } from "./application/auth.service";
 import { EmailService } from "./application/email.service";

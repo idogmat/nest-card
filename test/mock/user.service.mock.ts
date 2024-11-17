@@ -1,5 +1,5 @@
 import { UsersService } from '../../src/features/users/application/users.service';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
+import { UsersRepository } from '../../src/features/users/infrastructure/users.repository';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)

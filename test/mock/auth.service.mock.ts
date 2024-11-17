@@ -1,7 +1,7 @@
-import { AuthService } from 'src/features/auth/application/auth.service';
-import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
+import { AuthService } from '../../src/features/auth/application/auth.service';
+import { UsersRepository } from '../../src/features/users/infrastructure/users.repository';
 import { JwtService } from '@nestjs/jwt';
-import { AppSettings } from 'src/settings/app-settings';
+import { AppSettings } from '../../src/settings/app-settings';
 
 //  .overrideProvider(UsersService)
 //  .useValue(UserServiceMockObject)

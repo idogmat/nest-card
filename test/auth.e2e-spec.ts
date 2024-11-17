@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { AppModule } from 'src/app.module';
+import { AppModule } from '../src/app.module';
 import { initForTest } from './utils/ready-clear';
 
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
