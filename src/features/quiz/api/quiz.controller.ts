@@ -11,7 +11,7 @@ import { CreateGamePairCommand } from "../application/game-case/game.create-pair
 import { GetGamePairCommand } from "../application/game-case/game.find-pair.use-case";
 import { QuizGameQueryRepository } from "../infrastracture/quiz.game.query-repository";
 import { Game } from "../domain/game.entity";
-import { Pagination, PaginationOutput } from "src/base/models/pagination.base.model";
+import { Pagination, PaginationAllStatistic, PaginationOutput } from "src/base/models/pagination.base.model";
 import { GameOutputModel } from "../model/output/game.output.model";
 import { MyStatistic } from "../model/output/my-statistic.output.model";
 
@@ -73,19 +73,17 @@ export class QuizController {
     return statistic;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Get('/pair-game-quiz/users/top')
   async allMyStatistic(
-    @Req() req,
     @Query() query: any,
   ) {
-    const pagination: Pagination =
-      new Pagination(
+    const pagination: PaginationAllStatistic =
+      new PaginationAllStatistic(
         query,
         GAME_SORTING_PROPERTIES,
       );
     const statistic: any =
-      await this.quizGameQueryRepository.getAllStatistic(pagination, req.user);
+      await this.quizGameQueryRepository.getAllStatistic(pagination);
 
     return statistic;
   }

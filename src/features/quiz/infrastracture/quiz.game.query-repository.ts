@@ -2,15 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
-import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
-import { Game, GameStatus } from '../domain/game.entity';
+import { Pagination, PaginationAllStatistic, PaginationOutput } from 'src/base/models/pagination.base.model';
+import { Game } from '../domain/game.entity';
 import { PlayerProgress } from '../domain/player.entity';
 import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
 import { PlayerAnswer } from '../domain/playerAnswer.entity';
 import { GameOutputModel, GameOutputModelMapper } from '../model/output/game.output.model';
 import { AuthUser } from '../quiz.module';
 import { MyStatistic, MyStatisticMapper } from '../model/output/my-statistic.output.model';
-import { groupBy } from 'rxjs';
 
 @Injectable()
 export class QuizGameQueryRepository {
@@ -175,11 +174,10 @@ export class QuizGameQueryRepository {
   }
 
   async getAllStatistic(
-    pagination: Pagination,
-    user: AuthUser
+    pagination: PaginationAllStatistic,
   ): Promise<PaginationOutput<MyStatistic>> {
-    const conditions = [];
-    const params = [];
+    const sort = pagination.sort;
+    console.log(sort);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     const queryGetScores = await queryRunner.manager
@@ -230,19 +228,34 @@ export class QuizGameQueryRepository {
       .groupBy("pp.playerAccountId");
 
 
-    const scores = await queryGetScores.getRawMany();
-
-    console.log(scores, 'scores');
-
-    scores.map(e => console.log(e.result));
-    // scores.map(e => console.log(e));
+    if (sort?.length) {
+      sort.forEach((sortParams: string) => {
+        // const params = sortParams.split(' ');
+        console.log(sortParams, 'params');
+        queryGetScores.addOrderBy(
+          `"${sortParams[0]}"`,
+          sortParams[1].toUpperCase() as 'ASC' | 'DESC',
+        );
+      });
+    } else {
+      queryGetScores.orderBy(`"avgScores"`, 'DESC')
+        .addOrderBy(`"sumScore"`, 'DESC');
+    }
+    const countQuery = await queryRunner.manager
+      .createQueryBuilder(PlayerProgress, 'pp')
+      .select(`COUNT(DISTINCT pp."playerAccountId")`, 'totalCount')
+      .getRawOne();
+    const scores = await queryGetScores
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
+      .getRawMany();
 
     const mappedGames = scores.map(e => MyStatisticMapper(e));
     return new PaginationOutput<MyStatistic>(
       mappedGames,
       pagination.pageNumber,
       pagination.pageSize,
-      Number(scores.length),
+      Number(countQuery.totalCount),
     );
   }
 }

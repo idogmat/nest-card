@@ -16,6 +16,7 @@ import { CqrsModule } from "@nestjs/cqrs";
 import { GetGamePairUseCase } from "./application/game-case/game.find-pair.use-case";
 import { CreateGamePairUseCase } from "./application/game-case/game.create-pair.use-case";
 import { QuizGameQueryRepository } from "./infrastracture/quiz.game.query-repository";
+import { EndGameService } from "./infrastracture/schedulers/endGame.scheduler";
 
 export interface AuthUser {
   userId: string;
@@ -46,7 +47,8 @@ export interface AuthUser {
     QuizQueryRepository,
     QuizGameQueryRepository,
     GetGamePairUseCase,
-    CreateGamePairUseCase
+    CreateGamePairUseCase,
+    EndGameService
   ],
   exports: []
 })

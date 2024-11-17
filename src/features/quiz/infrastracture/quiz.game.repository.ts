@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Equal, LessThan, Not, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Question } from '../domain/question.entity';
 import { Game, GameStatus } from '../domain/game.entity';
 import { PlayerProgress } from '../domain/player.entity';
@@ -217,6 +217,7 @@ export class QuizGameRepository {
 
   async setAnswer(user: AuthUser, answer: string): Promise<any> {
     let answerId: null | string = null;
+    let endGameTimerId = null;
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction('REPEATABLE READ');
@@ -270,6 +271,9 @@ export class QuizGameRepository {
         .execute();
 
       if (game.questions.length === answers.length + 1
+        && game.questions.length !== opponent.answers.length) endGameTimerId = game.id;
+
+      if (game.questions.length === answers.length + 1
         && game.questions.length === opponent.answers.length) {
 
         const additionalMarkOwner = opponent.score
@@ -320,6 +324,83 @@ export class QuizGameRepository {
       await queryRunner.release();
     }
     const result = await this.playerAnswerRepo.findOneBy({ id: answerId });
-    return AnswerOutputModelMapper(result);
+    return { result: AnswerOutputModelMapper(result), endGameTimerId };
+  }
+
+  async finishGame(endGameId: string): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction('REPEATABLE READ');
+    try {
+      const queryGetGames = queryRunner.manager
+        .createQueryBuilder(Game, 'game')
+        .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
+        .leftJoinAndSelect('game.questions', 'questions')
+        .leftJoinAndSelect('questions.question', 'gameQuestion')
+        .leftJoinAndSelect('playerProgress.answers', 'answers')
+        .where(qb => {
+          const subQuery = qb.subQuery()
+            .select('playerProgress.gameId')
+            .from('PlayerProgress', 'playerProgress')
+            .where('"playerProgress"."gameId" = :endGameId', { endGameId })
+            .groupBy('"playerProgress"."gameId"')
+            .getQuery();
+          return 'game.id IN ' + subQuery;
+        }).andWhere(`game.status = :active`,
+          { active: GameStatus.Active })
+        .orderBy(`game."createdAt"`, `ASC`)
+        .addOrderBy(`answers."createdAt"`, `ASC`);
+
+      const game = await queryGetGames.getOne();
+      console.log(game.playersProgresses);
+      const getUser = game?.playersProgresses?.find(p => (p.answers.length !== game.questions.length));
+      // console.log(playerCheck);
+      console.log(getUser, 'getUser');
+      const questions = game.questions.sort((a, b) => a.order - b.order);
+      console.log(questions);
+
+      const answersArray = questions.map(q => this.playerAnswerRepo.create({
+        answer: null,
+        answerStatus: 'Incorrect',
+        createdAt: new Date(),
+        processId: getUser.id,
+        order: q.order,
+        questionId: q.id
+      }));
+      await queryRunner.manager.insert(PlayerAnswer, answersArray);
+
+      const opponent = game.playersProgresses.find(p => (p.playerAccountId !== getUser.playerAccountId));
+
+      const additionalMarkOwner = opponent.score
+        ? opponent
+        : null;
+
+      if (additionalMarkOwner) {
+
+        await queryRunner.manager.createQueryBuilder()
+          .update(PlayerProgress)
+          .set({
+            score: () => `score + 1`
+          })
+          .where("id = :processCheck", { processCheck: additionalMarkOwner.id })
+          .execute();
+
+      }
+
+      await this.gameRepo.createQueryBuilder()
+        .update(Game)
+        .set({
+          finishGameDate: new Date(),
+          status: GameStatus.Finished
+        })
+        .where("id = :gameId", { gameId: getUser.gameId })
+        .execute();
+
+      await queryRunner.commitTransaction();
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

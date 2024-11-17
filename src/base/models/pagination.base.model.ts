@@ -143,32 +143,41 @@ export class PaginationQuestionBodySearchTerm extends Pagination {
 }
 
 export class PaginationAllStatistic extends Pagination {
-  public readonly sort: string | null;
-  public readonly destination: string | null;
+  public readonly sort: (string | ParsedQs)[];
   constructor(query: ParsedQs, sortProperties: string[]) {
     super(query, sortProperties);
 
-    this.sort = query.sort?.toString() || null;
-    this.destination = query.destination?.toString() || null;
+    this.sort = this.getSort(query);
   }
-  // private getSort(query: ParsedQs): boolean | null {
-  //   let sort = 'avgScores';
-  //   let destination = 'desc'
-  //   console.log(query.publishedStatus);
-  //   switch (query.publishedStatus) {
-  //     case "published": {
-  //       result = true;
-  //       break;
-  //     }
-  //     case "notPublished": {
-  //       result = false;
-  //       break;
-  //     }
-  //     default:
-  //       break;
-  //   }
-  //   return result;
-  // }
+  private getSort(query: ParsedQs): (string | ParsedQs)[] {
+    const sortFields = [
+      "sumScore",
+      "avgScores",
+      "gamesCount",
+      "winsCount",
+      "drawsCount",
+      "lossesCount"
+    ];
+
+    const destination = ['asc', 'desc'];
+
+    if (Array.isArray(query?.sort)) {
+      const sort = query.sort.map(e => e?.split(' '));
+      const result = sort.reduce((acc: string[][], e: string[]) => {
+        if (sortFields.includes(e[0]) &&
+          destination.includes(e[1])) {
+          acc.push(e);
+        }
+        return acc;
+      }, [] as (string | ParsedQs)[]);
+      return result;
+    } else {
+      const result = (query.sort as string)?.split(' ') || ['', ''];
+      if (sortFields.includes(result[0]) && destination.includes(result[1])) {
+        return [result] as any;
+      }
+    }
+  }
 }
 // TYPES
 
