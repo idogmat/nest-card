@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PostPg } from '../../posts/domain/post.entity';
-import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
+import { CommentLikePg } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Entity()
 export class CommentPg {

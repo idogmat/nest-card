@@ -1,4 +1,4 @@
-import { UserPg } from "src/features/users/domain/user.entity";
+import { UserPg } from "./../../../features/users/domain/user.entity";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Game } from "./game.entity";
 import { PlayerAnswer } from "./playerAnswer.entity";

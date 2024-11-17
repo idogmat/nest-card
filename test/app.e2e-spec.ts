@@ -1,8 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
-import { UserCreateModel } from '../src/features/users/api/models/input/create-user.input.model';
-import { UsersService } from '../src/features/users/application/users.service';
+import { UserCreateModel } from './../src/features/users/api/models/input/create-user.input.model';
+import { UsersService } from './../src/features/users/application/users.service';
 import { applyAppSettings } from '../src/settings/apply-app-setting';
 import { skipSettings } from './utils/skip-settings';
 import { UsersTestManager } from './utils/routes/users-test-manager';

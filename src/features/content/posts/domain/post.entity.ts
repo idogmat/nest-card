@@ -1,4 +1,4 @@
-import { PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
+import { PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { BlogPg } from '../../blogs/domain/blog.entity';
 import { CommentPg } from '../../comments/domain/comment.entity';

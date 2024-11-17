@@ -4,7 +4,7 @@ import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.mo
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommentPg } from '../domain/comment.entity';
-import { CommentLikePg } from 'src/features/likes/domain/comment-like-info.entity';
+import { CommentLikePg } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsQueryRepository {

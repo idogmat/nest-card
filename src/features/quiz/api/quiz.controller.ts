@@ -3,7 +3,7 @@ import { ApiTags } from "@nestjs/swagger";
 import { SortingPropertiesType } from "src/base/types/sorting-properties.type";
 import { Question } from "../domain/question.entity";
 import { QuizGameService } from "../application/quiz.game.service";
-import { JwtAuthGuard } from "src/features/auth/guards/jwt-auth.guard";
+import { JwtAuthGuard } from "./../../../features/auth/guards/jwt-auth.guard";
 import { AnswerInputModel } from "../model/input/answer.input.model";
 import { EnhancedParseUUIDPipe } from "../../../utils/pipes/uuid-check";
 import { CommandBus } from "@nestjs/cqrs";

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import bcrypt from 'bcrypt';
-import { UserAuthInput } from 'src/features/auth/api/model/input/auth.input.model';
+import { UserAuthInput } from './../../../features/auth/api/model/input/auth.input.model';
 
 // Для провайдера всегда необходимо применять декоратор @Injectable() и регистрировать в модуле
 @Injectable()

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PostPg } from '../domain/post.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LikeType, PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
+import { LikeType, PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {

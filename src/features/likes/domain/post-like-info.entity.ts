@@ -1,4 +1,4 @@
-import { PostPg } from 'src/features/content/posts/domain/post.entity';
+import { PostPg } from './../../../features/content/posts/domain/post.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export type LikeType = 'None' | 'Like' | 'Dislike';

@@ -3,7 +3,7 @@ import { CommentPg } from '../domain/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommentCreateModel } from '../api/model/input/create-comment.input.model';
-import { CommentLikePg, LikeType } from 'src/features/likes/domain/comment-like-info.entity';
+import { CommentLikePg, LikeType } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsRepository {

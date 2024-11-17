@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Request } from "express";
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { DevicesService } from 'src/features/devices/application/devices.service';
+import { DevicesService } from './../../features/devices/application/devices.service';
 
 // Custom guard
 // https://docs.nestjs.com/guards

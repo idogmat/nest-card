@@ -1,6 +1,6 @@
 
-import { DevicePg } from 'src/features/devices/domain/device.entity';
-import { PlayerProgress } from 'src/features/quiz/domain/player.entity';
+import { DevicePg } from './../../../features/devices/domain/device.entity';
+import { PlayerProgress } from './../../../features/quiz/domain/player.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

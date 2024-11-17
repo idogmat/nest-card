@@ -1,4 +1,4 @@
-import { CommentPg } from 'src/features/content/comments/domain/comment.entity';
+import { CommentPg } from './../../../features/content/comments/domain/comment.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export type LikeType = 'None' | 'Like' | 'Dislike';

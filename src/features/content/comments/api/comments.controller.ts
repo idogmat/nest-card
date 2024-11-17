@@ -14,8 +14,8 @@ import {
 } from '@nestjs/common';
 import { CommentOutputModel } from './model/output/comment.output.model';
 import { CommentsQueryRepository } from '../infrastructure/comments.query-repository';
-import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
-import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
+import { JwtAuthGuard } from './../../../../features/auth/guards/jwt-auth.guard';
+import { LikeSetModel } from './../../../../features/likes/api/model/input/like-post.input.model';
 import { CommentsService } from '../application/comments.service';
 import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { CommentCreateModel } from './model/input/create-comment.input.model';

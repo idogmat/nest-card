@@ -1,4 +1,4 @@
-import { CommentLikePg, LikeType } from "src/features/likes/domain/comment-like-info.entity";
+import { CommentLikePg, LikeType } from "./../../../../../../features/likes/domain/comment-like-info.entity";
 import { CommentPg } from "../../../domain/comment.entity";
 
 export class CommentOutputModel {

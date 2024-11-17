@@ -22,7 +22,7 @@ import { AuthLoginCommand } from '../application/user-cases/auth-login-use-case'
 import { CommandBus } from '@nestjs/cqrs';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { RefreshGuard } from '../../../utils/guards/refresh.guard';
-import { DevicesService } from 'src/features/devices/application/devices.service';
+import { DevicesService } from '../../../features/devices/application/devices.service';
 
 @ApiTags('Auth')
 @Controller('auth')

@@ -21,8 +21,8 @@ import { SortingPropertiesType } from '../../../../base/types/sorting-properties
 import { PostsQueryRepository } from '../infrastructure/posts.query-repository';
 import { PostOutputModel } from './model/output/post.output.model';
 import { PostsService } from '../application/posts.service';
-import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
-import { LikeSetModel } from 'src/features/likes/api/model/input/like-post.input.model';
+import { JwtAuthGuard } from './../../../../features/auth/guards/jwt-auth.guard';
+import { LikeSetModel } from './../../../../features/likes/api/model/input/like-post.input.model';
 import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { CommentOutputModel } from '../../comments/api/model/output/comment.output.model';
 import { CommentsService } from '../../comments/application/comments.service';

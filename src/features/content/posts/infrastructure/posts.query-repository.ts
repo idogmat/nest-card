@@ -4,7 +4,7 @@ import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PostPg } from '../domain/post.entity';
-import { PostLikePg } from 'src/features/likes/domain/post-like-info.entity';
+import { PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
 
 const postMap =
   "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";

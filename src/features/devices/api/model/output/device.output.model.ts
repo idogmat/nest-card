@@ -1,4 +1,4 @@
-import { DevicePg } from "src/features/devices/domain/device.entity";
+import { DevicePg } from "./../../../../../features/devices/domain/device.entity";
 
 export class DeviceOutputModel {
   ip: string;

@@ -1,7 +1,7 @@
 import { AuthService } from "../auth.service";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
-import { DevicesService } from "src/features/devices/application/devices.service";
-import { UsersService } from "src/features/users/application/users.service";
+import { DevicesService } from "./../../../../features/devices/application/devices.service";
+import { UsersService } from "./../../../../features/users/application/users.service";
 
 export class AuthLoginCommand {
   constructor(

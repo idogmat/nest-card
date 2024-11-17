@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserAuthInput } from 'src/features/auth/api/model/input/auth.input.model';
+import { UserAuthInput } from './../../../features/auth/api/model/input/auth.input.model';
 import { UserPg } from '../domain/user.entity';
 import { EmailConfirmation } from '../api/models/input/create-user.input.model';
 
