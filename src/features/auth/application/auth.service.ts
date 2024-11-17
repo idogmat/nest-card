@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 import { UsersRepository } from 'src/features/users/infrastructure/users.repository';
 import { ConfigService } from '@nestjs/config';
 import { UserAuthInput } from '../api/model/input/auth.input.model';
-import { dateSetter } from 'src/utils/dataSetter';
+import { dateSetter } from 'src/utils/data.setter';
 
 
 @Injectable()
