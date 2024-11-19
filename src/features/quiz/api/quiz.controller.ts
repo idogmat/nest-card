@@ -14,6 +14,7 @@ import { Game } from "../domain/game.entity";
 import { Pagination, PaginationAllStatistic, PaginationOutput } from "src/base/models/pagination.base.model";
 import { GameOutputModel } from "../model/output/game.output.model";
 import { MyStatistic } from "../model/output/my-statistic.output.model";
+import { SetAnswerCommand } from "../application/game-case/game.set-answer.use-case";
 
 export const QUESTIONS_SORTING_PROPERTIES: SortingPropertiesType<Question> =
   ['updatedAt', 'createdAt'];
@@ -113,7 +114,8 @@ export class QuizController {
     @Req() req,
     @Body() answer: AnswerInputModel
   ) {
-    const settedAnswer = await this.quizGameService.setAnswer(req.user, answer.answer);
+    const settedAnswer = await this.commandBus.execute(new SetAnswerCommand(req.user, answer.answer));
     return settedAnswer;
+
   }
 }

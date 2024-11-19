@@ -1,5 +1,5 @@
-import { PostPg } from "../../../domain/post.entity";
-import { LikesInfo, LikeType, PostLikePg } from "./../../../../../../features/likes/domain/post-like-info.entity";
+import { Post } from "../../../domain/post.entity";
+import { LikesInfo, LikeType, PostLike } from "./../../../../../../features/likes/domain/post-like-info.entity";
 
 
 export class PostOutputModel {
@@ -15,7 +15,7 @@ export class PostOutputModel {
 
 // MAPPERS
 // FIXME поправить мапинг
-export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _userId?: string): PostOutputModel => {
+export const PostOutputModelMapper = (post: Post & { blogName: string; }, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
   outputModel.id = post.id;
   outputModel.title = post.title;
@@ -41,7 +41,7 @@ export const PostOutputModelMapper = (post: PostPg & { blogName: string; }, _use
 };
 
 export const getLikeCount = (
-  arr: PostLikePg[],
+  arr: PostLike[],
   type: LikeType
 ): number => {
   let count = 0;
@@ -53,7 +53,7 @@ export const getLikeCount = (
 };
 
 export const getCurrentStatus = (
-  arr: PostLikePg[],
+  arr: PostLike[],
   userId: string
 ): LikeType => {
   if (!userId) return "None";

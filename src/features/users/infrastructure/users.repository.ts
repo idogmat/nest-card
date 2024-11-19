@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAuthInput } from './../../../features/auth/api/model/input/auth.input.model';
-import { UserPg } from '../domain/user.entity';
+import { User } from '../domain/user.entity';
 import { EmailConfirmation } from '../api/models/input/create-user.input.model';
 
 @Injectable()
 export class UsersRepository {
   constructor(
-    @InjectRepository(UserPg)
-    private readonly usersRepo: Repository<UserPg>,
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
   ) { }
 
   async create(newUser: UserAuthInput): Promise<string> {
@@ -28,7 +28,7 @@ export class UsersRepository {
     return savedUser.id;
   }
 
-  async getById(id: string): Promise<UserPg | null> {
+  async getById(id: string): Promise<User | null> {
     const user = await this.usersRepo.findOneBy({ id: id });
     return user;
   }
@@ -71,7 +71,7 @@ export class UsersRepository {
 
   async setRecoveryCode(id: string, recoveryCode: string) {
     const updated = await this.usersRepo.createQueryBuilder()
-      .update(UserPg)
+      .update(User)
       .set({ recoveryCode })
       .where("id = :id", { id })
       .returning("*")
@@ -95,7 +95,7 @@ export class UsersRepository {
 
   async setNewPassword(id: string, passwordHash: string) {
     const updated = await this.usersRepo.createQueryBuilder()
-      .update(UserPg)
+      .update(User)
       .set({ passwordHash })
       .where("id = :id", { id })
       .returning("*")
@@ -105,7 +105,7 @@ export class UsersRepository {
 
   async setConfirmRegistrationCode(id: string, emailConfirmation: EmailConfirmation) {
     const updated = await this.usersRepo.createQueryBuilder()
-      .update(UserPg)
+      .update(User)
       .set({
         confirmationCode: emailConfirmation.confirmationCode,
         expirationDate: emailConfirmation.expirationDate,

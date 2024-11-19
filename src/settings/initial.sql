@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE public.user_pg
+CREATE TABLE public.user
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     login character varying NOT NULL COLLATE "C",
@@ -17,7 +17,7 @@ CREATE TABLE public.user_pg
 
 
 
-INSERT INTO public.user_pg(
+INSERT INTO public.user(
 	login, email, "passwordHash", "passwordSalt", "createdAt", "confirmationCode", "expirationDate", "isConfirmed")
 	VALUES ('testik',
 	'cigiwe8634@cartep.com',
@@ -25,7 +25,7 @@ INSERT INTO public.user_pg(
 	'$2b$10$kmCOAEDO4P9FvZX3Qx9AAu', 1726604312598, '?', NULL, false);
 
 
-CREATE TABLE public.device_pg
+CREATE TABLE public.device
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     ip character varying COLLATE "C",
@@ -35,13 +35,13 @@ CREATE TABLE public.device_pg
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY ("userId")
-        REFERENCES public.user_pg (id) MATCH SIMPLE
+        REFERENCES public.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
 );
 
-CREATE TABLE public.blog_pg
+CREATE TABLE public.blog
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     name character varying NOT NULL COLLATE "C",
@@ -52,7 +52,7 @@ CREATE TABLE public.blog_pg
     PRIMARY KEY (id)
 );
 
-CREATE TABLE public.post_pg
+CREATE TABLE public.post
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     title character  varying NOT NULL COLLATE "C",
@@ -62,13 +62,13 @@ CREATE TABLE public.post_pg
     "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY ("blogId")
-        REFERENCES public.blog_pg (id) MATCH SIMPLE
+        REFERENCES public.blog (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
 );
 
-CREATE TABLE public.comment_pg
+CREATE TABLE public.comment
 (
     id uuid NOT NULL DEFAULT uuid_generate_v4(),
     content text,
@@ -78,13 +78,13 @@ CREATE TABLE public.comment_pg
     "userLogin" character varying NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY ("postId")
-        REFERENCES public.post_pg (id) MATCH SIMPLE
+        REFERENCES public.post (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
 );
 
-CREATE TABLE public.post_like_pg
+CREATE TABLE public.post_like
 (
     id uuid NOT NULL DEFAULT  uuid_generate_v4(),
     "postId" uuid NOT NULL,
@@ -95,18 +95,18 @@ CREATE TABLE public.post_like_pg
     PRIMARY KEY (id),
     UNIQUE ("userId", "postId"),
     FOREIGN KEY ("postId")
-        REFERENCES public.post_pg (id) MATCH SIMPLE
+        REFERENCES public.post (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
     FOREIGN KEY ("userId")
-        REFERENCES public.user_pg (id) MATCH SIMPLE
+        REFERENCES public.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID
 );
 
-CREATE TABLE public.comment_like_pg
+CREATE TABLE public.comment_like
 (
     id uuid NOT NULL DEFAULT  uuid_generate_v4(),
     "commentId" uuid NOT NULL,
@@ -117,12 +117,12 @@ CREATE TABLE public.comment_like_pg
     PRIMARY KEY (id),
     UNIQUE ("userId", "commentId"),
     FOREIGN KEY ("commentId")
-        REFERENCES public.comment_pg (id) MATCH SIMPLE
+        REFERENCES public.comment (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID,
     FOREIGN KEY ("userId")
-        REFERENCES public.user_pg (id) MATCH SIMPLE
+        REFERENCES public.user (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
         NOT VALID

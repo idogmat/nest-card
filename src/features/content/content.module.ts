@@ -15,22 +15,28 @@ import { CustomBlogIdValidation } from "./posts/validate/blogId.validate";
 import { AuthModule } from "../auth/auth.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { SuperAdminController } from "./sa/api/super-admin.controller";
-import { BlogPg } from "./blogs/domain/blog.entity";
-import { PostPg } from "./posts/domain/post.entity";
-import { PostLikePg } from "../likes/domain/post-like-info.entity";
-import { CommentPg } from "./comments/domain/comment.entity";
-import { CommentLikePg } from "../likes/domain/comment-like-info.entity";
+import { Blog } from "./blogs/domain/blog.entity";
+import { Post } from "./posts/domain/post.entity";
+import { PostLike } from "../likes/domain/post-like-info.entity";
+import { Comment } from "./comments/domain/comment.entity";
+import { CommentLike } from "../likes/domain/comment-like-info.entity";
+import { BloggerController } from "../blogger/api/blogger.controller";
+import { BloggerService } from "../blogger/application/blogger.service";
+import { BloggerQueryRepository } from "../blogger/infrastructure/blogger.query-repository";
+import { BloggerRepository } from "../blogger/infrastructure/blogger.repository";
+import { SuperAdminQueryRepository } from "./sa/infrastructure/sa.query-repository";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([BlogPg, PostPg, PostLikePg, CommentPg, CommentLikePg])
+    TypeOrmModule.forFeature([Blog, Post, PostLike, Comment, CommentLike])
   ],
   controllers: [
     BlogsController,
     PostsController,
     CommentsController,
-    SuperAdminController
+    SuperAdminController,
+    BloggerController
   ],
   providers: [
     BlogsService,
@@ -42,7 +48,11 @@ import { CommentLikePg } from "../likes/domain/comment-like-info.entity";
     CommentsService,
     CommentsRepository,
     CommentsQueryRepository,
-    CustomBlogIdValidation
+    CustomBlogIdValidation,
+    BloggerService,
+    BloggerRepository,
+    BloggerQueryRepository,
+    SuperAdminQueryRepository
   ],
   exports: []
 })

@@ -3,8 +3,8 @@ import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/mod
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PostPg } from '../domain/post.entity';
-import { PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
+import { Post } from '../domain/post.entity';
+import { PostLike } from './../../../../features/likes/domain/post-like-info.entity';
 
 const postMap =
   "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
@@ -12,8 +12,8 @@ const postMap =
 @Injectable()
 export class PostsQueryRepository {
   constructor(
-    @InjectRepository(PostPg)
-    private readonly postRepo: Repository<PostPg>,
+    @InjectRepository(Post)
+    private readonly postRepo: Repository<Post>,
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
@@ -31,7 +31,7 @@ export class PostsQueryRepository {
           "'login', pl.login, " +
           "'addedAt', pl.addedAt" +
           ") ORDER BY pl.addedAt DESC )")
-          .from(PostLikePg, "pl")
+          .from(PostLike, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
       .where("p.id = :postId", { postId })
@@ -61,7 +61,7 @@ export class PostsQueryRepository {
           "'addedAt', pl.addedAt" +
           ") ORDER BY pl.addedAt DESC ) " +
           "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
-          .from(PostLikePg, "pl")
+          .from(PostLike, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
       .where("p.blogId = :blogId", { blogId })
@@ -113,7 +113,7 @@ export class PostsQueryRepository {
           "'addedAt', pl.addedAt" +
           ") ORDER BY pl.addedAt DESC ) " +
           "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
-          .from(PostLikePg, "pl")
+          .from(PostLike, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo");
 

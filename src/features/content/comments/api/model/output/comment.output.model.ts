@@ -1,5 +1,5 @@
-import { CommentLikePg, LikeType } from "./../../../../../../features/likes/domain/comment-like-info.entity";
-import { CommentPg } from "../../../domain/comment.entity";
+import { CommentLike, LikeType } from "./../../../../../../features/likes/domain/comment-like-info.entity";
+import { Comment } from "../../../domain/comment.entity";
 
 export class CommentOutputModel {
   id: string;
@@ -18,7 +18,7 @@ export class CommentOutputModel {
 
 // MAPPERS
 
-export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): CommentOutputModel => {
+export const CommentOutputModelMapper = (comment: Comment, _userId?: string): CommentOutputModel => {
   const outputModel = new CommentOutputModel();
   outputModel.id = comment.id;
   outputModel.content = comment.content;
@@ -37,7 +37,7 @@ export const CommentOutputModelMapper = (comment: CommentPg, _userId?: string): 
 };
 
 export const getLikeCount = (
-  arr: CommentLikePg[],
+  arr: CommentLike[],
   type: LikeType
 ): number => {
   let count = 0;
@@ -49,7 +49,7 @@ export const getLikeCount = (
 };
 
 export const getCurrentStatus = (
-  arr: CommentLikePg[],
+  arr: CommentLike[],
   userId: string
 ): LikeType => {
   if (!userId) return "None";

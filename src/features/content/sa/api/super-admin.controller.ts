@@ -28,6 +28,7 @@ import { BlogsService } from '../../blogs/application/blogs.service';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { BlogCreateModel } from '../../blogs/api/model/input/create-blog.input.model';
 import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
+import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -43,6 +44,7 @@ export class SuperAdminController {
     private readonly postsService: PostsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly superAdminQueryRepository: SuperAdminQueryRepository,
   ) { }
 
   // SA
@@ -58,7 +60,7 @@ export class SuperAdminController {
       );
 
     const blogs: PaginationOutput<BlogOutputModel> =
-      await this.blogsQueryRepository.getAll(pagination);
+      await this.superAdminQueryRepository.getAll(pagination);
 
     return blogs;
   }

@@ -1,4 +1,4 @@
-import { DevicePg } from "./../../../../../features/devices/domain/device.entity";
+import { Device } from "./../../../../../features/devices/domain/device.entity";
 
 export class DeviceOutputModel {
   ip: string;
@@ -17,7 +17,7 @@ export class DeviceDBModel {
 
 // MAPPERS
 
-export const DeviceOutputModelMapper = (device: DevicePg): DeviceOutputModel => {
+export const DeviceOutputModelMapper = (device: Device): DeviceOutputModel => {
   const outputModel = new DeviceOutputModel();
   outputModel.ip = device.ip;
   outputModel.title = device.title;

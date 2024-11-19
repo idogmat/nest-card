@@ -9,13 +9,13 @@ import {
 } from '../../../base/models/pagination.base.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserPg } from '../domain/user.entity';
+import { User } from '../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectRepository(UserPg)
-    private readonly usersRepo: Repository<UserPg>,
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
   ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {

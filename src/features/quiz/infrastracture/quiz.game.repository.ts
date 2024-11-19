@@ -7,10 +7,7 @@ import { PlayerProgress } from '../domain/player.entity';
 import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
 import { PlayerAnswer } from '../domain/playerAnswer.entity';
 import { GameOutputModelMapper } from '../model/output/game.output.model';
-import { AuthUser } from '../quiz.module';
-import { AnswerOutputModelMapper } from '../model/output/answer.output.model';
-
-
+import { AuthUser } from 'src/features/auth/auth.module';
 
 @Injectable()
 export class QuizGameRepository {
@@ -213,118 +210,6 @@ export class QuizGameRepository {
       .getOne();
 
     return GameOutputModelMapper(currentGame);
-  }
-
-  async setAnswer(user: AuthUser, answer: string): Promise<any> {
-    let answerId: null | string = null;
-    let endGameTimerId = null;
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction('REPEATABLE READ');
-    try {
-      const queryGetGames = queryRunner.manager
-        .createQueryBuilder(Game, 'game')
-        .leftJoinAndSelect('game.playersProgresses', 'playerProgress')
-        .leftJoinAndSelect('game.questions', 'questions')
-        .leftJoinAndSelect('questions.question', 'gameQuestion')
-        .leftJoinAndSelect('playerProgress.answers', 'answers')
-        .where(qb => {
-          const subQuery = qb.subQuery()
-            .select('playerProgress.gameId')
-            .from('PlayerProgress', 'playerProgress')
-            .where('"playerProgress"."playerAccountId" = :excludedPlayerAccountId', { excludedPlayerAccountId: user.userId })
-            .groupBy('"playerProgress"."gameId"')
-            .getQuery();
-          return 'game.id IN ' + subQuery;
-        }).andWhere(`game.status = :active`,
-          { active: GameStatus.Active })
-        .orderBy(`game."createdAt"`, `ASC`)
-        .addOrderBy(`answers."createdAt"`, `ASC`);
-
-      const game = await queryGetGames.getOne();
-      console.log(game, 'game');
-      if (!game) throw new ForbiddenException();
-      const processCheck = game.playersProgresses.find(p => (p.playerAccountId === user.userId));
-      if (!processCheck?.id) throw new ForbiddenException();
-      // console.log(playerCheck);
-      console.log(game.questions);
-      const answers = await queryRunner.manager.findBy(PlayerAnswer, { processId: processCheck?.id });
-      // console.log(answers, 'anwsers');
-      const question = game.questions.find(q => q.order === answers.length);
-
-      if (!question) throw new ForbiddenException();
-
-      const questionForGetAnswer = await queryRunner.manager.findOneBy(Question, { id: question.questionId });
-
-      let points = 0;
-      let finished = false;
-      const currentAnswers = questionForGetAnswer.correctAnswers.includes(answer) ? 'Correct' : 'Incorrect';
-      const opponent = game.playersProgresses.find(p => (p.playerAccountId !== user.userId));
-      if (currentAnswers === 'Correct') points++;
-
-      await queryRunner.manager.createQueryBuilder()
-        .update(PlayerProgress)
-        .set({
-          score: () => `score + ${points}`
-        })
-        .where("id = :processCheck", { processCheck: processCheck.id })
-        .execute();
-
-      if (game.questions.length === answers.length + 1
-        && game.questions.length !== opponent.answers.length) endGameTimerId = game.id;
-
-      if (game.questions.length === answers.length + 1
-        && game.questions.length === opponent.answers.length) {
-
-        const additionalMarkOwner = opponent.score
-          ? opponent
-          : null;
-
-        if (additionalMarkOwner) {
-
-          await queryRunner.manager.createQueryBuilder()
-            .update(PlayerProgress)
-            .set({
-              score: () => `score + 1`
-            })
-            .where("id = :processCheck", { processCheck: additionalMarkOwner.id })
-            .execute();
-
-        }
-        finished = true;
-
-        if (finished) {
-          await this.gameRepo.createQueryBuilder()
-            .update(Game)
-            .set({
-              finishGameDate: new Date(),
-              status: GameStatus.Finished
-            })
-            .where("id = :gameId", { gameId: processCheck.gameId })
-            .execute();
-        }
-      }
-
-      const model = this.playerAnswerRepo.create({
-        answer,
-        answerStatus: currentAnswers,
-        createdAt: new Date(),
-        processId: processCheck.id,
-        order: answers.length,
-        questionId: question.id
-      });
-      console.log(question);
-      await queryRunner.manager.save(model);
-      answerId = model.id;
-      await queryRunner.commitTransaction();
-    } catch (e) {
-      await queryRunner.rollbackTransaction();
-      throw new ForbiddenException();
-    } finally {
-      await queryRunner.release();
-    }
-    const result = await this.playerAnswerRepo.findOneBy({ id: answerId });
-    return { result: AnswerOutputModelMapper(result), endGameTimerId };
   }
 
   async finishGame(endGameId: string): Promise<void> {

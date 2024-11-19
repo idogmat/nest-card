@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DevicesRepository } from '../infrastructure/devices.repository';
-import { DevicePg } from '../domain/device.entity';
+import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesService {
@@ -12,7 +12,7 @@ export class DevicesService {
     title: string,
     userId: string,
     lastActiveDate?: Date
-  ): Promise<DevicePg> {
+  ): Promise<Device> {
     const device = await this.devicesRepository.create(ip,
       title,
       userId,

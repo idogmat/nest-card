@@ -1,4 +1,4 @@
-import { PostPg } from './../../../features/content/posts/domain/post.entity';
+import { Post } from './../../../features/content/posts/domain/post.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export type LikeType = 'None' | 'Like' | 'Dislike';
@@ -19,7 +19,7 @@ export class NewestLikes {
 }
 
 @Entity()
-export class PostLikePg {
+export class PostLike {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -38,6 +38,6 @@ export class PostLikePg {
   @Column()
   login: string;
 
-  @ManyToOne(() => PostPg, (post) => post.extendedLikesInfo)
-  post: PostPg;
+  @ManyToOne(() => Post, (post) => post.extendedLikesInfo)
+  post: Post;
 }

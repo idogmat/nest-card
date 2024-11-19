@@ -18,19 +18,19 @@ export class TestingController {
   @Delete()
   @HttpCode(204)
   async delete() {
-    await this.dataSource.query(`TRUNCATE TABLE device_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE user_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE blog_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE post_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE post_like_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE comment_pg CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE comment_like_pg CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "user" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "device" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "blog" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "post" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "post_like" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "comment" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "comment_like" CASCADE`);
 
-    await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE question CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "game" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "player_progress" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "question_of_the_game" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "player_answer" CASCADE`);
+    await this.dataSource.query(`TRUNCATE TABLE "question" CASCADE`);
     return;
   }
 

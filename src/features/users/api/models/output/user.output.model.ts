@@ -1,4 +1,4 @@
-import { UserPg } from "./../../../../../features/users/domain/user.entity";
+import { User } from "./../../../../../features/users/domain/user.entity";
 
 export class UserOutputModel {
   id: string;
@@ -16,7 +16,7 @@ export class UserDBModel {
 
 // MAPPERS
 
-export const UserOutputModelMapper = (user: UserPg): UserOutputModel => {
+export const UserOutputModelMapper = (user: User): UserOutputModel => {
   const outputModel = new UserOutputModel();
 
   outputModel.id = user.id;

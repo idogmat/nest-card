@@ -1,10 +1,11 @@
 
-import { DevicePg } from './../../../features/devices/domain/device.entity';
+import { Blog } from 'src/features/content/blogs/domain/blog.entity';
+import { Device } from './../../../features/devices/domain/device.entity';
 import { PlayerProgress } from './../../../features/quiz/domain/player.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class UserPg {
+export class User {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -35,8 +36,11 @@ export class UserPg {
   @Column({ nullable: true })
   recoveryCode: string | null;
 
-  @OneToMany(() => DevicePg, (device) => device)
-  divices: DevicePg[];
+  @OneToMany(() => Blog, (blog) => blog)
+  blogs: Blog[];
+
+  @OneToMany(() => Device, (device) => device)
+  divices: Device[];
 
   @OneToMany(() => PlayerProgress, (player) => player.playerAccount)
   player: PlayerProgress[];

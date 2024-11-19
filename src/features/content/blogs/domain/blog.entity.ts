@@ -1,8 +1,9 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PostPg } from '../../posts/domain/post.entity';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Post } from '../../posts/domain/post.entity';
+import { User } from 'src/features/users/domain/user.entity';
 
 @Entity()
-export class BlogPg {
+export class Blog {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -21,8 +22,14 @@ export class BlogPg {
   @Column()
   isMembership: boolean;
 
-  @OneToMany(() => PostPg, (post) => post.blog)
-  posts: PostPg[];
+  @Column({ type: 'uuid' })
+  userId: string;
+
+  @ManyToOne(() => User, (user) => user.blogs)
+  user: User;
+
+  @OneToMany(() => Post, (post) => post.blog)
+  posts: Post[];
 
 
 

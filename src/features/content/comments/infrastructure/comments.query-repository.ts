@@ -3,16 +3,14 @@ import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/outpu
 import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CommentPg } from '../domain/comment.entity';
-import { CommentLikePg } from './../../../../features/likes/domain/comment-like-info.entity';
+import { Comment } from '../domain/comment.entity';
+import { CommentLike } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
-    @InjectRepository(CommentPg)
-    private readonly commentRepo: Repository<CommentPg>,
-    @InjectRepository(CommentLikePg)
-    private readonly commentLikeRepo: Repository<CommentLikePg>,
+    @InjectRepository(Comment)
+    private readonly commentRepo: Repository<Comment>,
   ) { }
 
   async getById(id: string, userId?: string): Promise<CommentOutputModel | null> {
@@ -29,7 +27,7 @@ export class CommentsQueryRepository {
           "'login', cl.login, " +
           "'addedAt', cl.addedAt" +
           ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
-          .from(CommentLikePg, "cl")
+          .from(CommentLike, "cl")
           .where("cl.commentId = c.id");
       }, "extendedLikesInfo")
       .where("c.id = :id", { id })
@@ -60,7 +58,7 @@ export class CommentsQueryRepository {
           "'login', cl.login, " +
           "'addedAt', cl.addedAt" +
           ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
-          .from(CommentLikePg, "cl")
+          .from(CommentLike, "cl")
           .where("cl.commentId = c.id");
       }, "extendedLikesInfo")
       .where("c.postId = :postId", { postId });
@@ -72,28 +70,6 @@ export class CommentsQueryRepository {
       .offset((pagination.pageNumber - 1) * pagination.pageSize)
       .getRawMany();
 
-    console.log(comments);
-    // const totalCount = await this.dataSource.query(`
-    //   SELECT COUNT(*)
-    //   FROM public.comment_pg
-    //   WHERE "postId" = $1
-    //   `, [postId]);
-
-    // const comments = await this.dataSource.query(`
-    //   SELECT c.*,
-    //   (SELECT jsonb_agg(json_build_object(
-    //     'userId', cl."userId",
-    //     'login', cl.login,
-    //     'like', cl.type,
-    //     'addedAt', cl."addedAt"
-    //   ) ORDER BY cl."addedAt" DESC ) 
-    //   FROM public.comment_like_pg as cl WHERE c.id = cl."commentId") as "extendedLikesInfo"
-    //   FROM public.comment_pg as c
-    //   WHERE "postId" = $1
-    //   ORDER BY "${pagination.sortBy}" ${pagination.sortDirection}
-    //   LIMIT $2 OFFSET $3;
-    //   `, [postId, pagination.pageSize,
-    //   (pagination.pageNumber - 1) * pagination.pageSize]);
     const mappedComments = comments.map(e => CommentOutputModelMapper(e, userId));
 
     return new PaginationOutput<CommentOutputModel>(

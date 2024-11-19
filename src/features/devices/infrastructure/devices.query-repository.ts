@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { DeviceOutputModel, DeviceOutputModelMapper } from '../api/model/output/device.output.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DevicePg } from '../domain/device.entity';
+import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesQueryRepository {
   constructor(
-    @InjectRepository(DevicePg)
-    private readonly deviceRepo: Repository<DevicePg>,
+    @InjectRepository(Device)
+    private readonly deviceRepo: Repository<Device>,
   ) { }
 
   async getAll(
