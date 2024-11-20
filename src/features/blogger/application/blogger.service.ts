@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthUser } from "src/features/auth/auth.module";
+import { BlogCreateModel } from "src/features/content/blogs/api/model/input/create-blog.input.model";
 import { Blog } from "src/features/content/blogs/domain/blog.entity";
 import { Repository } from "typeorm";
 
@@ -32,22 +33,18 @@ export class BloggerService {
     return savedBlog.id;
   }
 
-  // async update(id: string, newModel: BlogPg) {
-  //   const updated = await this.blogRepo.createQueryBuilder()
-  //     .update(BlogPg)
-  //     .set({
-  //       name: newModel.name,
-  //       description: newModel.description,
-  //       websiteUrl: newModel.websiteUrl
-  //     })
-  //     .where("id = :id", { id })
-  //     .returning("*")
-  //     .execute();
-  //   return updated.raw;
-  // }
+  async updateBlog(id: string, userId: string, newModel: BlogCreateModel) {
+    const blog = await this.bloggerRepo.findOneBy({ id: id });
+    if (!blog?.id) throw new NotFoundException();
+    if (blog?.userId !== userId) throw new ForbiddenException();
+    await this.bloggerRepo.update({ id: id }, { ...newModel });
+  }
 
-  // async delete(id: string): Promise<boolean> {
-  //   const blog = await this.blogRepo.delete({ id: id });
-  //   return blog.affected === 1;
-  // }
+  async deleteBlog(id: string, userId: string): Promise<boolean> {
+    const blog = await this.bloggerRepo.findOneBy({ id: id });
+    if (!blog?.id) throw new NotFoundException();
+    if (blog?.userId !== userId) throw new ForbiddenException();
+    const result = await this.bloggerRepo.delete({ id: id });
+    return result.affected === 1;
+  }
 }

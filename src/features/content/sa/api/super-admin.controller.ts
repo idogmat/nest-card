@@ -29,6 +29,7 @@ import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-rep
 import { BlogCreateModel } from '../../blogs/api/model/input/create-blog.input.model';
 import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
 import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
+import { SuperAdminService } from '../application/sa.service';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -45,6 +46,7 @@ export class SuperAdminController {
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly superAdminQueryRepository: SuperAdminQueryRepository,
+    private readonly superAdminService: SuperAdminService,
   ) { }
 
   // SA
@@ -65,6 +67,17 @@ export class SuperAdminController {
     return blogs;
   }
 
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Put('blogs/:blogId/bind-with-user/:userId')
+  @HttpCode(204)
+  async bindBlogWithUser(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('userId', new EnhancedParseUUIDPipe()) userId: string,
+  ) {
+    console.log('ch');
+    await this.superAdminService.bindUserWithBlog(blogId, userId);
+  }
 
   @UseGuards(BasicAuthGuard)
   @Post('blogs')

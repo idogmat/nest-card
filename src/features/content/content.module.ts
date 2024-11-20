@@ -25,6 +25,8 @@ import { BloggerService } from "../blogger/application/blogger.service";
 import { BloggerQueryRepository } from "../blogger/infrastructure/blogger.query-repository";
 import { BloggerRepository } from "../blogger/infrastructure/blogger.repository";
 import { SuperAdminQueryRepository } from "./sa/infrastructure/sa.query-repository";
+import { SuperAdminService } from "./sa/application/sa.service";
+import { SuperAdminRepository } from "./sa/infrastructure/sa.repository";
 
 @Module({
   imports: [
@@ -52,7 +54,9 @@ import { SuperAdminQueryRepository } from "./sa/infrastructure/sa.query-reposito
     BloggerService,
     BloggerRepository,
     BloggerQueryRepository,
-    SuperAdminQueryRepository
+    SuperAdminQueryRepository,
+    SuperAdminRepository,
+    SuperAdminService,
   ],
   exports: []
 })

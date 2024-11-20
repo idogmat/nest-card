@@ -10,13 +10,13 @@ export class BloggerRepository {
     private readonly blogRepo: Repository<Blog>,
   ) { }
 
-  // async getById(id: string): Promise<BlogPg | null> {
-  //   const user = await this.blogRepo.findOneBy({ id: id });
-  //   if (!user) {
-  //     return null;
-  //   }
-  //   return user;
-  // }
+  async getById(id: string): Promise<Blog | null> {
+    const user = await this.blogRepo.findOneBy({ id: id });
+    if (!user) {
+      return null;
+    }
+    return user;
+  }
 
   async create(newBlog: Blog): Promise<string> {
     const blog = this.blogRepo.create({
@@ -44,8 +44,8 @@ export class BloggerRepository {
   //   return updated.raw;
   // }
 
-  // async delete(id: string): Promise<boolean> {
-  //   const blog = await this.blogRepo.delete({ id: id });
-  //   return blog.affected === 1;
-  // }
+  async delete(id: string): Promise<boolean> {
+    const blog = await this.blogRepo.delete({ id: id });
+    return blog.affected === 1;
+  }
 }

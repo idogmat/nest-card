@@ -22,7 +22,7 @@ export class Blog {
   @Column()
   isMembership: boolean;
 
-  @Column({ type: 'uuid' })
+  @Column({ type: 'uuid', nullable: true })
   userId: string;
 
   @ManyToOne(() => User, (user) => user.blogs)

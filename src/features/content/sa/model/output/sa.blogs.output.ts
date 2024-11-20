@@ -10,23 +10,24 @@ export class BlogOutputSAModel {
   blogOwnerInfo: {
     userId: string;
     userLogin: string;
-  };
+  } | null;
 }
 
 // MAPPERS
 
 export const BlogOutputSAModelMapper = (blog: Blog): BlogOutputSAModel => {
   const outputModel = new BlogOutputSAModel();
+  console.log(blog.user);
   outputModel.id = blog.id;
   outputModel.name = blog.name;
   outputModel.description = blog.description;
   outputModel.websiteUrl = blog.websiteUrl;
   outputModel.isMembership = blog.isMembership;
   outputModel.createdAt = new Date(blog.createdAt).toISOString();
-  outputModel.blogOwnerInfo = {
-    userId: blog.user.id,
-    userLogin: blog.user.login
-  };
+  blog.user?.id ? outputModel.blogOwnerInfo = {
+    userId: blog.user?.id,
+    userLogin: blog.user?.login
+  } : null;
 
   return outputModel;
 };

@@ -1,14 +1,16 @@
-import { Injectable } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { AuthUser } from "src/features/auth/auth.module";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Blog } from "src/features/content/blogs/domain/blog.entity";
-import { Repository } from "typeorm";
+import { User } from "src/features/users/domain/user.entity";
+import { DataSource, Repository } from "typeorm";
 
 @Injectable()
 export class SuperAdminService {
   constructor(
     @InjectRepository(Blog)
     private readonly bloggerRepo: Repository<Blog>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) { }
 
   async getById(id: string): Promise<Blog | null> {
@@ -31,22 +33,26 @@ export class SuperAdminService {
     return savedBlog.id;
   }
 
-  // async update(id: string, newModel: BlogPg) {
-  //   const updated = await this.blogRepo.createQueryBuilder()
-  //     .update(BlogPg)
-  //     .set({
-  //       name: newModel.name,
-  //       description: newModel.description,
-  //       websiteUrl: newModel.websiteUrl
-  //     })
-  //     .where("id = :id", { id })
-  //     .returning("*")
-  //     .execute();
-  //   return updated.raw;
-  // }
+  async bindUserWithBlog(blogId: string, userId: string) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const [blog, user] = await Promise.all([
+      queryRunner.manager.createQueryBuilder(Blog, 'b')
+        .where('b.id = :blogId', { blogId })
+        .getOne(),
+      queryRunner.manager.createQueryBuilder(User, 'u')
+        .where('u.id = :userId', { userId })
+        .getOne()
+    ]);
+    if (!blog || blog?.userId || !user?.id) throw new BadRequestException();
 
-  // async delete(id: string): Promise<boolean> {
-  //   const blog = await this.blogRepo.delete({ id: id });
-  //   return blog.affected === 1;
-  // }
+    const updated = await queryRunner.manager.createQueryBuilder(Blog, 'b')
+      .update(Blog)
+      .set({
+        userId
+      })
+      .where('id = :id', { id: blogId })
+      .execute();
+    return updated.affected;
+  }
 }

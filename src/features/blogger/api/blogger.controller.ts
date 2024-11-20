@@ -2,10 +2,13 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -19,6 +22,7 @@ import { Blog } from 'src/features/content/blogs/domain/blog.entity';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
 import { BlogOutputModel } from 'src/features/content/blogs/api/model/output/blog.output.model';
 import { SortingPropertiesType } from 'src/base/types/sorting-properties.type';
+import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
 
 // export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
 //   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -50,8 +54,8 @@ export class BloggerController {
     return createdBlog;
   }
   @UseGuards(JwtAuthGuard)
-  @Get('blogs')
-  async getAllSa(
+  @Get('/blogs')
+  async getAll(
     @Query() query: any,
   ) {
     const pagination: PaginationWithSearchBlogNameTerm =
@@ -64,5 +68,26 @@ export class BloggerController {
       await this.bloggerQueryRepository.getAll(pagination);
 
     return blogs;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('/blogs/:blogId')
+  @HttpCode(204)
+  async deleteBlog(
+    @Req() req: any,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+  ) {
+    await this.bloggerService.deleteBlog(blogId, req.user?.userId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('/blogs/:blogId')
+  @HttpCode(204)
+  async updateBlog(
+    @Req() req: any,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Body() updateModel: BlogCreateModel
+  ) {
+    await this.bloggerService.updateBlog(blogId, req.user?.userId, updateModel);
   }
 }
