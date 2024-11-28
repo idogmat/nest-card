@@ -1,19 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
 import { Pagination, PaginationOutput } from 'src/base/models/pagination.base.model';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Comment } from '../domain/comment.entity';
 import { CommentLike } from './../../../../features/likes/domain/comment-like-info.entity';
+import { User } from 'src/features/users/domain/user.entity';
 
 @Injectable()
 export class CommentsQueryRepository {
   constructor(
     @InjectRepository(Comment)
     private readonly commentRepo: Repository<Comment>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) { }
 
   async getById(id: string, userId?: string): Promise<CommentOutputModel | null> {
+    // const queryRunner = this.dataSource.createQueryRunner();
+    // await queryRunner.connect();
     const comment = await this.commentRepo.createQueryBuilder("c")
       .select([
         "c.*",
@@ -28,7 +33,9 @@ export class CommentsQueryRepository {
           "'addedAt', cl.addedAt" +
           ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
           .from(CommentLike, "cl")
-          .where("cl.commentId = c.id");
+          .leftJoin(User, 'u', 'cl.userId IS NOT NULL AND u.id = cl.userId')
+          .where("cl.commentId = c.id")
+          .andWhere("u.banned != true");
       }, "extendedLikesInfo")
       .where("c.id = :id", { id })
       .getRawOne();
@@ -44,8 +51,9 @@ export class CommentsQueryRepository {
     postId: string,
     userId?: string
   ): Promise<PaginationOutput<CommentOutputModel>> {
-
-    const commentQueryBuilder = this.commentRepo.createQueryBuilder("c")
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const commentQueryBuilder = queryRunner.manager.createQueryBuilder(Comment, "c")
       .select([
         "c.*",
       ])
@@ -59,7 +67,9 @@ export class CommentsQueryRepository {
           "'addedAt', cl.addedAt" +
           ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
           .from(CommentLike, "cl")
-          .where("cl.commentId = c.id");
+          .leftJoin(User, 'u', 'cl.userId IS NOT NULL AND u.id = cl.userId')
+          .where("cl.commentId = c.id")
+          .andWhere("u.banned != true");
       }, "extendedLikesInfo")
       .where("c.postId = :postId", { postId });
 
@@ -69,7 +79,7 @@ export class CommentsQueryRepository {
       .limit(pagination.pageSize)
       .offset((pagination.pageNumber - 1) * pagination.pageSize)
       .getRawMany();
-
+    console.log(comments, 'comments');
     const mappedComments = comments.map(e => CommentOutputModelMapper(e, userId));
 
     return new PaginationOutput<CommentOutputModel>(

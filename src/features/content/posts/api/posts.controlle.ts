@@ -44,7 +44,7 @@ export const COMMENTS_SORTING_PROPERTIES: SortingPropertiesType<CommentOutputMod
   ['content', 'createdAt'];
 
 @ApiTags('Posts')
-@Controller()
+@Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
@@ -55,7 +55,7 @@ export class PostsController {
   ) { }
 
   @UseGuards(AuthGetGuard)
-  @Get('posts')
+  @Get()
   async getAll(
     @Query() query: any,
     @Req() req?
@@ -71,10 +71,8 @@ export class PostsController {
     return posts;
   }
 
-
-
   @UseGuards(AuthGetGuard)
-  @Get('posts/:id')
+  @Get('/:id')
   async getById(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Req() req?
@@ -90,7 +88,7 @@ export class PostsController {
   }
 
   @UseGuards(AuthGetGuard)
-  @Get('posts/:id/comments')
+  @Get('/:id/comments')
   async getComments(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Query() query: any,
@@ -111,11 +109,12 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('posts/:id/comments')
+  @Post('/:id/comments')
   async createComment(
     @Req() req,
     @Param('id', new EnhancedParseUUIDPipe()) postId: string,
-    @Body() createModel: CommentCreateModel) {
+    @Body() createModel: CommentCreateModel
+  ) {
     const post = await this.postsQueryRepository.getById(postId);
     if (!post) throw new NotFoundException();
     const { content } = createModel;
@@ -128,7 +127,7 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('posts/:id/like-status')
+  @Put('/:id/like-status')
   @HttpCode(204)
   async setLikeStatus(
     @Req() req,

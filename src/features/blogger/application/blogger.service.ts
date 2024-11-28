@@ -2,26 +2,42 @@ import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/commo
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthUser } from "src/features/auth/auth.module";
 import { BlogCreateModel } from "src/features/content/blogs/api/model/input/create-blog.input.model";
+import { PostInBlogCreateModel } from "src/features/content/blogs/api/model/input/create-post.input.model";
 import { Blog } from "src/features/content/blogs/domain/blog.entity";
+import { PostOutputModelMapper } from "src/features/content/posts/api/model/output/post.output.model";
+import { Post } from "src/features/content/posts/domain/post.entity";
+import { PostLike } from "src/features/likes/domain/post-like-info.entity";
 import { Repository } from "typeorm";
 
 @Injectable()
 export class BloggerService {
   constructor(
     @InjectRepository(Blog)
-    private readonly bloggerRepo: Repository<Blog>,
+    private readonly blogRepo: Repository<Blog>,
+    @InjectRepository(Post)
+    private readonly postRepo: Repository<Post>,
   ) { }
 
   async getById(id: string): Promise<Blog | null> {
-    const blog = await this.bloggerRepo.findOneBy({ id: id });
+    const blog = await this.blogRepo.findOneBy({ id: id });
+    console.log(blog);
     if (!blog) {
       return null;
     }
     return blog;
   }
 
+  async getPostById(id: string): Promise<Post | null> {
+    const post = await this.postRepo.findOneBy({ id: id });
+    console.log(post, 'post');
+    if (!post) {
+      return null;
+    }
+    return post;
+  }
+
   async create(newBlog: Blog, user: AuthUser): Promise<string> {
-    const blog = this.bloggerRepo.create({
+    const blog = this.blogRepo.create({
       name: newBlog.name,
       description: newBlog.description,
       websiteUrl: newBlog.websiteUrl,
@@ -29,22 +45,79 @@ export class BloggerService {
       isMembership: newBlog.isMembership || false,
       userId: user.userId
     });
-    const savedBlog = await this.bloggerRepo.save(blog);
+    const savedBlog = await this.blogRepo.save(blog);
     return savedBlog.id;
   }
 
   async updateBlog(id: string, userId: string, newModel: BlogCreateModel) {
-    const blog = await this.bloggerRepo.findOneBy({ id: id });
+    const blog = await this.blogRepo.findOneBy({ id: id });
     if (!blog?.id) throw new NotFoundException();
     if (blog?.userId !== userId) throw new ForbiddenException();
-    await this.bloggerRepo.update({ id: id }, { ...newModel });
+    await this.blogRepo.update({ id: id }, { ...newModel });
+  }
+
+  async updatePost(blogId: string, postId: string, userId: string, newModel: PostInBlogCreateModel) {
+    const blog = await this.blogRepo.findOneBy({ id: blogId });
+    if (!blog) throw new NotFoundException();
+    if (blog.userId !== userId) throw new ForbiddenException();
+    const post = await this.postRepo.findOneBy({ id: postId });
+    if (!post?.id) throw new NotFoundException();
+    await this.postRepo.update({ id: postId }, { ...newModel });
   }
 
   async deleteBlog(id: string, userId: string): Promise<boolean> {
-    const blog = await this.bloggerRepo.findOneBy({ id: id });
+    const blog = await this.blogRepo.findOneBy({ id: id });
     if (!blog?.id) throw new NotFoundException();
     if (blog?.userId !== userId) throw new ForbiddenException();
-    const result = await this.bloggerRepo.delete({ id: id });
+    const result = await this.blogRepo.delete({ id: id });
     return result.affected === 1;
+  }
+
+  async deletePost(blogId: string, postId: string, userId: string) {
+    const blog = await this.blogRepo.findOneBy({ id: blogId });
+    if (!blog) throw new NotFoundException();
+    if (blog.userId !== userId) throw new ForbiddenException();
+    const post = await this.postRepo.findOneBy({ id: postId });
+    if (!post?.id) throw new NotFoundException();
+    const result = await this.postRepo.delete({ id: postId });
+    return result.affected === 1;
+  }
+
+  async createPost(id: string, user: AuthUser, model: PostInBlogCreateModel): Promise<any> {
+    const blog = await this.blogRepo.findOneBy({ id: id });
+    if (!blog?.id) throw new NotFoundException();
+    if (blog?.userId !== user.userId) throw new ForbiddenException();
+    const { content, shortDescription, title } = model;
+    const postMap =
+      "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
+    const created = this.postRepo.create({
+      content,
+      shortDescription,
+      title,
+      blogId: blog.id,
+      createdAt: new Date()
+    });
+    const post = await this.postRepo.save(created);
+    const result = await this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .select([
+        postMap,
+        "b.name AS \"blogName\"",
+      ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          ") ORDER BY pl.addedAt DESC )")
+          .from(PostLike, "pl")
+          .where("pl.postId = p.id");
+      }, "extendedLikesInfo")
+      .where("p.id = :postId", { postId: post.id })
+      .getRawOne();
+    console.log(result);
+    return PostOutputModelMapper(result as Post & { blogName: string; });
   }
 }

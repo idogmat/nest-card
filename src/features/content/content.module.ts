@@ -27,6 +27,7 @@ import { BloggerRepository } from "../blogger/infrastructure/blogger.repository"
 import { SuperAdminQueryRepository } from "./sa/infrastructure/sa.query-repository";
 import { SuperAdminService } from "./sa/application/sa.service";
 import { SuperAdminRepository } from "./sa/infrastructure/sa.repository";
+import { TransactionManager } from "src/utils/transaction/transactionManager";
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { SuperAdminRepository } from "./sa/infrastructure/sa.repository";
     SuperAdminQueryRepository,
     SuperAdminRepository,
     SuperAdminService,
+    TransactionManager
   ],
   exports: []
 })

@@ -30,6 +30,7 @@ import { BlogCreateModel } from '../../blogs/api/model/input/create-blog.input.m
 import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
 import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
 import { SuperAdminService } from '../application/sa.service';
+import { BanInputModel } from '../model/input/sa.ban.input';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -48,6 +49,17 @@ export class SuperAdminController {
     private readonly superAdminQueryRepository: SuperAdminQueryRepository,
     private readonly superAdminService: SuperAdminService,
   ) { }
+
+  @UseGuards(BasicAuthGuard)
+  @Put('/users/:id/ban')
+  @HttpCode(204)
+  async banUser(
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Body() ban: BanInputModel
+  ) {
+    await this.superAdminService.banUser(id, ban);
+    return;
+  }
 
   // SA
   @UseGuards(BasicAuthGuard)
@@ -75,7 +87,6 @@ export class SuperAdminController {
     @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
     @Param('userId', new EnhancedParseUUIDPipe()) userId: string,
   ) {
-    console.log('ch');
     await this.superAdminService.bindUserWithBlog(blogId, userId);
   }
 

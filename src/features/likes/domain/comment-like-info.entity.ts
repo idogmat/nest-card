@@ -29,7 +29,7 @@ export class CommentLike {
   @Column()
   commentId: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   userId: string;
 
   @Column()

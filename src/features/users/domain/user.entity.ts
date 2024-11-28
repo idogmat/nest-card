@@ -24,6 +24,8 @@ export class User {
   @Column()
   createdAt: Date;
 
+
+
   @Column()
   confirmationCode: string;
 
@@ -32,6 +34,15 @@ export class User {
 
   @Column()
   isConfirmed: boolean;
+
+  @Column({ nullable: true, default: false })
+  banned: boolean;
+
+  @Column({ nullable: true })
+  banReason: string;
+
+  @Column({ nullable: true })
+  banDate: Date;
 
   @Column({ nullable: true })
   recoveryCode: string | null;

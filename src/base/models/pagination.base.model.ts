@@ -83,12 +83,29 @@ export class Pagination {
 export class PaginationWithSearchLoginAndEmailTerm extends Pagination {
   public readonly searchLoginTerm: string | null;
   public readonly searchEmailTerm: string | null;
-
+  public readonly banStatus: string | null;
   constructor(query: ParsedQs, sortProperties: string[]) {
     super(query, sortProperties);
 
     this.searchLoginTerm = query.searchLoginTerm?.toString() || null;
     this.searchEmailTerm = query.searchEmailTerm?.toString() || null;
+    this.banStatus = this.getBanFilter(query);
+  }
+  getBanFilter(query: ParsedQs) {
+    let result = null;
+    switch (query.banStatus) {
+      case "banned": {
+        result = true;
+        break;
+      }
+      case "notBanned": {
+        result = false;
+        break;
+      }
+      default:
+        break;
+    }
+    return result;
   }
 }
 

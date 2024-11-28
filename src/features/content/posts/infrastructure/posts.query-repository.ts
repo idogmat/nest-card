@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
 import { PostOutputModel, PostOutputModelMapper } from '../api/model/output/post.output.model';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Post } from '../domain/post.entity';
 import { PostLike } from './../../../../features/likes/domain/post-like-info.entity';
+import { User } from 'src/features/users/domain/user.entity';
 
 const postMap =
   "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
@@ -14,10 +15,14 @@ export class PostsQueryRepository {
   constructor(
     @InjectRepository(Post)
     private readonly postRepo: Repository<Post>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
-    const post = await this.postRepo.createQueryBuilder("p")
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const post = await queryRunner.manager.createQueryBuilder(Post, "p")
       .leftJoinAndSelect("p.blog", "b")
       .select([
         postMap,
@@ -32,7 +37,9 @@ export class PostsQueryRepository {
           "'addedAt', pl.addedAt" +
           ") ORDER BY pl.addedAt DESC )")
           .from(PostLike, "pl")
-          .where("pl.postId = p.id");
+          .leftJoin(User, 'u', 'pl.userId IS NOT NULL AND u.id = pl.userId')
+          .where("pl.postId = p.id")
+          .andWhere("u.banned != true");
       }, "extendedLikesInfo")
       .where("p.id = :postId", { postId })
       .getRawOne();
@@ -45,7 +52,9 @@ export class PostsQueryRepository {
   }
 
   async getByBlogId(blogId: string, userId?: string): Promise<PostOutputModel | null> {
-    const post = await this.postRepo.createQueryBuilder("p")
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const post = await queryRunner.manager.createQueryBuilder(Post, "p")
       .leftJoinAndSelect("p.blog", "b")
       .select([
         postMap,
@@ -62,7 +71,9 @@ export class PostsQueryRepository {
           ") ORDER BY pl.addedAt DESC ) " +
           "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
           .from(PostLike, "pl")
-          .where("pl.postId = p.id");
+          .leftJoin(User, 'u', 'pl.userId IS NOT NULL AND u.id = pl.userId')
+          .where("pl.postId = p.id")
+          .andWhere("u.banned != true");
       }, "extendedLikesInfo")
       .where("p.blogId = :blogId", { blogId })
       .getRawOne();

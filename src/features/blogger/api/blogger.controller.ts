@@ -3,6 +3,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -23,9 +24,11 @@ import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/mod
 import { BlogOutputModel } from 'src/features/content/blogs/api/model/output/blog.output.model';
 import { SortingPropertiesType } from 'src/base/types/sorting-properties.type';
 import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
+import { PostInBlogCreateModel } from 'src/features/content/blogs/api/model/input/create-post.input.model';
+import { PostOutputModel } from 'src/features/content/posts/api/model/output/post.output.model';
 
-// export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
-//   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
+export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
+  ['title', 'blogId', 'blogName', 'content', 'createdAt'];
 
 export const BLOGS_SORTING_PROPERTIES: SortingPropertiesType<BlogOutputModel> =
   ['name', 'description', 'createdAt'];
@@ -47,9 +50,9 @@ export class BloggerController {
     const createdBlogId = await this.bloggerService.create(
       createModel as Blog, req.user
     );
-
+    console.log(createdBlogId);
     const createdBlog: any | null =
-      await this.bloggerService.getById(createdBlogId);
+      await this.bloggerQueryRepository.getBlogById(createdBlogId);
 
     return createdBlog;
   }
@@ -57,6 +60,7 @@ export class BloggerController {
   @Get('/blogs')
   async getAll(
     @Query() query: any,
+    @Req() req: any,
   ) {
     const pagination: PaginationWithSearchBlogNameTerm =
       new PaginationWithSearchBlogNameTerm(
@@ -65,7 +69,7 @@ export class BloggerController {
       );
 
     const blogs: PaginationOutput<BlogOutputModel> =
-      await this.bloggerQueryRepository.getAll(pagination);
+      await this.bloggerQueryRepository.getAll(pagination, req.user.userId);
 
     return blogs;
   }
@@ -89,5 +93,73 @@ export class BloggerController {
     @Body() updateModel: BlogCreateModel
   ) {
     await this.bloggerService.updateBlog(blogId, req.user?.userId, updateModel);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('/blogs/:blogId/posts')
+  async createPost(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Req() req: any,
+    @Body() createModel: PostInBlogCreateModel
+  ) {
+    const createdPost =
+      await this.bloggerService.createPost(blogId, req.user, createModel);
+
+    return createdPost;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/blogs/:blogId/posts')
+  async getPosts(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Query() query: any,
+    @Req() req: any,
+  ) {
+    const blog = await this.bloggerService.getById(blogId);
+    if (!blog) throw new NotFoundException();
+    const pagination: PaginationWithSearchBlogNameTerm =
+      new PaginationWithSearchBlogNameTerm(
+        query,
+        POSTS_SORTING_PROPERTIES,
+      );
+
+    const posts: PaginationOutput<PostOutputModel> =
+      await this.bloggerQueryRepository.getAllPosts(pagination, blogId, req?.user?.userId);
+
+    return posts;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async updatePost(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+    @Body() updateModel: PostInBlogCreateModel,
+    @Req() req: any,
+  ) {
+
+    await this.bloggerService.updatePost(
+      blogId,
+      postId,
+      req.user.userId,
+      updateModel
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('blogs/:blogId/posts/:postId')
+  @HttpCode(204)
+  async deletePost(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe()) postId: string,
+    @Req() req: any,
+  ) {
+
+    await this.bloggerService.deletePost(
+      blogId,
+      postId,
+      req.user.userId,
+    );
   }
 }

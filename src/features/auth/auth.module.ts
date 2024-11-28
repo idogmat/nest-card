@@ -29,6 +29,6 @@ export interface AuthUser {
     EmailService,
     AuthLoginUseCase,
   ],
-  exports: [AuthService, JwtService]
+  exports: [AuthService, JwtService, UserModule]
 })
 export class AuthModule { }

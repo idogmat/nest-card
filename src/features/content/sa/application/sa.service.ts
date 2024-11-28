@@ -3,6 +3,8 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Blog } from "src/features/content/blogs/domain/blog.entity";
 import { User } from "src/features/users/domain/user.entity";
 import { DataSource, Repository } from "typeorm";
+import { BanInputModel } from "../model/input/sa.ban.input";
+import { TransactionManager } from "src/utils/transaction/transactionManager";
 
 @Injectable()
 export class SuperAdminService {
@@ -11,7 +13,10 @@ export class SuperAdminService {
     private readonly bloggerRepo: Repository<Blog>,
     @InjectDataSource()
     private readonly dataSource: DataSource,
-  ) { }
+    private readonly transactionManager: TransactionManager,
+  ) {
+    this.transactionManager = new TransactionManager(this.dataSource);
+  }
 
   async getById(id: string): Promise<Blog | null> {
     const blog = await this.bloggerRepo.findOneBy({ id: id });
@@ -19,6 +24,20 @@ export class SuperAdminService {
       return null;
     }
     return blog;
+  }
+
+  async banUser(id: string, ban: BanInputModel): Promise<void> {
+    return await this.transactionManager.executeInTransaction(async (queryRunner) => {
+      // const queryRunner = this.dataSource.createQueryRunner();
+      // await queryRunner.connect();
+      const user = await queryRunner.manager.findOne(User, { where: { id } });
+      if (!user) throw new BadRequestException();
+
+      user.banned = ban.isBanned;
+      user.banReason = ban.isBanned ? ban.banReason : null;
+      user.banDate = ban.isBanned ? new Date() : null;
+      await queryRunner.manager.save(user);
+    });
   }
 
   async create(newBlog: Blog): Promise<string> {

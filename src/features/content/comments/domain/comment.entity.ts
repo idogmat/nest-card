@@ -16,7 +16,7 @@ export class Comment {
   @Column()
   createdAt: Date;
 
-  @Column()
+  @Column({ type: 'uuid' })
   userId: string;
 
   @Column()

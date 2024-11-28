@@ -48,6 +48,6 @@ import { TransactionManager } from "src/utils/transaction/transactionManager";
     EndGameService,
     TransactionManager
   ],
-  exports: []
+  exports: [TransactionManager]
 })
 export class QuizModule { }
