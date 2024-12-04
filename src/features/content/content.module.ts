@@ -28,18 +28,19 @@ import { SuperAdminQueryRepository } from "./sa/infrastructure/sa.query-reposito
 import { SuperAdminService } from "./sa/application/sa.service";
 import { SuperAdminRepository } from "./sa/infrastructure/sa.repository";
 import { TransactionManager } from "src/utils/transaction/transactionManager";
+import { BlogBlock } from "./blogs/domain/blog.ban.entity";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Blog, Post, PostLike, Comment, CommentLike])
+    TypeOrmModule.forFeature([Blog, BlogBlock, Post, PostLike, Comment, CommentLike])
   ],
   controllers: [
     BlogsController,
     PostsController,
     CommentsController,
     SuperAdminController,
-    BloggerController
+    BloggerController,
   ],
   providers: [
     BlogsService,

@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../../posts/domain/post.entity';
 import { User } from 'src/features/users/domain/user.entity';
+import { BlogBlock } from './blog.ban.entity';
 
 @Entity()
 export class Blog {
@@ -31,6 +32,8 @@ export class Blog {
   @OneToMany(() => Post, (post) => post.blog)
   posts: Post[];
 
+  @OneToMany(() => BlogBlock, (blogBlock) => blogBlock.blog)
+  blogBlocks: BlogBlock[];
 
 
   static createBlog(name: string, description: string, websiteUrl: string) {

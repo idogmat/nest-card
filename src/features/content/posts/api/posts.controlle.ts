@@ -2,6 +2,7 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -30,6 +31,9 @@ import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-rep
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
 import { EnhancedParseUUIDPipe } from '../../../../utils/pipes/uuid-check';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
+import { BlogBlock } from '../../blogs/domain/blog.ban.entity';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   [
@@ -52,6 +56,8 @@ export class PostsController {
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+    @InjectDataSource()
+    private readonly dataSource: DataSource
   ) { }
 
   @UseGuards(AuthGetGuard)
@@ -115,8 +121,17 @@ export class PostsController {
     @Param('id', new EnhancedParseUUIDPipe()) postId: string,
     @Body() createModel: CommentCreateModel
   ) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
     const post = await this.postsQueryRepository.getById(postId);
     if (!post) throw new NotFoundException();
+    const blocked = await queryRunner.manager.createQueryBuilder(BlogBlock, 'bb')
+      .where(
+        `bb.blockedByUserId = :userId AND bb.blogId = :blogId`,
+        { userId: req.user.userId, blogId: post.blogId }
+      )
+      .getRawOne();
+    if (blocked) throw new ForbiddenException();
     const { content } = createModel;
 
     const createdComment = await this.commentsService.create(

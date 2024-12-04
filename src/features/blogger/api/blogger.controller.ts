@@ -20,18 +20,23 @@ import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
 import { BloggerService } from '../application/blogger.service';
 import { BloggerQueryRepository } from '../infrastructure/blogger.query-repository';
 import { Blog } from 'src/features/content/blogs/domain/blog.entity';
-import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
+import { PaginationOutput, PaginationWithSearchBlogNameTerm, PaginationWithSearchLoginTerm } from 'src/base/models/pagination.base.model';
 import { BlogOutputModel } from 'src/features/content/blogs/api/model/output/blog.output.model';
 import { SortingPropertiesType } from 'src/base/types/sorting-properties.type';
 import { EnhancedParseUUIDPipe } from 'src/utils/pipes/uuid-check';
 import { PostInBlogCreateModel } from 'src/features/content/blogs/api/model/input/create-post.input.model';
 import { PostOutputModel } from 'src/features/content/posts/api/model/output/post.output.model';
+import { BanUserForBlogInputModel } from '../model/input/banBlogForUser.input.model';
+import { BanndedUserOutputModel } from '../model/output/banned.users.output.model';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
 
 export const BLOGS_SORTING_PROPERTIES: SortingPropertiesType<BlogOutputModel> =
   ['name', 'description', 'createdAt'];
+
+export const BLOGS_BANNED_PROPERTIES: SortingPropertiesType<BanndedUserOutputModel> =
+  ['login', 'createdAt'];
 
 @ApiTags('Blogger')
 @Controller('blogger')
@@ -161,5 +166,38 @@ export class BloggerController {
       postId,
       req.user.userId,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put('users/:userId/ban')
+  @HttpCode(204)
+  async bunBlogForUser(
+    @Req() req: any,
+    @Param('userId', new EnhancedParseUUIDPipe()) userId: string,
+    @Body() banPayload: BanUserForBlogInputModel
+  ) {
+    await this.bloggerService.banUserForBlog(
+      banPayload, req.user, userId
+    );
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('users/blog/:blogId')
+  async getBannedUsers(
+    @Query() query: any,
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Req() req: any,
+  ) {
+    const pagination: PaginationWithSearchLoginTerm =
+      new PaginationWithSearchLoginTerm(
+        query,
+        BLOGS_BANNED_PROPERTIES,
+      );
+
+    const blogs: PaginationOutput<BanndedUserOutputModel> =
+      await this.bloggerQueryRepository.getBannedUsers(pagination, blogId, req.user.userId);
+
+    return blogs;
   }
 }

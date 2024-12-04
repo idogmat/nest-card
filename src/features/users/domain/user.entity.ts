@@ -3,6 +3,7 @@ import { Blog } from 'src/features/content/blogs/domain/blog.entity';
 import { Device } from './../../../features/devices/domain/device.entity';
 import { PlayerProgress } from './../../../features/quiz/domain/player.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { BlogBlock } from 'src/features/content/blogs/domain/blog.ban.entity';
 
 @Entity()
 export class User {
@@ -24,8 +25,6 @@ export class User {
   @Column()
   createdAt: Date;
 
-
-
   @Column()
   confirmationCode: string;
 
@@ -46,6 +45,9 @@ export class User {
 
   @Column({ nullable: true })
   recoveryCode: string | null;
+
+  @OneToMany(() => BlogBlock, (blog) => blog.blogId)
+  BlogBlocks: BlogBlock[];
 
   @OneToMany(() => Blog, (blog) => blog)
   blogs: Blog[];

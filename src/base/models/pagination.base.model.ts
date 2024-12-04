@@ -119,6 +119,16 @@ export class PaginationWithSearchBlogNameTerm extends Pagination {
   }
 }
 
+export class PaginationWithSearchLoginTerm extends Pagination {
+  public readonly searchLoginTerm: string | null;
+
+  constructor(query: ParsedQs, sortProperties: string[]) {
+    super(query, sortProperties);
+
+    this.searchLoginTerm = query.searchLoginTerm?.toString() || null;
+  }
+}
+
 export class PaginationPostSearchBlogNameTerm extends Pagination {
   public readonly searchTitleTerm: string | null;
   public readonly searchBlogNameTerm: string | null;

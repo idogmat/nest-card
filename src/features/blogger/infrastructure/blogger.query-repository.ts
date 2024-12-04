@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { PaginationOutput, PaginationWithSearchBlogNameTerm, PaginationWithSearchLoginTerm } from 'src/base/models/pagination.base.model';
 import { BlogOutputModel, BlogOutputModelMapper } from 'src/features/content/blogs/api/model/output/blog.output.model';
 import { Blog } from 'src/features/content/blogs/domain/blog.entity';
 import { PostOutputModel, PostOutputModelMapper } from 'src/features/content/posts/api/model/output/post.output.model';
 import { Post } from 'src/features/content/posts/domain/post.entity';
 import { PostLike } from 'src/features/likes/domain/post-like-info.entity';
 import { User } from 'src/features/users/domain/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { BanndedUserOutputModel, BanndedUserOutputModelMapper } from '../model/output/banned.users.output.model';
+import { BlogBlock } from 'src/features/content/blogs/domain/blog.ban.entity';
 
 @Injectable()
 export class BloggerQueryRepository {
@@ -16,11 +18,14 @@ export class BloggerQueryRepository {
     private readonly blogRepo: Repository<Blog>,
     @InjectRepository(Post)
     private readonly postRepo: Repository<Post>,
+    @InjectDataSource()
+    private readonly dataSource: DataSource,
   ) { }
   async getBlogById(id: string) {
     const blog = await this.blogRepo.findOneBy({ id });
     return BlogOutputModelMapper(blog);
   }
+
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
     userId: string,
@@ -32,7 +37,15 @@ export class BloggerQueryRepository {
       params.push({ name: `%${pagination.searchNameTerm}%` });
     }
 
-    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b");
+    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
+      .where(qb => {
+        const subQuery = qb.subQuery()
+          .select("bb.blogId")
+          .from(BlogBlock, "bb")
+          .where("bb.blockedByUserId = :userId", { userId })
+          .getQuery();
+        return "b.id NOT IN " + subQuery;
+      });
 
     if (conditions.length > 0) {
       conditions.forEach((condition, i) => blogQueryBuilder.andWhere(condition, params[i]));
@@ -122,6 +135,65 @@ export class BloggerQueryRepository {
     const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
     return new PaginationOutput<PostOutputModel>(
       mappedPosts,
+      pagination.pageNumber,
+      pagination.pageSize,
+      Number(totalCount),
+    );
+  }
+
+  async getBannedUsers(
+    pagination: PaginationWithSearchLoginTerm,
+    blogId?: string,
+    userId?: string
+  ): Promise<PaginationOutput<BanndedUserOutputModel>> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const [blog, blocked] = await Promise.all([
+      queryRunner.manager.createQueryBuilder(Blog, "b")
+        .select('*')
+        .where(`b.id = :blogId`, { blogId })
+        .getRawOne(),
+      queryRunner.manager.createQueryBuilder(BlogBlock, "bb")
+        .where(`bb.blockedByUserId = :userId AND bb.blogId = :blogId`, { userId, blogId })
+        .getRawOne()]);
+    if (!blog) throw new NotFoundException();
+    if (blocked) throw new ForbiddenException();
+    if (blog.userId !== userId) throw new ForbiddenException();
+
+    const blogQueryBuilder = queryRunner.manager.createQueryBuilder(BlogBlock, "bb")
+      .leftJoinAndSelect('bb.blog', "b")
+      .leftJoinAndSelect('bb.blockedByUser', "uu")
+      .select([
+        "bb.*",
+        "uu.login as login"
+      ])
+      .where(`b.id = :blogId`, { blogId })
+      .andWhere(`uu.id IS NOT NULL`);
+
+    let sortBy = `b.${pagination.sortBy}`;
+    if (pagination.sortBy === 'login') {
+      sortBy = `uu.login`;
+    }
+
+    if (pagination.searchLoginTerm) {
+      blogQueryBuilder.andWhere(
+        `(login ilike :term OR u."banReason" ilike :term)`,
+        { term: `%${pagination.searchLoginTerm}%` }
+      );
+    }
+
+    const totalCount = await blogQueryBuilder.getCount();
+    console.log(totalCount);
+    const users = await blogQueryBuilder
+      .orderBy(sortBy, pagination.sortDirection)
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
+      .getRawMany();
+    // console.log(users, 'users');
+    const bannedUsers = users.map(b => BanndedUserOutputModelMapper(b));
+    console.log('bannedUsers');
+    return new PaginationOutput<BanndedUserOutputModel>(
+      bannedUsers,
       pagination.pageNumber,
       pagination.pageSize,
       Number(totalCount),

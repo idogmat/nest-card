@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthUser } from "src/features/auth/auth.module";
 import { BlogCreateModel } from "src/features/content/blogs/api/model/input/create-blog.input.model";
@@ -8,14 +8,21 @@ import { PostOutputModelMapper } from "src/features/content/posts/api/model/outp
 import { Post } from "src/features/content/posts/domain/post.entity";
 import { PostLike } from "src/features/likes/domain/post-like-info.entity";
 import { Repository } from "typeorm";
+import { BanUserForBlogInputModel } from "../model/input/banBlogForUser.input.model";
+import { BlogBlock } from "src/features/content/blogs/domain/blog.ban.entity";
+import { User } from "src/features/users/domain/user.entity";
+import { UsersRepository } from "src/features/users/infrastructure/users.repository";
 
 @Injectable()
 export class BloggerService {
   constructor(
     @InjectRepository(Blog)
     private readonly blogRepo: Repository<Blog>,
+    @InjectRepository(BlogBlock)
+    private readonly blogBlockRepo: Repository<BlogBlock>,
     @InjectRepository(Post)
     private readonly postRepo: Repository<Post>,
+    private readonly userRepo: UsersRepository,
   ) { }
 
   async getById(id: string): Promise<Blog | null> {
@@ -119,5 +126,34 @@ export class BloggerService {
       .getRawOne();
     console.log(result);
     return PostOutputModelMapper(result as Post & { blogName: string; });
+  }
+
+  async banUserForBlog(banPayload: BanUserForBlogInputModel, user: AuthUser, bannedUserId: string) {
+    const [blog, userForBan] = await Promise.all([
+      this.blogRepo.findOneBy({ id: banPayload.blogId }),
+      this.userRepo.getById(bannedUserId)
+    ]);
+    if (!blog?.id) throw new NotFoundException();
+    if (!userForBan?.id) throw new NotFoundException();
+    if (
+      blog?.userId !== user.userId ||
+      user.userId === bannedUserId
+    ) throw new ForbiddenException();
+    const blogBlocked = await this.blogBlockRepo.findOneBy({
+      blockedByUserId: bannedUserId,
+      blogId: blog.id
+    });
+    if (blogBlocked && banPayload.isBanned) throw new NotFoundException();
+    if (banPayload.isBanned) {
+      await this.blogBlockRepo.insert({
+        blogId: blog.id,
+        blockedByUserId: bannedUserId,
+        banReason: banPayload.banReason,
+        createdAt: new Date()
+      });
+    } else if (blogBlocked) {
+      await this.blogBlockRepo.delete(blogBlocked);
+    }
+    return;
   }
 }
