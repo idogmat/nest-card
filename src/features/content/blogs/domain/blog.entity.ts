@@ -23,6 +23,12 @@ export class Blog {
   @Column()
   isMembership: boolean;
 
+  @Column({ type: 'boolean', default: false })
+  bannedByAdmin: boolean;
+
+  @Column({ type: 'timestamp without time zone', nullable: true })
+  banDate: Date;
+
   @Column({ type: 'uuid', nullable: true })
   userId: string;
 

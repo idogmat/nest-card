@@ -17,20 +17,20 @@ export class PostOutputModel {
 // FIXME поправить мапинг
 export const PostOutputModelMapper = (post: Post & { blogName: string; }, _userId?: string): PostOutputModel => {
   const outputModel = new PostOutputModel();
-  outputModel.id = post.id;
-  outputModel.title = post.title;
-  outputModel.shortDescription = post.shortDescription;
-  outputModel.content = post.content;
-  outputModel.blogId = post.blogId;
-  outputModel.blogName = post.blogName;
-  outputModel.createdAt = new Date(+post.createdAt).toISOString();
+  outputModel.id = post?.id;
+  outputModel.title = post?.title;
+  outputModel.shortDescription = post?.shortDescription;
+  outputModel.content = post?.content;
+  outputModel.blogId = post?.blogId;
+  outputModel.blogName = post?.blogName;
+  outputModel.createdAt = new Date(+post?.createdAt).toISOString();
   outputModel.extendedLikesInfo = {
     likesCount: post?.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Like') : 0,
     dislikesCount: post?.extendedLikesInfo?.length ? getLikeCount(post?.extendedLikesInfo, 'Dislike') : 0,
     myStatus: post?.extendedLikesInfo?.length ? getCurrentStatus(post?.extendedLikesInfo, _userId) : "None",
     newestLikes: post?.extendedLikesInfo?.length ? post?.extendedLikesInfo?.reduce((acc, e) => {
       if (e?.type === 'Like' && acc.length < 3) {
-        acc.push({ addedAt: new Date(e.addedAt).toISOString(), login: e.login, userId: e.userId });
+        acc.push({ addedAt: new Date(e?.addedAt).toISOString(), login: e?.login, userId: e?.userId });
       }
       return acc;
     }, [])

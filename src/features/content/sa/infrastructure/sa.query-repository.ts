@@ -39,7 +39,6 @@ export class SuperAdminQueryRepository {
       .skip((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
     const mappedBlogs = blogs.map(BlogOutputSAModelMapper);
-
     return new PaginationOutput<BlogOutputSAModel>(
       mappedBlogs,
       pagination.pageNumber,

@@ -61,6 +61,25 @@ export class BloggerController {
 
     return createdBlog;
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/blogs/comments')
+  async getAllComments(
+    @Query() query: any,
+    @Req() req: any,
+  ) {
+    const pagination: PaginationWithSearchBlogNameTerm =
+      new PaginationWithSearchBlogNameTerm(
+        query,
+        BLOGS_SORTING_PROPERTIES,
+      );
+
+    const comments: PaginationOutput<any> =
+      await this.bloggerQueryRepository.getAllComments(pagination, req.user.userId);
+
+    return comments;
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('/blogs')
   async getAll(

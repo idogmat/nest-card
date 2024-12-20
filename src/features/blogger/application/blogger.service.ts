@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AuthUser } from "src/features/auth/auth.module";
 import { BlogCreateModel } from "src/features/content/blogs/api/model/input/create-blog.input.model";
@@ -10,7 +10,6 @@ import { PostLike } from "src/features/likes/domain/post-like-info.entity";
 import { Repository } from "typeorm";
 import { BanUserForBlogInputModel } from "../model/input/banBlogForUser.input.model";
 import { BlogBlock } from "src/features/content/blogs/domain/blog.ban.entity";
-import { User } from "src/features/users/domain/user.entity";
 import { UsersRepository } from "src/features/users/infrastructure/users.repository";
 
 @Injectable()
@@ -28,9 +27,6 @@ export class BloggerService {
   async getById(id: string): Promise<Blog | null> {
     const blog = await this.blogRepo.findOneBy({ id: id });
     console.log(blog);
-    if (!blog) {
-      return null;
-    }
     return blog;
   }
 

@@ -13,11 +13,11 @@ export class BlogsQueryRepository {
   ) { }
 
   async getById(id: string): Promise<BlogOutputModel | null> {
-    const user = await this.blogRepo.findOneBy({ id: id });
-    if (!user) {
+    const blog = await this.blogRepo.findOneBy({ id: id });
+    if (!blog || blog.bannedByAdmin) {
       throw new NotFoundException();
     }
-    return BlogOutputModelMapper(user);
+    return BlogOutputModelMapper(blog);
   }
 
   async getAll(
@@ -30,10 +30,11 @@ export class BlogsQueryRepository {
       params.push({ name: `%${pagination.searchNameTerm}%` });
     }
 
-    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b");
+    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
+      .where(`b."bannedByAdmin" != :banned`, { banned: true });
 
     if (conditions.length > 0) {
-      conditions.forEach((condition, i) => blogQueryBuilder.where(condition, params[i]));
+      conditions.forEach((condition, i) => blogQueryBuilder.andWhere(condition, params[i]));
     }
     // const sql = blogsQueryBuilder.getSql();
 

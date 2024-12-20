@@ -9,3 +9,8 @@ export class BanInputModel {
   banReason: string;
 
 }
+
+export class BlogBanInputModel {
+  @IsBoolean()
+  isBanned: boolean;
+}

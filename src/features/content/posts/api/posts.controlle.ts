@@ -81,7 +81,7 @@ export class PostsController {
   @Get('/:id')
   async getById(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
-    @Req() req?
+    @Req() req
   ) {
     const post: PostOutputModel =
       await this.postsQueryRepository.getById(id, req?.user?.userId);

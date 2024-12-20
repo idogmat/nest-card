@@ -11,6 +11,10 @@ export class BlogOutputSAModel {
     userId: string;
     userLogin: string;
   } | null;
+  banInfo: {
+    isBanned: boolean,
+    banDate: string;
+  } | null;
 }
 
 // MAPPERS
@@ -27,6 +31,10 @@ export const BlogOutputSAModelMapper = (blog: Blog): BlogOutputSAModel => {
   blog.user?.id ? outputModel.blogOwnerInfo = {
     userId: blog.user?.id,
     userLogin: blog.user?.login
+  } : null;
+  blog.bannedByAdmin !== null ? outputModel.banInfo = {
+    isBanned: Boolean(blog.bannedByAdmin),
+    banDate: blog.banDate ? new Date(blog.banDate).toISOString() : null
   } : null;
 
   return outputModel;

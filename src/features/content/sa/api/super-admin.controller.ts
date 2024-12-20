@@ -30,7 +30,7 @@ import { BlogCreateModel } from '../../blogs/api/model/input/create-blog.input.m
 import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
 import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
 import { SuperAdminService } from '../application/sa.service';
-import { BanInputModel } from '../model/input/sa.ban.input';
+import { BanInputModel, BlogBanInputModel } from '../model/input/sa.ban.input';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -59,6 +59,16 @@ export class SuperAdminController {
   ) {
     await this.superAdminService.banUser(id, ban);
     return;
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put('/blogs/:blogId/ban')
+  @HttpCode(204)
+  async banBlog(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Body() ban: BlogBanInputModel
+  ) {
+    return await this.superAdminService.banBlog(blogId, ban);
   }
 
   // SA
@@ -123,7 +133,7 @@ export class SuperAdminController {
 
     if (!createdPostId) throw new NotFoundException();
     const createdPost: PostOutputModel | null =
-      await this.postsQueryRepository.getById(createdPostId);
+      await this.postsQueryRepository.getByIdForAdmin(createdPostId);
 
     return createdPost;
   }
@@ -137,7 +147,7 @@ export class SuperAdminController {
     const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const post: PostOutputModel =
-      await this.postsQueryRepository.getById(postId);
+      await this.postsQueryRepository.getByIdForAdmin(postId);
 
     if (!post) {
       throw new NotFoundException();
@@ -203,7 +213,7 @@ export class SuperAdminController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, blogId, req?.user?.userId);
+      await this.postsQueryRepository.getAllForAdmin(pagination, blogId, req?.user?.userId);
 
     return posts;
   }

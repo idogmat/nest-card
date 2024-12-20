@@ -20,6 +20,39 @@ export class PostsQueryRepository {
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
+    // const queryRunner = this.dataSource.createQueryRunner();
+    // await queryRunner.connect();
+    const post = await this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .select([
+        postMap,
+        "b.name AS \"blogName\"",
+        "b.bannedByAdmin AS \"bannedByAdmin\"",
+      ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          ") ORDER BY pl.addedAt DESC )")
+          .from(PostLike, "pl")
+          .leftJoin(User, 'u', 'pl.userId IS NOT NULL AND u.id = pl.userId')
+          .where("pl.postId = p.id")
+          .andWhere("u.banned != true");
+      }, "extendedLikesInfo")
+      .where("p.id = :postId", { postId })
+      .getRawOne();
+
+    if (!post || post.bannedByAdmin) {
+      return;
+    }
+
+    return PostOutputModelMapper(post, userId);
+  }
+
+  async getByIdForAdmin(postId: string, userId?: string): Promise<PostOutputModel | null> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     const post = await queryRunner.manager.createQueryBuilder(Post, "p")
@@ -86,20 +119,82 @@ export class PostsQueryRepository {
     return PostOutputModelMapper(post, userId);
   }
 
-  // const postQueryBuilder = this.postRepo.find({
-  //   relations: {
-  //     blog: true,
-  //     extendedLiksInfo: true
-  //   },
-  //   order: {
-  //     [sortBy]: sortDirection,
-  //     blog: {
-  //       'name': 
-  //     }
-  //   }
-  // });
-
   async getAll(
+    pagination: PaginationWithSearchBlogNameTerm,
+    blogId?: string,
+    userId?: string
+  ): Promise<PaginationOutput<PostOutputModel>> {
+    const conditions = [];
+    const params = [];
+
+
+    const postQueryBuilder = this.postRepo.createQueryBuilder("p")
+      .leftJoinAndSelect("p.blog", "b")
+      .select([
+        "p.*",
+        "b.name AS \"blogName\"",
+      ])
+      .addSelect((subQuery) => {
+        return subQuery.select("COALESCE" +
+          "(jsonb_agg(jsonb_build_object(" +
+          "'userId', pl.userId, " +
+          "'postId', pl.postId, " +
+          "'type', pl.type, " +
+          "'login', pl.login, " +
+          "'addedAt', pl.addedAt" +
+          ") ORDER BY pl.addedAt DESC ) " +
+          "FILTER (WHERE pl.userId IS NOT NULL), '[]')")
+          .from(PostLike, "pl")
+          .where("pl.postId = p.id");
+      }, "extendedLikesInfo")
+      .where(`b.bannedByAdmin != true`);
+
+
+    if (pagination.searchNameTerm) {
+      conditions.push("p.title ilike :title");
+      params.push({ title: `%${pagination.searchNameTerm}%` });
+    }
+
+    if (blogId) {
+      conditions.push(`p."blogId" = :blogId`);
+      params.push({ blogId });
+    }
+
+    if (conditions.length > 0) {
+      conditions.forEach((condition, i) => {
+        if (i === 0)
+          postQueryBuilder.andWhere(condition, params[i]);
+        if (i === 1)
+          postQueryBuilder.andWhere(condition, params[i]);
+      });
+    }
+
+    let sortBy = `p.${pagination.sortBy}`;
+    if (pagination.sortBy === "blogName") {
+      sortBy = "b.name";
+    }
+
+    const totalCount = await postQueryBuilder.getCount();
+
+    const posts = await postQueryBuilder
+      .orderBy(`${sortBy}`, pagination.sortDirection)
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
+      .getRawMany();
+
+
+    console.log(posts);
+
+    const mappedPosts = posts.map(b => PostOutputModelMapper(b, userId));
+    return new PaginationOutput<PostOutputModel>(
+      mappedPosts,
+      pagination.pageNumber,
+      pagination.pageSize,
+      Number(totalCount),
+    );
+  }
+
+  async getAllForAdmin(
     pagination: PaginationWithSearchBlogNameTerm,
     blogId?: string,
     userId?: string

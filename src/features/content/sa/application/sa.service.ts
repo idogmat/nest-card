@@ -3,7 +3,7 @@ import { InjectDataSource, InjectRepository } from "@nestjs/typeorm";
 import { Blog } from "src/features/content/blogs/domain/blog.entity";
 import { User } from "src/features/users/domain/user.entity";
 import { DataSource, Repository } from "typeorm";
-import { BanInputModel } from "../model/input/sa.ban.input";
+import { BanInputModel, BlogBanInputModel } from "../model/input/sa.ban.input";
 import { TransactionManager } from "src/utils/transaction/transactionManager";
 
 @Injectable()
@@ -37,6 +37,17 @@ export class SuperAdminService {
       user.banReason = ban.isBanned ? ban.banReason : null;
       user.banDate = ban.isBanned ? new Date() : null;
       await queryRunner.manager.save(user);
+    });
+  }
+
+  async banBlog(id: string, ban: BlogBanInputModel): Promise<void> {
+    return await this.transactionManager.executeInTransaction(async (queryRunner) => {
+      const blog = await queryRunner.manager.findOne(Blog, { where: { id } });
+      if (!blog) throw new BadRequestException();
+
+      blog.bannedByAdmin = ban.isBanned;
+      blog.banDate = new Date();
+      await queryRunner.manager.save(blog);
     });
   }
 

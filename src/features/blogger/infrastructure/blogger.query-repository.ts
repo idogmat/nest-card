@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm, PaginationWithSearchLoginTerm } from 'src/base/models/pagination.base.model';
 import { BlogOutputModel, BlogOutputModelMapper } from 'src/features/content/blogs/api/model/output/blog.output.model';
@@ -10,6 +10,9 @@ import { User } from 'src/features/users/domain/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { BanndedUserOutputModel, BanndedUserOutputModelMapper } from '../model/output/banned.users.output.model';
 import { BlogBlock } from 'src/features/content/blogs/domain/blog.ban.entity';
+import { Comment } from 'src/features/content/comments/domain/comment.entity';
+import { CommentLike } from 'src/features/likes/domain/comment-like-info.entity';
+import { CommentByUserOutputModel, CommentByUserOutputModelMapper } from '../model/output/comment.output.model';
 
 @Injectable()
 export class BloggerQueryRepository {
@@ -38,7 +41,9 @@ export class BloggerQueryRepository {
     }
 
     const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
-      .where(qb => {
+      .where(`b."bannedByAdmin" != :banned`, { banned: true })
+      .andWhere(`b."userId" = :userId`, { userId })
+      .andWhere(qb => {
         const subQuery = qb.subQuery()
           .select("bb.blogId")
           .from(BlogBlock, "bb")
@@ -82,6 +87,7 @@ export class BloggerQueryRepository {
       .select([
         "p.*",
         "b.name AS \"blogName\"",
+        "b.bannedByAdmin AS \"bannedByAdmin\"",
       ])
       .addSelect((subQuery) => {
         return subQuery.select("COALESCE" +
@@ -97,7 +103,9 @@ export class BloggerQueryRepository {
           .leftJoin(User, 'u', 'pl.userId IS NOT NULL AND u.id = pl.userId')
           .where("pl.postId = p.id")
           .andWhere("u.banned != true");
-      }, "extendedLikesInfo");
+      }, "extendedLikesInfo")
+      .where(`b."bannedByAdmin" != true`);
+
 
 
     if (pagination.searchNameTerm) {
@@ -113,7 +121,7 @@ export class BloggerQueryRepository {
     if (conditions.length > 0) {
       conditions.forEach((condition, i) => {
         if (i === 0)
-          postQueryBuilder.where(condition, params[i]);
+          postQueryBuilder.andWhere(condition, params[i]);
         if (i === 1)
           postQueryBuilder.andWhere(condition, params[i]);
       });
@@ -194,6 +202,60 @@ export class BloggerQueryRepository {
     console.log('bannedUsers');
     return new PaginationOutput<BanndedUserOutputModel>(
       bannedUsers,
+      pagination.pageNumber,
+      pagination.pageSize,
+      Number(totalCount),
+    );
+  }
+
+  async getAllComments(
+    pagination: PaginationWithSearchBlogNameTerm,
+    userId?: string
+  ): Promise<PaginationOutput<CommentByUserOutputModel>> {
+    const conditions = [];
+    const params = [];
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    const postQueryBuilder = queryRunner.manager.createQueryBuilder(Comment, "c")
+      .leftJoinAndSelect("c.post", "p")
+      .leftJoin(User, "u", "c.userId = u.id")
+      // .leftJoin("user", "u", "c.userId = u.id")
+      .select([
+        `p.id as "postId"`,
+        "c.*",
+        `u.id as "userId"`,
+        "u.login as login"
+      ])
+      .where(`"userId" =:userId`, { userId })
+      // .andWhere((subQuery) =>{
+
+      // });
+      .addSelect((subQuery) => {
+        return subQuery.select("COALESCE(" +
+          "jsonb_agg(jsonb_build_object(" +
+          "'userId', cl.userId, " +
+          "'commentId', cl.commentId, " +
+          "'type', cl.type, " +
+          "'login', cl.login, " +
+          "'addedAt', cl.addedAt" +
+          ")) FILTER (WHERE cl.userId IS NOT NULL), '[]')")
+          .from(CommentLike, "cl")
+          .leftJoin(User, 'u', 'cl.userId IS NOT NULL AND u.id = cl.userId')
+          .where("cl.commentId = c.id")
+          .andWhere("u.banned != true");
+      }, "extendedLikesInfo");
+
+    const totalCount = await postQueryBuilder.getCount();
+
+    const comments = await postQueryBuilder
+      .orderBy(`"${pagination.sortBy}"`, pagination.sortDirection)
+      .limit(pagination.pageSize)
+      .offset((pagination.pageNumber - 1) * pagination.pageSize)
+      .getRawMany();
+    console.log(comments);
+    const mappedComments = comments.map(b => CommentByUserOutputModelMapper(b, userId));
+    return new PaginationOutput<CommentByUserOutputModel>(
+      mappedComments,
       pagination.pageNumber,
       pagination.pageSize,
       Number(totalCount),
