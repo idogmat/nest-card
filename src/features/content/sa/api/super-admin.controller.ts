@@ -58,7 +58,6 @@ export class SuperAdminController {
     @Body() ban: BanInputModel
   ) {
     await this.superAdminService.banUser(id, ban);
-    return;
   }
 
   @UseGuards(BasicAuthGuard)

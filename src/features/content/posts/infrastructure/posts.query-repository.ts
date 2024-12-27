@@ -20,8 +20,6 @@ export class PostsQueryRepository {
   ) { }
 
   async getById(postId: string, userId?: string): Promise<PostOutputModel | null> {
-    // const queryRunner = this.dataSource.createQueryRunner();
-    // await queryRunner.connect();
     const post = await this.postRepo.createQueryBuilder("p")
       .leftJoinAndSelect("p.blog", "b")
       .select([
@@ -46,7 +44,7 @@ export class PostsQueryRepository {
       .getRawOne();
 
     if (!post || post.bannedByAdmin) {
-      return;
+      return null;
     }
 
     return PostOutputModelMapper(post, userId);
@@ -54,7 +52,6 @@ export class PostsQueryRepository {
 
   async getByIdForAdmin(postId: string, userId?: string): Promise<PostOutputModel | null> {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     const post = await queryRunner.manager.createQueryBuilder(Post, "p")
       .leftJoinAndSelect("p.blog", "b")
       .select([
@@ -86,7 +83,6 @@ export class PostsQueryRepository {
 
   async getByBlogId(blogId: string, userId?: string): Promise<PostOutputModel | null> {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     const post = await queryRunner.manager.createQueryBuilder(Post, "p")
       .leftJoinAndSelect("p.blog", "b")
       .select([

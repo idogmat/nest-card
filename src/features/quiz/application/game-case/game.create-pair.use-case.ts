@@ -24,7 +24,6 @@ export class CreateGamePairUseCase implements ICommandHandler<CreateGamePairComm
   async execute(command: CreateGamePairCommand): Promise<boolean | GameOutputModel> {
     const { user } = command;
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     await queryRunner.startTransaction();
     let result = null;
     let gameId = null;

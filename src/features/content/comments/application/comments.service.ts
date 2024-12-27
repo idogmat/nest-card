@@ -1,26 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CommentsRepository } from '../infrastructure/comments.repository';
 import { CommentOutputModel, CommentOutputModelMapper } from '../api/model/output/comment.output.model';
-import { PostsRepository } from '../../posts/infrastructure/posts.repository';
 import { Comment } from '../domain/comment.entity';
+import { Post } from '../../posts/domain/post.entity';
 
 @Injectable()
 export class CommentsService {
   constructor(
     private readonly commentsRepository: CommentsRepository,
-    private readonly postsRepository: PostsRepository,
   ) { }
   async create(
-    postId: string,
+    post: Post,
     content: string,
     userId: string,
     userLogin: string,
   ): Promise<CommentOutputModel> {
-
-    const post = await this.postsRepository.getById(postId);
     if (!post) throw new NotFoundException();
     const newComment: any = {
-      postId,
+      postId: post.id,
       content,
       userId,
       userLogin,

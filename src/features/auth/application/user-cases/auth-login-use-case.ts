@@ -25,6 +25,7 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
     const passwordHash = await this.authService.hashPassword(command.password, user.passwordSalt);
     if (user.passwordHash !== passwordHash) return false;
     const lastActiveDate = new Date();
+    console.log(command);
     const device = await this.devicesService.create(
       command.device.ip,
       command.device.title,

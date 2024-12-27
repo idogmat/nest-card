@@ -39,12 +39,12 @@ export const CommentByUserOutputModelMapper = (comment: any, _userId: string): C
     myStatus: getCurrentStatus(comment?.extendedLikesInfo, _userId),
   };
   outputModel.createdAt = new Date(comment.createdAt).toISOString();
-  // outputModel.postInfo = {
-  //   id: comment.postId,
-  //   title: comment.postTitle,
-  //   blogId: comment.blogId,
-  //   blogName: comment.blogName
-  // };
+  outputModel.postInfo = {
+    id: comment.postId,
+    title: comment.postTitle,
+    blogId: comment.blogId,
+    blogName: comment.blogName
+  };
   // outputModel.login = block.login;
   // outputModel.banInfo = {
   //   isBanned: !!block.banReason,

@@ -27,7 +27,9 @@ export class PostsRepository {
   }
 
   async getById(id: string) {
+    console.log('k');
     const post = await this.postRepo.findOneBy({ id: id });
+    console.log('pst');
     return post;
   }
 

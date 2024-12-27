@@ -27,7 +27,7 @@ export class SuperAdminService {
   }
 
   async banUser(id: string, ban: BanInputModel): Promise<void> {
-    return await this.transactionManager.executeInTransaction(async (queryRunner) => {
+    await this.transactionManager.executeInTransaction(async (queryRunner) => {
       // const queryRunner = this.dataSource.createQueryRunner();
       // await queryRunner.connect();
       const user = await queryRunner.manager.findOne(User, { where: { id } });
@@ -65,7 +65,6 @@ export class SuperAdminService {
 
   async bindUserWithBlog(blogId: string, userId: string) {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     const [blog, user] = await Promise.all([
       queryRunner.manager.createQueryBuilder(Blog, 'b')
         .where('b.id = :blogId', { blogId })
@@ -73,7 +72,7 @@ export class SuperAdminService {
       queryRunner.manager.createQueryBuilder(User, 'u')
         .where('u.id = :userId', { userId })
         .getOne()
-    ]);
+    ]).then(res => { console.log(res); return res; });;
     if (!blog || blog?.userId || !user?.id) throw new BadRequestException();
 
     const updated = await queryRunner.manager.createQueryBuilder(Blog, 'b')

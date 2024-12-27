@@ -52,7 +52,6 @@ export class CommentsQueryRepository {
     userId?: string
   ): Promise<PaginationOutput<CommentOutputModel>> {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     const commentQueryBuilder = queryRunner.manager.createQueryBuilder(Comment, "c")
       .select([
         "c.*",

@@ -19,6 +19,8 @@ export class BloggerQueryRepository {
   constructor(
     @InjectRepository(Blog)
     private readonly blogRepo: Repository<Blog>,
+    @InjectRepository(BlogBlock)
+    private readonly blogBlockRepo: Repository<BlogBlock>,
     @InjectRepository(Post)
     private readonly postRepo: Repository<Post>,
     @InjectDataSource()
@@ -63,7 +65,7 @@ export class BloggerQueryRepository {
       .take(pagination.pageSize)
       .skip((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
-    console.log(blogs, 'blogs');
+    // console.log(blogs, 'blogs');
     const mappedBlogs = blogs.map(BlogOutputModelMapper);
 
     return new PaginationOutput<BlogOutputModel>(
@@ -155,15 +157,14 @@ export class BloggerQueryRepository {
     userId?: string
   ): Promise<PaginationOutput<BanndedUserOutputModel>> {
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    const [blog, blocked] = await Promise.all([
-      queryRunner.manager.createQueryBuilder(Blog, "b")
-        .select('*')
-        .where(`b.id = :blogId`, { blogId })
-        .getRawOne(),
-      queryRunner.manager.createQueryBuilder(BlogBlock, "bb")
-        .where(`bb.blockedByUserId = :userId AND bb.blogId = :blogId`, { userId, blogId })
-        .getRawOne()]);
+    const startTime = performance.now();
+
+    const blog = await this.blogRepo.findOne({ where: { id: blogId } });
+    const blocked = await this.blogBlockRepo.findOne({ where: { blockedByUserId: userId, id: blogId } });
+    const endTime = performance.now();
+    const executionTime = endTime - startTime;
+    console.log(`Execution Time: ${executionTime} milliseconds`);
+    console.log(blog, blocked);
     if (!blog) throw new NotFoundException();
     if (blocked) throw new ForbiddenException();
     if (blog.userId !== userId) throw new ForbiddenException();
@@ -210,26 +211,20 @@ export class BloggerQueryRepository {
 
   async getAllComments(
     pagination: PaginationWithSearchBlogNameTerm,
-    userId?: string
+    userId: string
   ): Promise<PaginationOutput<CommentByUserOutputModel>> {
-    const conditions = [];
-    const params = [];
     const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
     const postQueryBuilder = queryRunner.manager.createQueryBuilder(Comment, "c")
-      .leftJoinAndSelect("c.post", "p")
-      .leftJoin(User, "u", "c.userId = u.id")
-      // .leftJoin("user", "u", "c.userId = u.id")
       .select([
         `p.id as "postId"`,
+        `p.title as "postTitle"`,
+        `p.blogId as "blogId"`,
+        `b.name as "blogName"`,
         "c.*",
-        `u.id as "userId"`,
-        "u.login as login"
       ])
-      .where(`"userId" =:userId`, { userId })
-      // .andWhere((subQuery) =>{
-
-      // });
+      .leftJoin("c.post", "p")
+      .leftJoin(`p.blog`, "b")
+      .where(`b."userId" =:userId`, { userId })
       .addSelect((subQuery) => {
         return subQuery.select("COALESCE(" +
           "jsonb_agg(jsonb_build_object(" +
@@ -242,7 +237,7 @@ export class BloggerQueryRepository {
           .from(CommentLike, "cl")
           .leftJoin(User, 'u', 'cl.userId IS NOT NULL AND u.id = cl.userId')
           .where("cl.commentId = c.id")
-          .andWhere("u.banned != true");
+          .andWhere("u.banned != :banned", { banned: true });
       }, "extendedLikesInfo");
 
     const totalCount = await postQueryBuilder.getCount();

@@ -88,8 +88,9 @@ export class BloggerService {
 
   async createPost(id: string, user: AuthUser, model: PostInBlogCreateModel): Promise<any> {
     const blog = await this.blogRepo.findOneBy({ id: id });
+    console.log(blog);
     if (!blog?.id) throw new NotFoundException();
-    if (blog?.userId !== user.userId) throw new ForbiddenException();
+    if (blog?.userId !== user?.userId) throw new ForbiddenException();
     const { content, shortDescription, title } = model;
     const postMap =
       "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
@@ -125,20 +126,27 @@ export class BloggerService {
   }
 
   async banUserForBlog(banPayload: BanUserForBlogInputModel, user: AuthUser, bannedUserId: string) {
-    const [blog, userForBan] = await Promise.all([
+    const [
+      blog,
+      userForBan,
+      blogBlocked
+    ] = await Promise.all([
       this.blogRepo.findOneBy({ id: banPayload.blogId }),
-      this.userRepo.getById(bannedUserId)
-    ]);
+      this.userRepo.getById(bannedUserId),
+      this.blogBlockRepo.findOne({
+        where: {
+          blockedByUserId: bannedUserId,
+          blogId: banPayload.blogId,
+        },
+      })
+    ]).then(res => { console.log(res); return res; });
     if (!blog?.id) throw new NotFoundException();
     if (!userForBan?.id) throw new NotFoundException();
     if (
       blog?.userId !== user.userId ||
       user.userId === bannedUserId
     ) throw new ForbiddenException();
-    const blogBlocked = await this.blogBlockRepo.findOneBy({
-      blockedByUserId: bannedUserId,
-      blogId: blog.id
-    });
+
     if (blogBlocked && banPayload.isBanned) throw new NotFoundException();
     if (banPayload.isBanned) {
       await this.blogBlockRepo.insert({
@@ -147,9 +155,11 @@ export class BloggerService {
         banReason: banPayload.banReason,
         createdAt: new Date()
       });
+      return;
     } else if (blogBlocked) {
       await this.blogBlockRepo.delete(blogBlocked);
+      return;
     }
-    return;
+
   }
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from 'src/features/users/domain/user.entity';
 import { Blog } from './blog.entity';
 
@@ -7,9 +7,11 @@ export class BlogBlock {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
+  @Index()
   @Column({ type: 'uuid' })
   blogId: string;
 
+  @Index()
   @Column({ type: 'uuid' })
   blockedByUserId: string;
 

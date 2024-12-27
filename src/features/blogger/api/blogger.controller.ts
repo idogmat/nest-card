@@ -198,7 +198,6 @@ export class BloggerController {
     await this.bloggerService.banUserForBlog(
       banPayload, req.user, userId
     );
-    return;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -216,7 +215,7 @@ export class BloggerController {
 
     const blogs: PaginationOutput<BanndedUserOutputModel> =
       await this.bloggerQueryRepository.getBannedUsers(pagination, blogId, req.user.userId);
-
+    console.log(blogs, 'tut');
     return blogs;
   }
 }
