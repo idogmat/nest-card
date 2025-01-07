@@ -29,11 +29,18 @@ import { SuperAdminService } from "./sa/application/sa.service";
 import { SuperAdminRepository } from "./sa/infrastructure/sa.repository";
 import { TransactionManager } from "src/utils/transaction/transactionManager";
 import { BlogBlock } from "./blogs/domain/blog.ban.entity";
+import { BlogImage } from "./images/domain/blog-image.entity";
+import { ImageService } from "./images/application/image.service";
+import { S3StorageAdapter } from "./images/adapter/adapter.s3";
+import { CqrsModule } from "@nestjs/cqrs";
+import { InsertBlogImageUseCase } from "../blogger/application/use-cases/insert-image";
+import { PostImage } from "./images/domain/post-image.entity";
 
 @Module({
   imports: [
     AuthModule,
-    TypeOrmModule.forFeature([Blog, BlogBlock, Post, PostLike, Comment, CommentLike])
+    CqrsModule,
+    TypeOrmModule.forFeature([Blog, BlogBlock, Post, PostLike, Comment, CommentLike, BlogImage, PostImage])
   ],
   controllers: [
     BlogsController,
@@ -59,7 +66,10 @@ import { BlogBlock } from "./blogs/domain/blog.ban.entity";
     SuperAdminQueryRepository,
     SuperAdminRepository,
     SuperAdminService,
-    TransactionManager
+    ImageService,
+    TransactionManager,
+    S3StorageAdapter,
+    InsertBlogImageUseCase
   ],
   exports: []
 })

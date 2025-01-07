@@ -1,5 +1,6 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -12,9 +13,11 @@ import {
   Put,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-
+import { Express } from 'express'
 import { BlogCreateModel } from 'src/features/content/blogs/api/model/input/create-blog.input.model';
 import { JwtAuthGuard } from 'src/features/auth/guards/jwt-auth.guard';
 import { BloggerService } from '../application/blogger.service';
@@ -28,6 +31,11 @@ import { PostInBlogCreateModel } from 'src/features/content/blogs/api/model/inpu
 import { PostOutputModel } from 'src/features/content/posts/api/model/output/post.output.model';
 import { BanUserForBlogInputModel } from '../model/input/banBlogForUser.input.model';
 import { BanndedUserOutputModel } from '../model/output/banned.users.output.model';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageService } from 'src/features/content/images/application/image.service';
+import { CommandBus } from '@nestjs/cqrs';
+import { InsertBlogImageCommand } from '../application/use-cases/insert-image';
+import { ImageType } from 'src/features/content/images/domain/blog-image.entity';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -44,6 +52,8 @@ export class BloggerController {
   constructor(
     private readonly bloggerService: BloggerService,
     private readonly bloggerQueryRepository: BloggerQueryRepository,
+    private readonly imageService: ImageService,
+    private commandBus: CommandBus
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -60,6 +70,83 @@ export class BloggerController {
       await this.bloggerQueryRepository.getBlogById(createdBlogId);
 
     return createdBlog;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/blogs/:id/images/main')
+  async addMainImage(
+    @Req() req: any,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    // check blog exist and blog's owner
+    // check size
+    console.log(req.user)
+    console.log(file)
+
+    const config = {
+      id,
+      user: req.user,
+      width: 156,
+      height: 156,
+      fileSize: file.size
+    }
+    const folder = `blogId/${id}/main`
+    const result = await this.commandBus.execute(new InsertBlogImageCommand(
+      file,
+      folder,
+      config,
+      ImageType.Main
+    )
+    );
+    return result
+
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('/blogs/:id/images/main')
+  async getImage(
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+  ) {
+    const folder = `blogId/${id}/main`
+    const image = await this.imageService.getImagesDB(folder);
+    // const imageBase64 = image.data.toString('base64');
+    // const result = {
+    //   data: `data:${image.mimeType};base64,${imageBase64}`,
+    //   mimeType: image.mimeType,
+    //   width: 300,
+    //   height: 200,
+    //   fileSize: image.size
+    // }
+
+    return image
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/blogs/:id/images/wallpaper')
+  async addWallPaperImage(
+    @Req() req: any,
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const config = {
+      id,
+      user: req.user,
+      width: 1028,
+      height: 312,
+      fileSize: file.size
+    }
+    const folder = `blogId/${id}/wallpaper`
+    const result = await this.commandBus.execute(new InsertBlogImageCommand(
+      file,
+      folder,
+      config,
+      ImageType.Wallpaper
+    )
+    );
+    return result
   }
 
   @UseGuards(JwtAuthGuard)

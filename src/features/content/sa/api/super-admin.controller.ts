@@ -31,6 +31,7 @@ import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.i
 import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
 import { SuperAdminService } from '../application/sa.service';
 import { BanInputModel, BlogBanInputModel } from '../model/input/sa.ban.input';
+import { BlogOutputSAModel } from '../model/output/sa.blogs.output';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -82,7 +83,7 @@ export class SuperAdminController {
         BLOGS_SORTING_PROPERTIES,
       );
 
-    const blogs: PaginationOutput<BlogOutputModel> =
+    const blogs: PaginationOutput<BlogOutputSAModel> =
       await this.superAdminQueryRepository.getAll(pagination);
 
     return blogs;

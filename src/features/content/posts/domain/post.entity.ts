@@ -2,6 +2,7 @@ import { PostLike } from './../../../../features/likes/domain/post-like-info.ent
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Blog } from '../../blogs/domain/blog.entity';
 import { Comment } from '../../comments/domain/comment.entity';
+import { PostImage } from '../../images/domain/post-image.entity';
 
 @Entity()
 export class Post {
@@ -31,5 +32,8 @@ export class Post {
 
   @OneToMany(() => Comment, (comment) => comment.post)
   comments: Comment[];
+
+  @OneToMany(() => PostImage, (image) => image.post)
+  images: PostImage[];
 }
 

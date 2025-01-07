@@ -31,6 +31,7 @@ export class BlogsQueryRepository {
     }
 
     const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
       .where(`b."bannedByAdmin" != :banned`, { banned: true });
 
     if (conditions.length > 0) {
@@ -47,7 +48,7 @@ export class BlogsQueryRepository {
       .getMany();
 
     const mappedBlogs = blogs.map(BlogOutputModelMapper);
-
+    console.log(blogs)
     return new PaginationOutput<BlogOutputModel>(
       mappedBlogs,
       pagination.pageNumber,

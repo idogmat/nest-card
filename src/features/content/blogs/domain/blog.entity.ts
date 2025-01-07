@@ -2,6 +2,7 @@ import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'ty
 import { Post } from '../../posts/domain/post.entity';
 import { User } from 'src/features/users/domain/user.entity';
 import { BlogBlock } from './blog.ban.entity';
+import { BlogImage } from '../../images/domain/blog-image.entity';
 
 @Entity()
 export class Blog {
@@ -37,6 +38,9 @@ export class Blog {
 
   @OneToMany(() => Post, (post) => post.blog)
   posts: Post[];
+
+  @OneToMany(() => BlogImage, (image) => image.blog)
+  images: BlogImage[];
 
   @OneToMany(() => BlogBlock, (blogBlock) => blogBlock.blog)
   blogBlocks: BlogBlock[];

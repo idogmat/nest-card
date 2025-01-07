@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
-import { BlogOutputModel } from 'src/features/content/blogs/api/model/output/blog.output.model';
 import { Blog } from 'src/features/content/blogs/domain/blog.entity';
 import { Repository } from 'typeorm';
 import { BlogOutputSAModel, BlogOutputSAModelMapper } from '../model/output/sa.blogs.output';
@@ -15,7 +14,7 @@ export class SuperAdminQueryRepository {
 
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
-  ): Promise<PaginationOutput<BlogOutputModel>> {
+  ): Promise<PaginationOutput<BlogOutputSAModel>> {
     const conditions = [];
     const params = [];
     if (pagination.searchNameTerm) {

@@ -43,6 +43,7 @@ export class BloggerQueryRepository {
     }
 
     const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
       .where(`b."bannedByAdmin" != :banned`, { banned: true })
       .andWhere(`b."userId" = :userId`, { userId })
       .andWhere(qb => {
