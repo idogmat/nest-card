@@ -1,5 +1,6 @@
 import { Post } from "../../../domain/post.entity";
 import { LikesInfo, LikeType, PostLike } from "./../../../../../../features/likes/domain/post-like-info.entity";
+import { postImagesMapper, PostImagesOutputModel } from "src/features/content/images/api/model/output.post-image";
 
 
 export class PostOutputModel {
@@ -11,6 +12,7 @@ export class PostOutputModel {
   blogName: string;
   createdAt: string;
   extendedLikesInfo: LikesInfo;
+  images: PostImagesOutputModel
 }
 
 // MAPPERS
@@ -36,6 +38,7 @@ export const PostOutputModelMapper = (post: Post & { blogName: string; }, _userI
     }, [])
       : [],
   };
+  outputModel.images = postImagesMapper(post.images)
 
   return outputModel;
 };

@@ -11,6 +11,7 @@ import { Repository } from "typeorm";
 import { BanUserForBlogInputModel } from "../model/input/banBlogForUser.input.model";
 import { BlogBlock } from "src/features/content/blogs/domain/blog.ban.entity";
 import { UsersRepository } from "src/features/users/infrastructure/users.repository";
+import { PostImage } from "src/features/content/images/domain/post-image.entity";
 
 @Injectable()
 export class BloggerService {
@@ -119,6 +120,16 @@ export class BloggerService {
           .from(PostLike, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'url', pi.url, " +
+          "'fileSize', pi.fileSize, " +
+          "'height', pi.height, " +
+          "'width', pi.width " +
+          "))")
+          .from(PostImage, "pi")
+          .where("p.id = pi.postId")
+      }, "images")
       .where("p.id = :postId", { postId: post.id })
       .getRawOne();
     console.log(result);

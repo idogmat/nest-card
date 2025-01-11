@@ -13,6 +13,7 @@ import { BlogBlock } from 'src/features/content/blogs/domain/blog.ban.entity';
 import { Comment } from 'src/features/content/comments/domain/comment.entity';
 import { CommentLike } from 'src/features/likes/domain/comment-like-info.entity';
 import { CommentByUserOutputModel, CommentByUserOutputModelMapper } from '../model/output/comment.output.model';
+import { PostImage } from 'src/features/content/images/domain/post-image.entity';
 
 @Injectable()
 export class BloggerQueryRepository {
@@ -27,7 +28,10 @@ export class BloggerQueryRepository {
     private readonly dataSource: DataSource,
   ) { }
   async getBlogById(id: string) {
-    const blog = await this.blogRepo.findOneBy({ id });
+    const blog = await this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
+      .where(`b.id = :id`, { id })
+      .getOne()
     return BlogOutputModelMapper(blog);
   }
 
@@ -107,6 +111,16 @@ export class BloggerQueryRepository {
           .where("pl.postId = p.id")
           .andWhere("u.banned != true");
       }, "extendedLikesInfo")
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'url', pi.url, " +
+          "'fileSize', pi.fileSize, " +
+          "'height', pi.height, " +
+          "'width', pi.width " +
+          "))")
+          .from(PostImage, "pi")
+          .where("p.id = pi.postId")
+      }, "images")
       .where(`b."bannedByAdmin" != true`);
 
 

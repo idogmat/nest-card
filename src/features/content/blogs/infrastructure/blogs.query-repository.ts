@@ -13,8 +13,12 @@ export class BlogsQueryRepository {
   ) { }
 
   async getById(id: string): Promise<BlogOutputModel | null> {
-    const blog = await this.blogRepo.findOneBy({ id: id });
-    if (!blog || blog.bannedByAdmin) {
+    const blog = await this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
+      .where(`b.id = :id`, { id })
+      .getOne()
+    console.log(blog)
+    if (!blog || blog?.bannedByAdmin) {
       throw new NotFoundException();
     }
     return BlogOutputModelMapper(blog);
@@ -48,7 +52,6 @@ export class BlogsQueryRepository {
       .getMany();
 
     const mappedBlogs = blogs.map(BlogOutputModelMapper);
-    console.log(blogs)
     return new PaginationOutput<BlogOutputModel>(
       mappedBlogs,
       pagination.pageNumber,

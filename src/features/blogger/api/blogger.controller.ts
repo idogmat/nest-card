@@ -1,10 +1,8 @@
 import { ApiTags } from '@nestjs/swagger';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -34,8 +32,9 @@ import { BanndedUserOutputModel } from '../model/output/banned.users.output.mode
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageService } from 'src/features/content/images/application/image.service';
 import { CommandBus } from '@nestjs/cqrs';
-import { InsertBlogImageCommand } from '../application/use-cases/insert-image';
+import { InsertBlogImageCommand } from '../application/use-cases/insert-blog-image';
 import { ImageType } from 'src/features/content/images/domain/blog-image.entity';
+import { InsertPostImageCommand } from '../application/use-cases/insert-post-image';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -74,10 +73,70 @@ export class BloggerController {
 
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('file'))
-  @Post('/blogs/:id/images/main')
-  async addMainImage(
+  @Post('/blogs/:blogId/posts/:postId/images/main')
+  async addMainBlogImage(
     @Req() req: any,
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('blogId', new EnhancedParseUUIDPipe(404)) blogId: string,
+    @Param('postId', new EnhancedParseUUIDPipe(404)) postId: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    // check blog exist and blog's owner
+    // check size
+    console.log(req.user)
+    console.log(file)
+
+    const config = {
+      blogId,
+      postId,
+      user: req.user,
+      width: 940,
+      height: 432,
+      fileSize: file.size
+    }
+    const folder = `blog/${blogId}/post/${postId}/main`
+    const result = await this.commandBus.execute(new InsertPostImageCommand(
+      file,
+      folder,
+      config,
+      ImageType.Main
+    )
+    );
+    return result
+
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/blogs/:id/images/wallpaper')
+  async addWallPaperBlogImage(
+    @Req() req: any,
+    @Param('id', new EnhancedParseUUIDPipe(404)) id: string,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    const config = {
+      id,
+      user: req.user,
+      width: 1028,
+      height: 312,
+      fileSize: file.size
+    }
+    const folder = `blog/${id}/wallpaper`
+    const result = await this.commandBus.execute(new InsertBlogImageCommand(
+      file,
+      folder,
+      config,
+      ImageType.Wallpaper
+    )
+    );
+    return result
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @Post('/blogs/:id/images/main')
+  async addMainPostImage(
+    @Req() req: any,
+    @Param('id', new EnhancedParseUUIDPipe(404)) id: string,
     @UploadedFile() file: Express.Multer.File
   ) {
     // check blog exist and blog's owner
@@ -92,7 +151,7 @@ export class BloggerController {
       height: 156,
       fileSize: file.size
     }
-    const folder = `blogId/${id}/main`
+    const folder = `blog/${id}/main`
     const result = await this.commandBus.execute(new InsertBlogImageCommand(
       file,
       folder,
@@ -107,46 +166,11 @@ export class BloggerController {
   @UseGuards(JwtAuthGuard)
   @Get('/blogs/:id/images/main')
   async getImage(
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Param('id', new EnhancedParseUUIDPipe(404)) id: string,
   ) {
-    const folder = `blogId/${id}/main`
-    const image = await this.imageService.getImagesDB(folder);
-    // const imageBase64 = image.data.toString('base64');
-    // const result = {
-    //   data: `data:${image.mimeType};base64,${imageBase64}`,
-    //   mimeType: image.mimeType,
-    //   width: 300,
-    //   height: 200,
-    //   fileSize: image.size
-    // }
-
+    const folder = `blog/${id}/main`
+    const image = await this.imageService.getBlogImagesDB(folder);
     return image
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('file'))
-  @Post('/blogs/:id/images/wallpaper')
-  async addWallPaperImage(
-    @Req() req: any,
-    @Param('id', new EnhancedParseUUIDPipe()) id: string,
-    @UploadedFile() file: Express.Multer.File
-  ) {
-    const config = {
-      id,
-      user: req.user,
-      width: 1028,
-      height: 312,
-      fileSize: file.size
-    }
-    const folder = `blogId/${id}/wallpaper`
-    const result = await this.commandBus.execute(new InsertBlogImageCommand(
-      file,
-      folder,
-      config,
-      ImageType.Wallpaper
-    )
-    );
-    return result
   }
 
   @UseGuards(JwtAuthGuard)

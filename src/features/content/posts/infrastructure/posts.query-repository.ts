@@ -6,6 +6,7 @@ import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { Post } from '../domain/post.entity';
 import { PostLike } from './../../../../features/likes/domain/post-like-info.entity';
 import { User } from 'src/features/users/domain/user.entity';
+import { PostImage } from '../../images/domain/post-image.entity';
 
 const postMap =
   "p.id, p.title, p.\"shortDescription\", p.content, p.blogId, p.\"createdAt\"";
@@ -40,13 +41,23 @@ export class PostsQueryRepository {
           .where("pl.postId = p.id")
           .andWhere("u.banned != true");
       }, "extendedLikesInfo")
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'url', pi.url, " +
+          "'fileSize', pi.fileSize, " +
+          "'height', pi.height, " +
+          "'width', pi.width " +
+          "))")
+          .from(PostImage, "pi")
+          .where("p.id = pi.postId")
+      }, "images")
       .where("p.id = :postId", { postId })
       .getRawOne();
 
     if (!post || post.bannedByAdmin) {
       return null;
     }
-
+    console.log(post)
     return PostOutputModelMapper(post, userId);
   }
 

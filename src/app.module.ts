@@ -11,6 +11,7 @@ import { ContentModule } from './features/content/content.module';
 import { TestModule } from './features/testing/testing.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { QuizModule } from './features/quiz/quiz.module';
+import { S3Module } from './features/s3/s3.module';
 
 const env = getConfiguration();
 @Module({
@@ -21,6 +22,7 @@ const env = getConfiguration();
     QuizModule,
     DeviceModule,
     ContentModule,
+    S3Module,
     TestModule,
     // TypeOrmModule.forRoot({
     //   type: 'postgres',

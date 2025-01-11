@@ -34,5 +34,6 @@ export const BlogOutputModelMapper = (blog: Blog): BlogOutputModel => {
   outputModel.createdAt = new Date(blog.createdAt).toISOString();
   outputModel.images = blogImagesMapper(blog.images)
 
+
   return outputModel;
 };

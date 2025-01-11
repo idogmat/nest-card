@@ -40,4 +40,32 @@ export class S3StorageAdapter {
     });
   }
 
+  async clearBucket(): Promise<void> {
+    const data: AWS.S3.ObjectList = await new Promise((resolve, reject) => {
+      this.s3.listObjectsV2({ Bucket: this.bucketName }, (err, data) => {
+        if (data?.Contents) {
+          resolve(data.Contents)
+        } else {
+          console.log(err, err.stack);
+          reject()
+        }
+      });
+    })
+    if (data) {
+      const deleteParams = {
+        Bucket: this.bucketName,
+        Delete: {
+          Objects: data.map(item => ({ Key: item.Key })),
+        },
+      };
+      await this.s3.deleteObjects(deleteParams, (err, data) => {
+        if (data) {
+          console.log('fin')
+        } else {
+          console.log(err, err.stack);
+        }
+      });
+    }
+  }
+
 }

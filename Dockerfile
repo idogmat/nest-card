@@ -6,13 +6,13 @@ WORKDIR /usr/src/app
 
 # Install app dependencies
 COPY package*.json ./
-RUN npm install
+RUN yarn
 
 # Bundle app source
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 3003
 
 # Command to run the application
-CMD ["npm", "run", "start:dev"]
+CMD ["yarn", "start:dev"]

@@ -27,13 +27,9 @@ import { LikeSetModel } from './../../../../features/likes/api/model/input/like-
 import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { CommentOutputModel } from '../../comments/api/model/output/comment.output.model';
 import { CommentsService } from '../../comments/application/comments.service';
-import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
 import { EnhancedParseUUIDPipe } from '../../../../utils/pipes/uuid-check';
-import { InjectDataSource } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { BlogBlock } from '../../blogs/domain/blog.ban.entity';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   [
@@ -53,7 +49,6 @@ export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
-    private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
 

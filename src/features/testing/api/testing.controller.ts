@@ -6,13 +6,15 @@ import {
 } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { S3StorageAdapter } from 'src/features/s3/adapter/adapter.s3';
 
 // Tag для swagger
 @ApiTags('Testing')
 @Controller('testing/all-data')
 export class TestingController {
   constructor(
-    @InjectDataSource() protected dataSource: DataSource
+    @InjectDataSource() protected dataSource: DataSource,
+    private readonly s3StorageAdapter: S3StorageAdapter
   ) { }
 
   @Delete()
@@ -22,9 +24,11 @@ export class TestingController {
       "user",
       "device",
       "blog",
+      "blog_image",
       "blog_block",
       "post",
       "post_like",
+      "post_image",
       "comment",
       "comment_like",
       "game",
@@ -33,28 +37,18 @@ export class TestingController {
       "player_answer",
       "question"
        CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "device" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "blog" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "post" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "post_like" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "comment" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "comment_like" CASCADE`);
-
-    // await this.dataSource.query(`TRUNCATE TABLE "game" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "player_progress" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "question_of_the_game" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "player_answer" CASCADE`);
-    // await this.dataSource.query(`TRUNCATE TABLE "question" CASCADE`);
+    // await this.s3StorageAdapter.clearBucket()
     return;
   }
 
   @Delete('/game')
   @HttpCode(204)
   async deleteGame() {
-    await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
-    await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
+    await this.s3StorageAdapter.clearBucket()
+    // await this.dataSource.query(`TRUNCATE TABLE game CASCADE`);
+    // await this.dataSource.query(`TRUNCATE TABLE player_progress CASCADE`);
+    // await this.dataSource.query(`TRUNCATE TABLE question_of_the_game CASCADE`);
+    // await this.dataSource.query(`TRUNCATE TABLE player_answer CASCADE`);
     // await this.dataSource.query(`TRUNCATE TABLE question CASCADE`);
     return;
   }

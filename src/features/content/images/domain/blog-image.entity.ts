@@ -18,6 +18,12 @@ export class BlogImage {
   url: string;
 
   @Column()
+  width: number;
+
+  @Column()
+  height: number;
+
+  @Column()
   fileSize: number;
 
   @Column({ type: 'uuid' })
