@@ -27,7 +27,7 @@ export class BloggerQueryRepository {
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) { }
-  async getBlogById(id: string) {
+  async getBlogById(id: string): Promise<BlogOutputModel> {
     const blog = await this.blogRepo.createQueryBuilder("b")
       .leftJoinAndSelect(`b.images`, `i`)
       .where(`b.id = :id`, { id })

@@ -1,4 +1,4 @@
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -55,6 +55,8 @@ export class BloggerController {
     private commandBus: CommandBus
   ) { }
 
+  @ApiResponse({ status: 201, description: 'The blog has been successfully created.', type: BlogOutputModel })
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/blogs')
   async create(
@@ -65,7 +67,7 @@ export class BloggerController {
       createModel as Blog, req.user
     );
     console.log(createdBlogId);
-    const createdBlog: any | null =
+    const createdBlog: BlogOutputModel | null =
       await this.bloggerQueryRepository.getBlogById(createdBlogId);
 
     return createdBlog;

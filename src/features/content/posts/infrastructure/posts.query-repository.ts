@@ -154,6 +154,16 @@ export class PostsQueryRepository {
           .from(PostLike, "pl")
           .where("pl.postId = p.id");
       }, "extendedLikesInfo")
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'url', pi.url, " +
+          "'fileSize', pi.fileSize, " +
+          "'height', pi.height, " +
+          "'width', pi.width " +
+          "))")
+          .from(PostImage, "pi")
+          .where("p.id = pi.postId")
+      }, "images")
       .where(`b.bannedByAdmin != true`);
 
 

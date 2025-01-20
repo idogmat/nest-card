@@ -1,14 +1,21 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { BlogImage, ImageType } from "../../domain/blog-image.entity";
 
-class Image {
+export class Image {
+  @ApiProperty({ type: String })
   url: string;
+  @ApiProperty({ type: Number })
   width: number;
+  @ApiProperty({ type: Number })
   height: number;
+  @ApiProperty({ type: Number })
   fileSize: number;
 }
 
 export class BlogImagesOutputModel {
+  @ApiProperty({ type: Image || null, description: 'Wallpaper image' })
   wallpaper: Image | null
+  @ApiProperty({ type: [Image], description: 'Image' })
   main: Image[] | []
 }
 
