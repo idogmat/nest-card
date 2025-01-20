@@ -3,21 +3,25 @@ import { BlogOutputModel, BlogOutputModelMapper } from '../api/model/output/blog
 import { PaginationOutput, PaginationWithSearchBlogNameTerm } from 'src/base/models/pagination.base.model';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BlogPg } from '../domain/blog.entity';
+import { Blog } from '../domain/blog.entity';
 
 @Injectable()
 export class BlogsQueryRepository {
   constructor(
-    @InjectRepository(BlogPg)
-    private readonly blogRepo: Repository<BlogPg>,
+    @InjectRepository(Blog)
+    private readonly blogRepo: Repository<Blog>,
   ) { }
 
   async getById(id: string): Promise<BlogOutputModel | null> {
-    const user = await this.blogRepo.findOneBy({ id: id });
-    if (!user) {
+    const blog = await this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
+      .where(`b.id = :id`, { id })
+      .getOne()
+    console.log(blog)
+    if (!blog || blog?.bannedByAdmin) {
       throw new NotFoundException();
     }
-    return BlogOutputModelMapper(user);
+    return BlogOutputModelMapper(blog);
   }
 
   async getAll(
@@ -30,10 +34,12 @@ export class BlogsQueryRepository {
       params.push({ name: `%${pagination.searchNameTerm}%` });
     }
 
-    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b");
+    const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
+      .leftJoinAndSelect(`b.images`, `i`)
+      .where(`b."bannedByAdmin" != :banned`, { banned: true });
 
     if (conditions.length > 0) {
-      conditions.forEach((condition, i) => blogQueryBuilder.where(condition, params[i]));
+      conditions.forEach((condition, i) => blogQueryBuilder.andWhere(condition, params[i]));
     }
     // const sql = blogsQueryBuilder.getSql();
 
@@ -46,7 +52,6 @@ export class BlogsQueryRepository {
       .getMany();
 
     const mappedBlogs = blogs.map(BlogOutputModelMapper);
-
     return new PaginationOutput<BlogOutputModel>(
       mappedBlogs,
       pagination.pageNumber,

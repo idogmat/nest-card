@@ -20,6 +20,7 @@ import { CommentsService } from '../application/comments.service';
 import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { CommentCreateModel } from './model/input/create-comment.input.model';
 import { EnhancedParseUUIDPipe } from '../../../../utils/pipes/uuid-check';
+import { UsersService } from 'src/features/users/application/users.service';
 
 @ApiTags('Comments')
 @Controller('comments')
@@ -27,6 +28,7 @@ export class CommentsController {
   constructor(
     private readonly commentsQueryRepository: CommentsQueryRepository,
     private readonly commentsService: CommentsService,
+    private readonly usersService: UsersService
   ) { }
 
   @UseGuards(AuthGetGuard)
@@ -37,7 +39,10 @@ export class CommentsController {
   ) {
     const comment: CommentOutputModel =
       await this.commentsQueryRepository.getById(id, req?.user?.userId);
+
     if (!comment) throw new NotFoundException;
+    const user = await this.usersService.getById(comment.commentatorInfo.userId);
+    if (user.banned) throw new NotFoundException;
     return comment;
   }
 

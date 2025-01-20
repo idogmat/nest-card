@@ -1,4 +1,4 @@
-import { CommentPg } from './../../../features/content/comments/domain/comment.entity';
+import { Comment } from './../../../features/content/comments/domain/comment.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 export type LikeType = 'None' | 'Like' | 'Dislike';
@@ -19,7 +19,7 @@ export class NewestLikes {
 }
 
 @Entity()
-export class CommentLikePg {
+export class CommentLike {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -29,7 +29,7 @@ export class CommentLikePg {
   @Column()
   commentId: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   userId: string;
 
   @Column()
@@ -38,6 +38,6 @@ export class CommentLikePg {
   @Column()
   login: string;
 
-  @ManyToOne(() => CommentPg, (comment) => comment.extendedLikesInfo)
-  comment: CommentPg;
+  @ManyToOne(() => Comment, (comment) => comment.extendedLikesInfo)
+  comment: Comment;
 }

@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { DevicePg } from '../domain/device.entity';
+import { Device } from '../domain/device.entity';
 
 @Injectable()
 export class DevicesRepository {
   constructor(
-    @InjectRepository(DevicePg)
-    private readonly deviceRepo: Repository<DevicePg>,
+    @InjectRepository(Device)
+    private readonly deviceRepo: Repository<Device>,
   ) { }
 
   async create(ip: string,
     title: string,
     userId: string,
-    lastActiveDate?: Date): Promise<DevicePg | null> {
+    lastActiveDate?: Date): Promise<Device | null> {
     const device = this.deviceRepo.create({
       ip,
       title,
@@ -25,7 +25,7 @@ export class DevicesRepository {
     return savedDevice;
   }
 
-  async getById(id: string): Promise<DevicePg | null> {
+  async getById(id: string): Promise<Device | null> {
     const device = await this.deviceRepo.findOneBy({ id: id });
     if (!device) {
       return null;
@@ -33,7 +33,7 @@ export class DevicesRepository {
     return device;
   }
 
-  async delete(device: DevicePg): Promise<boolean> {
+  async delete(device: Device): Promise<boolean> {
     const result = await this.deviceRepo.remove(device);
     return !!result;
   };
@@ -41,7 +41,7 @@ export class DevicesRepository {
   async deleteAll(id: string, userId: string): Promise<boolean> {
     const result = await this.deviceRepo.createQueryBuilder()
       .delete()
-      .from(DevicePg)
+      .from(Device)
       .where("id != :id", { id })
       .andWhere("userId = :userId", { userId })
       .execute();
@@ -50,15 +50,15 @@ export class DevicesRepository {
 
   async updateDate(id: string, lastActiveDate: string) {
     await this.deviceRepo.createQueryBuilder()
-      .update(DevicePg)
+      .update(Device)
       .set({ lastActiveDate })
       .where("id = :id", { id })
       .execute();
   }
 
-  async updateFields(id: string, newModel: DevicePg) {
+  async updateFields(id: string, newModel: Device) {
     await this.deviceRepo.createQueryBuilder()
-      .update(DevicePg)
+      .update(Device)
       .set({
         id: newModel.ip,
         title: newModel.title,

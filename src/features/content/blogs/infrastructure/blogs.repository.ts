@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { BlogPg } from '../domain/blog.entity';
+import { Blog } from '../domain/blog.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class BlogsRepository {
   constructor(
-    @InjectRepository(BlogPg)
-    private readonly blogRepo: Repository<BlogPg>,
+    @InjectRepository(Blog)
+    private readonly blogRepo: Repository<Blog>,
   ) { }
 
-  async getById(id: string): Promise<BlogPg | null> {
+  async getById(id: string): Promise<Blog | null> {
     const user = await this.blogRepo.findOneBy({ id: id });
     if (!user) {
       return null;
@@ -18,7 +18,7 @@ export class BlogsRepository {
     return user;
   }
 
-  async create(newBlog: BlogPg): Promise<string> {
+  async create(newBlog: Blog): Promise<string> {
     const blog = this.blogRepo.create({
       name: newBlog.name,
       description: newBlog.description,
@@ -30,9 +30,9 @@ export class BlogsRepository {
     return savedBlog.id;
   }
 
-  async update(id: string, newModel: BlogPg) {
+  async update(id: string, newModel: Blog) {
     const updated = await this.blogRepo.createQueryBuilder()
-      .update(BlogPg)
+      .update(Blog)
       .set({
         name: newModel.name,
         description: newModel.description,

@@ -4,11 +4,11 @@ import { UsersRepository } from "./infrastructure/users.repository";
 import { UsersQueryRepository } from "./infrastructure/users.query-repository";
 import { UsersController } from "./api/users.controller";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { UserPg } from "./domain/user.entity";
+import { User } from "./domain/user.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserPg])
+    TypeOrmModule.forFeature([User])
   ],
   controllers: [UsersController],
   providers: [UsersService, UsersRepository, UsersQueryRepository],

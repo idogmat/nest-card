@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { CommentPg } from '../domain/comment.entity';
+import { Comment } from '../domain/comment.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CommentCreateModel } from '../api/model/input/create-comment.input.model';
-import { CommentLikePg, LikeType } from './../../../../features/likes/domain/comment-like-info.entity';
+import { CommentLike, LikeType } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Injectable()
 export class CommentsRepository {
   constructor(
-    @InjectRepository(CommentPg)
-    private readonly commentRepo: Repository<CommentPg>,
-    @InjectRepository(CommentLikePg)
-    private readonly commentLikeRepo: Repository<CommentLikePg>,
+    @InjectRepository(Comment)
+    private readonly commentRepo: Repository<Comment>,
+    @InjectRepository(CommentLike)
+    private readonly commentLikeRepo: Repository<CommentLike>,
   ) { }
 
-  async create(newComment: CommentPg): Promise<string> {
+  async create(newComment: Comment): Promise<string> {
     const comment = this.commentRepo.create({
       content: newComment.content,
       postId: newComment.postId,
@@ -27,7 +27,7 @@ export class CommentsRepository {
     return savedComment.id;
   }
 
-  async getById(id: string): Promise<CommentPg | null> {
+  async getById(id: string): Promise<Comment | null> {
     const comment = await this.commentRepo.findOneBy({ id: id });
     if (!comment) {
       return null;
@@ -63,7 +63,7 @@ export class CommentsRepository {
 
   async update(id: string, newModel: CommentCreateModel) {
     const updated = await this.commentRepo.createQueryBuilder()
-      .update(CommentPg)
+      .update(Comment)
       .set({
         content: newModel.content,
       })

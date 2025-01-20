@@ -1,9 +1,9 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PostPg } from '../../posts/domain/post.entity';
-import { CommentLikePg } from './../../../../features/likes/domain/comment-like-info.entity';
+import { Post } from '../../posts/domain/post.entity';
+import { CommentLike } from './../../../../features/likes/domain/comment-like-info.entity';
 
 @Entity()
-export class CommentPg {
+export class Comment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -16,15 +16,15 @@ export class CommentPg {
   @Column()
   createdAt: Date;
 
-  @Column()
+  @Column({ type: 'uuid' })
   userId: string;
 
   @Column()
   userLogin: string;
 
-  @ManyToOne(() => PostPg, (post) => post.comments)
-  post: PostPg;
+  @ManyToOne(() => Post, (post) => post.comments)
+  post: Post;
 
-  @OneToMany(() => CommentLikePg, (like) => like.comment)
-  extendedLikesInfo: CommentLikePg[];
+  @OneToMany(() => CommentLike, (like) => like.comment)
+  extendedLikesInfo: CommentLike[];
 }

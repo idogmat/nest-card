@@ -1,0 +1,65 @@
+version: '3.5'
+
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: nest-app
+    ports:
+      - '3003:3003'
+    environment:
+      - HASH_ROUNDS=${HASH_ROUNDS}
+      - ADMIN_LOGIN=${ADMIN_LOGIN}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - EMAIL=${EMAIL}
+      - EMAIL_PWD=${EMAIL_PWD}
+      - ACCESS_SECRET_TOKEN=${ACCESS_SECRET_TOKEN}
+      - REFRESH_SECRET_TOKEN=${REFRESH_SECRET_TOKEN}
+      - ACCESS_SECRET_TOKEN_EXPIRATION=${ACCESS_SECRET_TOKEN_EXPIRATION}
+      - REFRESH_SECRET_TOKEN_EXPIRATION=${REFRESH_SECRET_TOKEN_EXPIRATION}
+      - THROTTLER_TTL=${THROTTLER_TTL}
+      - THROTTLER_LIMIT=${THROTTLER_LIMIT}
+      - CONFIRM_EMAIL=${CONFIRM_EMAIL}
+      - RECOVERY_EMAIL=${RECOVERY_EMAIL}
+      - DB_TYPE=${DB_TYPE}
+      - APP_PORT=${APP_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+    depends_on:
+      - db
+
+  db:
+    image: postgres:12
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - '5435:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+
+volumes:
+  pgdata:

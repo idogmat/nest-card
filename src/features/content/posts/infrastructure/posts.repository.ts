@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { PostPg } from '../domain/post.entity';
+import { Post } from '../domain/post.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LikeType, PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
+import { LikeType, PostLike } from './../../../../features/likes/domain/post-like-info.entity';
 
 @Injectable()
 export class PostsRepository {
   constructor(
-    @InjectRepository(PostPg)
-    private readonly postRepo: Repository<PostPg>,
-    @InjectRepository(PostLikePg)
-    private readonly postlikeRepo: Repository<PostLikePg>
+    @InjectRepository(Post)
+    private readonly postRepo: Repository<Post>,
+    @InjectRepository(PostLike)
+    private readonly postlikeRepo: Repository<PostLike>
   ) { }
 
-  async create(newPost: PostPg): Promise<string> {
+  async create(newPost: Post): Promise<string> {
     const post = this.postRepo.create({
       title: newPost.title,
       content: newPost.content,
@@ -27,13 +27,15 @@ export class PostsRepository {
   }
 
   async getById(id: string) {
+    console.log('k');
     const post = await this.postRepo.findOneBy({ id: id });
+    console.log('pst');
     return post;
   }
 
-  async update(id: string, newModel: PostPg) {
+  async update(id: string, newModel: Post) {
     const updated = await this.postRepo.createQueryBuilder()
-      .update(PostPg)
+      .update(Post)
       .set({
         title: newModel.title,
         content: newModel.content,

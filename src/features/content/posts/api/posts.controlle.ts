@@ -2,6 +2,7 @@ import { ApiTags } from '@nestjs/swagger';
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   HttpCode,
   NotFoundException,
@@ -26,7 +27,6 @@ import { LikeSetModel } from './../../../../features/likes/api/model/input/like-
 import { AuthGetGuard } from '../../../../utils/guards/auth-get.guard';
 import { CommentOutputModel } from '../../comments/api/model/output/comment.output.model';
 import { CommentsService } from '../../comments/application/comments.service';
-import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { CommentsQueryRepository } from '../../comments/infrastructure/comments.query-repository';
 import { CommentCreateModel } from '../../comments/api/model/input/create-comment.input.model';
 import { EnhancedParseUUIDPipe } from '../../../../utils/pipes/uuid-check';
@@ -44,18 +44,18 @@ export const COMMENTS_SORTING_PROPERTIES: SortingPropertiesType<CommentOutputMod
   ['content', 'createdAt'];
 
 @ApiTags('Posts')
-@Controller()
+@Controller('posts')
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly commentsService: CommentsService,
-    private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
     private readonly commentsQueryRepository: CommentsQueryRepository,
+
   ) { }
 
   @UseGuards(AuthGetGuard)
-  @Get('posts')
+  @Get()
   async getAll(
     @Query() query: any,
     @Req() req?
@@ -71,13 +71,11 @@ export class PostsController {
     return posts;
   }
 
-
-
   @UseGuards(AuthGetGuard)
-  @Get('posts/:id')
+  @Get('/:id')
   async getById(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
-    @Req() req?
+    @Req() req
   ) {
     const post: PostOutputModel =
       await this.postsQueryRepository.getById(id, req?.user?.userId);
@@ -90,7 +88,7 @@ export class PostsController {
   }
 
   @UseGuards(AuthGetGuard)
-  @Get('posts/:id/comments')
+  @Get('/:id/comments')
   async getComments(
     @Param('id', new EnhancedParseUUIDPipe()) id: string,
     @Query() query: any,
@@ -111,24 +109,28 @@ export class PostsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Post('posts/:id/comments')
+  @Post('/:id/comments')
   async createComment(
     @Req() req,
     @Param('id', new EnhancedParseUUIDPipe()) postId: string,
-    @Body() createModel: CommentCreateModel) {
-    const post = await this.postsQueryRepository.getById(postId);
+    @Body() createModel: CommentCreateModel
+  ) {
+    const post = await this.postsService.getById(postId);
     if (!post) throw new NotFoundException();
-    const { content } = createModel;
+    const blocked = await this.postsService.checkBlog(req.user.userId, post.blogId);
+
+    console.log(blocked);
+    if (blocked) throw new ForbiddenException();
 
     const createdComment = await this.commentsService.create(
-      postId, content, req.user.userId, req.user.login
+      post, createModel.content, req.user.userId, req.user.login
     );
 
     return createdComment;
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put('posts/:id/like-status')
+  @Put('/:id/like-status')
   @HttpCode(204)
   async setLikeStatus(
     @Req() req,

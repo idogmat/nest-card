@@ -28,6 +28,10 @@ import { BlogsService } from '../../blogs/application/blogs.service';
 import { BlogsQueryRepository } from '../../blogs/infrastructure/blogs.query-repository';
 import { BlogCreateModel } from '../../blogs/api/model/input/create-blog.input.model';
 import { PostInBlogCreateModel } from '../../blogs/api/model/input/create-post.input.model';
+import { SuperAdminQueryRepository } from '../infrastructure/sa.query-repository';
+import { SuperAdminService } from '../application/sa.service';
+import { BanInputModel, BlogBanInputModel } from '../model/input/sa.ban.input';
+import { BlogOutputSAModel } from '../model/output/sa.blogs.output';
 
 export const POSTS_SORTING_PROPERTIES: SortingPropertiesType<PostOutputModel> =
   ['title', 'blogId', 'blogName', 'content', 'createdAt'];
@@ -43,7 +47,29 @@ export class SuperAdminController {
     private readonly postsService: PostsService,
     private readonly blogsQueryRepository: BlogsQueryRepository,
     private readonly postsQueryRepository: PostsQueryRepository,
+    private readonly superAdminQueryRepository: SuperAdminQueryRepository,
+    private readonly superAdminService: SuperAdminService,
   ) { }
+
+  @UseGuards(BasicAuthGuard)
+  @Put('/users/:id/ban')
+  @HttpCode(204)
+  async banUser(
+    @Param('id', new EnhancedParseUUIDPipe()) id: string,
+    @Body() ban: BanInputModel
+  ) {
+    await this.superAdminService.banUser(id, ban);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put('/blogs/:blogId/ban')
+  @HttpCode(204)
+  async banBlog(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Body() ban: BlogBanInputModel
+  ) {
+    return await this.superAdminService.banBlog(blogId, ban);
+  }
 
   // SA
   @UseGuards(BasicAuthGuard)
@@ -57,12 +83,22 @@ export class SuperAdminController {
         BLOGS_SORTING_PROPERTIES,
       );
 
-    const blogs: PaginationOutput<BlogOutputModel> =
-      await this.blogsQueryRepository.getAll(pagination);
+    const blogs: PaginationOutput<BlogOutputSAModel> =
+      await this.superAdminQueryRepository.getAll(pagination);
 
     return blogs;
   }
 
+  // SA
+  @UseGuards(BasicAuthGuard)
+  @Put('blogs/:blogId/bind-with-user/:userId')
+  @HttpCode(204)
+  async bindBlogWithUser(
+    @Param('blogId', new EnhancedParseUUIDPipe()) blogId: string,
+    @Param('userId', new EnhancedParseUUIDPipe()) userId: string,
+  ) {
+    await this.superAdminService.bindUserWithBlog(blogId, userId);
+  }
 
   @UseGuards(BasicAuthGuard)
   @Post('blogs')
@@ -97,7 +133,7 @@ export class SuperAdminController {
 
     if (!createdPostId) throw new NotFoundException();
     const createdPost: PostOutputModel | null =
-      await this.postsQueryRepository.getById(createdPostId);
+      await this.postsQueryRepository.getByIdForAdmin(createdPostId);
 
     return createdPost;
   }
@@ -111,7 +147,7 @@ export class SuperAdminController {
     const blog = await this.blogsQueryRepository.getById(blogId);
     if (!blog) throw new NotFoundException();
     const post: PostOutputModel =
-      await this.postsQueryRepository.getById(postId);
+      await this.postsQueryRepository.getByIdForAdmin(postId);
 
     if (!post) {
       throw new NotFoundException();
@@ -177,7 +213,7 @@ export class SuperAdminController {
       );
 
     const posts: PaginationOutput<PostOutputModel> =
-      await this.postsQueryRepository.getAll(pagination, blogId, req?.user?.userId);
+      await this.postsQueryRepository.getAllForAdmin(pagination, blogId, req?.user?.userId);
 
     return posts;
   }

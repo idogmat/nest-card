@@ -12,6 +12,12 @@ import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
 
 
+export interface AuthUser {
+  userId: string;
+  login: string;
+  deviceId: string;
+}
+
 @Module({
   imports: [UserModule, DeviceModule, CqrsModule, PassportModule],
   controllers: [AuthController],
@@ -23,6 +29,6 @@ import { PassportModule } from "@nestjs/passport";
     EmailService,
     AuthLoginUseCase,
   ],
-  exports: [AuthService, JwtService]
+  exports: [AuthService, JwtService, UserModule]
 })
 export class AuthModule { }

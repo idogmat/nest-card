@@ -1,10 +1,11 @@
-import { PostLikePg } from './../../../../features/likes/domain/post-like-info.entity';
+import { PostLike } from './../../../../features/likes/domain/post-like-info.entity';
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { BlogPg } from '../../blogs/domain/blog.entity';
-import { CommentPg } from '../../comments/domain/comment.entity';
+import { Blog } from '../../blogs/domain/blog.entity';
+import { Comment } from '../../comments/domain/comment.entity';
+import { PostImage } from '../../images/domain/post-image.entity';
 
 @Entity()
-export class PostPg {
+export class Post {
   @PrimaryGeneratedColumn("uuid")
   id: string;
 
@@ -23,13 +24,16 @@ export class PostPg {
   @Column()
   createdAt: Date;
 
-  @OneToMany(() => PostLikePg, (like) => like.post)
-  extendedLikesInfo: PostLikePg[];
+  @OneToMany(() => PostLike, (like) => like.post)
+  extendedLikesInfo: PostLike[];
 
-  @ManyToOne(() => BlogPg, (blog) => blog.posts)
-  blog: BlogPg;
+  @ManyToOne(() => Blog, (blog) => blog.posts)
+  blog: Blog;
 
-  @OneToMany(() => CommentPg, (comment) => comment.post)
-  comments: CommentPg[];
+  @OneToMany(() => Comment, (comment) => comment.post)
+  comments: Comment[];
+
+  @OneToMany(() => PostImage, (image) => image.post)
+  images: PostImage[];
 }
 

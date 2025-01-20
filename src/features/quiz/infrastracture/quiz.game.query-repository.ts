@@ -8,8 +8,8 @@ import { PlayerProgress } from '../domain/player.entity';
 import { QuestionOfTheGame } from '../domain/questionsForGame.entity';
 import { PlayerAnswer } from '../domain/playerAnswer.entity';
 import { GameOutputModel, GameOutputModelMapper } from '../model/output/game.output.model';
-import { AuthUser } from '../quiz.module';
 import { MyStatistic, MyStatisticMapper } from '../model/output/my-statistic.output.model';
+import { AuthUser } from 'src/features/auth/auth.module';
 
 @Injectable()
 export class QuizGameQueryRepository {
@@ -222,7 +222,7 @@ export class QuizGameQueryRepository {
         ) AS "drawsCount"`,
         `json_build_object(
           'id', pp."playerAccountId",
-          'login', (SELECT u.login FROM user_pg u where pp."playerAccountId" = u.id)
+          'login', (SELECT u.login FROM user u where pp."playerAccountId" = u.id)
         ) as player`,
       ])
       .groupBy("pp.playerAccountId");

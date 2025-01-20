@@ -17,12 +17,8 @@ import { GetGamePairUseCase } from "./application/game-case/game.find-pair.use-c
 import { CreateGamePairUseCase } from "./application/game-case/game.create-pair.use-case";
 import { QuizGameQueryRepository } from "./infrastracture/quiz.game.query-repository";
 import { EndGameService } from "./infrastracture/schedulers/endGame.scheduler";
-
-export interface AuthUser {
-  userId: string;
-  login: string;
-  deviceId: string;
-}
+import { SetAnswerUseCase } from "./application/game-case/game.set-answer.use-case";
+import { TransactionManager } from "src/utils/transaction/transactionManager";
 
 @Module({
   imports: [
@@ -47,9 +43,11 @@ export interface AuthUser {
     QuizQueryRepository,
     QuizGameQueryRepository,
     GetGamePairUseCase,
+    SetAnswerUseCase,
     CreateGamePairUseCase,
-    EndGameService
+    EndGameService,
+    TransactionManager
   ],
-  exports: []
+  exports: [TransactionManager]
 })
 export class QuizModule { }

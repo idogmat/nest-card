@@ -1,8 +1,8 @@
-import { UserPg } from "./../../../features/users/domain/user.entity";
+import { User } from "./../../../features/users/domain/user.entity";
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class DevicePg {
+export class Device {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -18,6 +18,6 @@ export class DevicePg {
   @Column()
   lastActiveDate: Date;
 
-  @ManyToOne(() => UserPg, (user) => user.divices)
-  user: UserPg;
+  @ManyToOne(() => User, (user) => user.divices)
+  user: User;
 }

@@ -9,13 +9,13 @@ import {
 } from '../../../base/models/pagination.base.model';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserPg } from '../domain/user.entity';
+import { User } from '../domain/user.entity';
 
 @Injectable()
 export class UsersQueryRepository {
   constructor(
-    @InjectRepository(UserPg)
-    private readonly usersRepo: Repository<UserPg>,
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
   ) { }
 
   async getById(id: string): Promise<UserOutputModel | null> {
@@ -31,29 +31,24 @@ export class UsersQueryRepository {
   ): Promise<PaginationOutput<UserOutputModel>> {
 
     const conditions = [];
-    const params = [];
-    console.log(pagination);
+    let searchTerm = '';
     const userQueryBuilder = this.usersRepo.createQueryBuilder("u");
 
+    const validNullParam = (param: string | null) => (param === null ? '' : param);
     if (pagination.searchLoginTerm) {
-      conditions.push("u.login ilike :login");
-      params.push({ login: `%${pagination.searchLoginTerm}%` });
+      conditions.push(`u.login ilike :login`);
+      userQueryBuilder.setParameter('login', `%${validNullParam(pagination.searchLoginTerm)}%`);
     }
     if (pagination.searchEmailTerm) {
-      conditions.push("u.email ilike :email");
-      params.push({ email: `%${pagination.searchEmailTerm}%` });
+      conditions.push(`u.email ilike :email`);
+      userQueryBuilder.setParameter('email', `%${validNullParam(pagination.searchEmailTerm)}%`);
     }
 
-    if (conditions.length > 0) {
-      conditions.forEach((condition, i) => {
-        if (i === 0)
-          userQueryBuilder.where(condition, params[i]);
-        if (i === 1)
-          userQueryBuilder.andWhere(condition, params[i]);
-      });
+    userQueryBuilder.where(`u.banned ${pagination.banStatus === null ? 'IS NOT NULL' : '= ' + pagination.banStatus}`);
+    if (conditions.length) {
+      searchTerm = conditions.join(' OR ');
+      userQueryBuilder.andWhere(searchTerm);
     }
-
-    // console.log(userQueryBuilder.getSql());
 
     const totalCount = await userQueryBuilder.getCount();
 
@@ -62,7 +57,7 @@ export class UsersQueryRepository {
       .take(pagination.pageSize)
       .skip((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
-
+    // console.log(users);
     const mappedUsers = users.map(UserOutputModelMapper);
     return new PaginationOutput<UserOutputModel>(
       mappedUsers,

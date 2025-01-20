@@ -1,4 +1,4 @@
-import { UserPg } from "./../../../features/users/domain/user.entity";
+import { User } from "./../../../features/users/domain/user.entity";
 import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Game } from "./game.entity";
 import { PlayerAnswer } from "./playerAnswer.entity";
@@ -23,8 +23,8 @@ export class PlayerProgress {
   @Column({ default: 0 })
   score: number;
 
-  @ManyToOne(() => UserPg, (user) => user.player)
-  playerAccount: UserPg;
+  @ManyToOne(() => User, (user) => user.player)
+  playerAccount: User;
 
   @ManyToOne(() => Game, (game) => game.playersProgresses)
   game: Game;
