@@ -32,7 +32,7 @@ jobs:
       #   run: yarn
 
       - name: Run tests
-        run: docker-compose -f docker-compose.yml run --rm app npm test
+        run: docker-compose -f docker-compose.yml run --rm app yarn test:e2e
 
     # - name: Test
     #   run: yarn test:e2e # запускаем скрипт тестами
