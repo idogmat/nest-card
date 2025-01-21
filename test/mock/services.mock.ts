@@ -20,10 +20,10 @@ export class UserServiceMock extends UsersService {
 }
 
 
-export class EmailServiceMock {
+export class EmailServiceMock extends EmailService {
 
   async transporter() {
-    return {}
+    return { sendMail: () => { } }
   }
 
   async sendMail(_name: string, mail: string, code: string) {
