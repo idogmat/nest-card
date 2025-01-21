@@ -3,6 +3,8 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { initForTest } from './utils/ready-clear';
+import { EmailService } from 'src/features/auth/application/email.service';
+import { EmailServiceMock } from './mock/user.service.mock';
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
 describe('auth', () => {
@@ -13,6 +15,9 @@ describe('auth', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
     })
+      .overrideProvider(EmailService)
+      //.useValue(UserServiceMockObject)
+      .useClass(EmailServiceMock)
       .compile();
 
     const result = await initForTest(moduleFixture, AppModule);

@@ -1,3 +1,4 @@
+import { EmailService } from 'src/features/auth/application/email.service';
 import { UsersService } from '../../src/features/users/application/users.service';
 import { UsersRepository } from '../../src/features/users/infrastructure/users.repository';
 
@@ -35,5 +36,25 @@ export class UserServiceMock extends UsersService {
       'Call mock method sendMessageOnEmail / MailService, for specific test',
     );
     return Promise.resolve(true);
+  }
+}
+
+
+export class EmailServiceMock extends EmailService {
+  constructor() {
+    super();
+  }
+  async sendMail(_name: string, mail: string, code: string) {
+    console.log('sendMail')
+  }
+
+
+  async sendMailPasswordRecovery(
+    _name: string,
+    mail: string,
+    code: string,
+  ) {
+
+    console.log('sendMail')
   }
 }
