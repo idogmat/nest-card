@@ -36,6 +36,10 @@ jobs:
           echo "DB_USER=${{ secrets.DB_USER }}" >> docker.env
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> docker.env
           echo "DB_NAME=${{ secrets.DB_NAME }}" >> docker.env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> docker.env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> docker.env
+          echo "AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}" >> docker.env
+          echo "S3_ENDPOINT=${{ secrets.S3_ENDPOINT }}" >> docker.env
 
       - name: Debug docker.env
         run: cat docker.env
