@@ -29,7 +29,6 @@ describe('posts', () => {
       imports: [AppModule]
     })
       .compile();
-
     const result = await initForTest(moduleFixture, AppModule);
     app = result.app;
     await result.cleadDB();

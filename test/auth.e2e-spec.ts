@@ -3,7 +3,6 @@ import request from 'supertest';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { initForTest } from './utils/ready-clear';
-
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
 describe('auth', () => {
@@ -29,7 +28,6 @@ describe('auth', () => {
     const result = await request(app.getHttpServer())
       .post('/api/auth/registration')
       .send(regUser);
-    console.log(result.body);
     expect(result.status).toBe(204);
 
     const { login: loginOrEmail, password } = regUser;
