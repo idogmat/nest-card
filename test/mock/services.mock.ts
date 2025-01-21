@@ -20,24 +20,20 @@ export class UserServiceMock extends UsersService {
 }
 
 
-export class EmailServiceMock extends EmailService {
+export class EmailServiceMock {
 
   async transporter() {
     return { sendMail: () => { } }
   }
 
   async sendMail(_name: string, mail: string, code: string) {
-    console.log('sendMail')
   }
-
 
   async sendMailPasswordRecovery(
     _name: string,
     mail: string,
     code: string,
   ) {
-
-    console.log('sendMail')
   }
 }
 
@@ -49,7 +45,6 @@ export class ImageServiceMock extends ImageService {
   }
 
   async insertPostImage(file: Express.Multer.File, folder: string): Promise<Record<string, Partial<Express.Multer.File> & { Key: string }>> {
-    console.log('ImageServiceMock')
     const obj300x180 = await this.resizeImage(file, 300, 180)
     const obj149x96 = await this.resizeImage(file, 149, 96)
     const records = {
@@ -61,14 +56,10 @@ export class ImageServiceMock extends ImageService {
   }
 
   async getBlogImagesDB(blogId: string): Promise<BlogImage[] | []> {
-    console.log('ImageServiceMock')
-
     return [];
   }
 
   async getPostImagesDB(postId: string): Promise<PostImage[] | []> {
-    console.log('ImageServiceMock')
-
     return [];
   }
 }
@@ -76,19 +67,14 @@ export class ImageServiceMock extends ImageService {
 export class S3StorageAdapterMock extends S3StorageAdapter {
 
   async uploadFile(file: any, folder: string): Promise<null> {
-    console.log('S3StorageAdapterMock')
     return null
   }
 
   async getFileUrl(key: string): Promise<string> {
-    console.log('S3StorageAdapterMock')
-
     return 'null'
   }
 
   async clearBucket(): Promise<void> {
-    console.log('S3StorageAdapterMock')
-
   }
 
 }
