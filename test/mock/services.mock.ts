@@ -45,6 +45,16 @@ export class ImageServiceMock extends ImageService {
 
   }
 
+  async insertPostImage(file: Express.Multer.File, folder: string): Promise<Record<string, Partial<Express.Multer.File> & { Key: string }>> {
+    const obj300x180 = await this.resizeImage(file, 300, 180)
+    const obj149x96 = await this.resizeImage(file, 149, 96)
+    const records = {
+      ['940x432']: { ...file, Key: `${folder}/940x432/${file.originalname}` },
+      ['300x180']: { ...obj300x180, Key: `${folder}/300x180/${file.originalname}` },
+      ['149x96']: { ...obj149x96, Key: `${folder}/149x96/${file.originalname}` }
+    }
+    return records
+  }
 
   async getBlogImagesDB(blogId: string): Promise<BlogImage[] | []> {
 
