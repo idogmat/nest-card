@@ -9,10 +9,10 @@ export class EmailTestManager {
     return nodemailer.createTransport({
       service: "gmail",
       host: "smtp.gmail.com",
-      secure: false, // true for 465, false for other ports
+      secure: false,
       auth: {
-        user: process.env.EMAIL, // generated ethereal user
-        pass: process.env.EMAIL_PWD, // generated ethereal password
+        user: process.env.EMAIL,
+        pass: process.env.EMAIL_PWD,
       },
     });
   }

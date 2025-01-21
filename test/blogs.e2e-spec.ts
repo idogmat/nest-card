@@ -4,6 +4,8 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import 'dotenv/config';
 import { initForTest } from './utils/ready-clear';
+import { ImageService } from 'src/features/content/images/application/image.service';
+import { ImageServiceMock } from './mock/services.mock';
 
 const login = process.env.ADMIN_LOGIN;
 const password = process.env.ADMIN_PASSWORD;
@@ -27,6 +29,8 @@ describe('blogs', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
     })
+      .overrideProvider(ImageService)
+      .useClass(ImageServiceMock)
       .compile();
 
     const result = await initForTest(moduleFixture, AppModule);

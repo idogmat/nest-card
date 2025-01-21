@@ -4,7 +4,7 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';
 import { initForTest } from './utils/ready-clear';
 import { EmailService } from 'src/features/auth/application/email.service';
-import { EmailServiceMock } from './mock/user.service.mock';
+import { EmailServiceMock } from './mock/services.mock';
 const regUser = { login: 'name77', password: 'qwerty1221', email: 'email3787@gil.em' };
 
 describe('auth', () => {
@@ -16,7 +16,6 @@ describe('auth', () => {
       imports: [AppModule]
     })
       .overrideProvider(EmailService)
-      //.useValue(UserServiceMockObject)
       .useClass(EmailServiceMock)
       .compile();
 

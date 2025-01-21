@@ -7,7 +7,7 @@ import { applyAppSettings } from '../src/settings/apply-app-setting';
 import { skipSettings } from './utils/skip-settings';
 import { UsersTestManager } from './utils/routes/users-test-manager';
 import { aDescribe } from './utils/aDescribe';
-import { UserServiceMock } from './mock/user.service.mock';
+import { UserServiceMock } from './mock/services.mock';
 
 const TEST_ADMIN_CREDENTIALS = {
   login: 'test',
