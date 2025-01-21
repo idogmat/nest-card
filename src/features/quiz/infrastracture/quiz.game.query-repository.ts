@@ -222,14 +222,14 @@ export class QuizGameQueryRepository {
         ) AS "drawsCount"`,
         `json_build_object(
           'id', pp."playerAccountId",
-          'login', (SELECT u.login FROM user u where pp."playerAccountId" = u.id)
+          'login', (SELECT u.login FROM "user" u where pp."playerAccountId" = u.id)
         ) as player`,
       ])
       .groupBy("pp.playerAccountId");
 
 
     if (sort?.length) {
-      sort.forEach((sortParams: string) => {
+      sort.forEach((sortParams: string[]) => {
         // const params = sortParams.split(' ');
         console.log(sortParams, 'params');
         queryGetScores.addOrderBy(

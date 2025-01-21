@@ -170,13 +170,13 @@ export class PaginationQuestionBodySearchTerm extends Pagination {
 }
 
 export class PaginationAllStatistic extends Pagination {
-  public readonly sort: (string | ParsedQs)[];
+  public readonly sort: string[][];
   constructor(query: ParsedQs, sortProperties: string[]) {
     super(query, sortProperties);
 
     this.sort = this.getSort(query);
   }
-  private getSort(query: ParsedQs): (string | ParsedQs)[] {
+  private getSort(query: ParsedQs): string[][] {
     const sortFields = [
       "sumScore",
       "avgScores",
@@ -187,16 +187,17 @@ export class PaginationAllStatistic extends Pagination {
     ];
 
     const destination = ['asc', 'desc'];
-
+    console.log(query.sort, 'sort')
     if (Array.isArray(query?.sort)) {
-      const sort = query.sort.map(e => e?.split(' '));
+
+      const sort = query.sort.map((e: string | ParsedQs) => { if (e.toString().includes(' ')) return e.toString().split(' ') });
       const result = sort.reduce((acc: string[][], e: string[]) => {
         if (sortFields.includes(e[0]) &&
           destination.includes(e[1])) {
           acc.push(e);
         }
         return acc;
-      }, [] as (string | ParsedQs)[]);
+      }, [] as string[][]);
       return result;
     } else {
       const result = (query.sort as string)?.split(' ') || ['', ''];

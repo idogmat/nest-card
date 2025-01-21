@@ -64,7 +64,6 @@ describe('blogs', () => {
       .auth(login, password, { type: "basic" })
       .send(newPost);
     expect(posts.status).toBe(201);
-    console.log(posts.body);
     expect(posts.body.blogId).toBe(result.body.id);
     // expect(posts.body.blogName).toBe(result.body.name);
   });
