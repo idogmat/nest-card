@@ -5,7 +5,8 @@ import { AppModule } from '../src/app.module';
 import 'dotenv/config';
 import { initForTest } from './utils/ready-clear';
 import { ImageService } from 'src/features/content/images/application/image.service';
-import { ImageServiceMock } from './mock/services.mock';
+import { ImageServiceMock, S3StorageAdapterMock } from './mock/services.mock';
+import { S3StorageAdapter } from 'src/features/s3/adapter/adapter.s3';
 
 const login = process.env.ADMIN_LOGIN;
 const password = process.env.ADMIN_PASSWORD;
@@ -30,6 +31,8 @@ describe('posts', () => {
     const moduleFixture = await Test.createTestingModule({
       imports: [AppModule]
     })
+      .overrideProvider(S3StorageAdapter)
+      .useClass(S3StorageAdapterMock)
       .overrideProvider(ImageService)
       .useClass(ImageServiceMock)
       .compile();
