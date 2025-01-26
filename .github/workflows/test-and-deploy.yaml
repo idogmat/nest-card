@@ -58,16 +58,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Copy files to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_PRIVATE_KEY }}
-          source: |
-            ./docker-compose.yml
-            ./docker.env
-          target: ~/deploy/
+      # - name: Copy files to server
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with:
+      #     host: ${{ secrets.SERVER_HOST }}
+      #     username: ${{ secrets.SERVER_USER }}
+      #     key: ${{ secrets.SERVER_PRIVATE_KEY }}
+      #     source: |
+      #       ./docker-compose.yml
+      #       ./docker.env
+      #     target: ~/deploy/
 
       - name: Deploy app on server
         uses: appleboy/ssh-action@v0.1.7
