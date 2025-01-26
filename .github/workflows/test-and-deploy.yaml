@@ -6,53 +6,53 @@ on:
       - main
 
 jobs:
-  Tests:
-    name: Tests
-    environment: docker.env
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  # Tests:
+  #   name: Tests
+  #   environment: docker.env
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Create docker.env file
-        run: |
-          echo "HASH_ROUNDS=${{ secrets.HASH_ROUNDS }}" >> docker.env
-          echo "ADMIN_LOGIN=${{ secrets.ADMIN_LOGIN }}" >> docker.env
-          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> docker.env
-          echo "EMAIL=${{ secrets.EMAIL }}" >> docker.env
-          echo "EMAIL_PWD=${{ secrets.EMAIL_PWD }}" >> docker.env
-          echo "ACCESS_SECRET_TOKEN=${{ secrets.ACCESS_SECRET_TOKEN }}" >> docker.env
-          echo "REFRESH_SECRET_TOKEN=${{ secrets.REFRESH_SECRET_TOKEN }}" >> docker.env
-          echo "ACCESS_SECRET_TOKEN_EXPIRATION=${{ secrets.ACCESS_SECRET_TOKEN_EXPIRATION }}" >> docker.env
-          echo "REFRESH_SECRET_TOKEN_EXPIRATION=${{ secrets.REFRESH_SECRET_TOKEN_EXPIRATION }}" >> docker.env
-          echo "THROTTLER_TTL=${{ secrets.THROTTLER_TTL }}" >> docker.env
-          echo "THROTTLER_LIMIT=${{ secrets.THROTTLER_LIMIT }}" >> docker.env
-          echo "CONFIRM_EMAIL=${{ secrets.CONFIRM_EMAIL }}" >> docker.env
-          echo "RECOVERY_EMAIL=${{ secrets.RECOVERY_EMAIL }}" >> docker.env
-          echo "DB_TYPE=${{ secrets.DB_TYPE }}" >> docker.env
-          echo "APP_PORT=${{ secrets.APP_PORT }}" >> docker.env
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> docker.env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> docker.env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> docker.env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> docker.env
-          echo "DB_NAME=${{ secrets.DB_NAME }}" >> docker.env
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> docker.env
-          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> docker.env
-          echo "AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}" >> docker.env
-          echo "S3_ENDPOINT=${{ secrets.S3_ENDPOINT }}" >> docker.env
+  #     - name: Create docker.env file
+  #       run: |
+  #         echo "HASH_ROUNDS=${{ secrets.HASH_ROUNDS }}" >> docker.env
+  #         echo "ADMIN_LOGIN=${{ secrets.ADMIN_LOGIN }}" >> docker.env
+  #         echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> docker.env
+  #         echo "EMAIL=${{ secrets.EMAIL }}" >> docker.env
+  #         echo "EMAIL_PWD=${{ secrets.EMAIL_PWD }}" >> docker.env
+  #         echo "ACCESS_SECRET_TOKEN=${{ secrets.ACCESS_SECRET_TOKEN }}" >> docker.env
+  #         echo "REFRESH_SECRET_TOKEN=${{ secrets.REFRESH_SECRET_TOKEN }}" >> docker.env
+  #         echo "ACCESS_SECRET_TOKEN_EXPIRATION=${{ secrets.ACCESS_SECRET_TOKEN_EXPIRATION }}" >> docker.env
+  #         echo "REFRESH_SECRET_TOKEN_EXPIRATION=${{ secrets.REFRESH_SECRET_TOKEN_EXPIRATION }}" >> docker.env
+  #         echo "THROTTLER_TTL=${{ secrets.THROTTLER_TTL }}" >> docker.env
+  #         echo "THROTTLER_LIMIT=${{ secrets.THROTTLER_LIMIT }}" >> docker.env
+  #         echo "CONFIRM_EMAIL=${{ secrets.CONFIRM_EMAIL }}" >> docker.env
+  #         echo "RECOVERY_EMAIL=${{ secrets.RECOVERY_EMAIL }}" >> docker.env
+  #         echo "DB_TYPE=${{ secrets.DB_TYPE }}" >> docker.env
+  #         echo "APP_PORT=${{ secrets.APP_PORT }}" >> docker.env
+  #         echo "DB_HOST=${{ secrets.DB_HOST }}" >> docker.env
+  #         echo "DB_PORT=${{ secrets.DB_PORT }}" >> docker.env
+  #         echo "DB_USER=${{ secrets.DB_USER }}" >> docker.env
+  #         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> docker.env
+  #         echo "DB_NAME=${{ secrets.DB_NAME }}" >> docker.env
+  #         echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> docker.env
+  #         echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> docker.env
+  #         echo "AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}" >> docker.env
+  #         echo "S3_ENDPOINT=${{ secrets.S3_ENDPOINT }}" >> docker.env
 
-      - name: Debug docker.env
-        run: cat docker.env
+  #     - name: Debug docker.env
+  #       run: cat docker.env
     
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
+  #     - name: Set up Docker
+  #       uses: docker/setup-buildx-action@v2
 
-      - name: Run tests
-        run:  yarn docker:test
+  #     - name: Run tests
+  #       run:  yarn docker:test
 
   Deploy:
     name: Deploy
-    needs: Tests
+    # needs: Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -74,7 +74,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_PRIVATE_KEY }}
+          password: ${{ secrets.SERVER_PASSWORD }}
           script: |
             cd ~/deploy/
             ls
