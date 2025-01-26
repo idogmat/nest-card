@@ -1,10 +1,10 @@
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { BloggerService } from "../blogger.service";
-import { ImageService } from "src/features/content/images/application/image.service";
+import { ImageService } from "../../../../features/content/images/application/image.service";
 import { BadRequestException, ForbiddenException, NotFoundException } from "@nestjs/common";
-import { AuthUser } from "src/features/auth/auth.module";
-import { ImageType } from "src/features/content/images/domain/blog-image.entity";
-import { blogImagesMapper, BlogImagesOutputModel } from "src/features/content/images/api/model/output.blog-image";
+import { AuthUser } from "../../../../features/auth/auth.module";
+import { ImageType } from "../../../../features/content/images/domain/blog-image.entity";
+import { blogImagesMapper, BlogImagesOutputModel } from "../../../../features/content/images/api/model/output.blog-image";
 
 
 export class InsertBlogImageCommand {

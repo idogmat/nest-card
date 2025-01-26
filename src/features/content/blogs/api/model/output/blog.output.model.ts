@@ -1,4 +1,4 @@
-import { blogImagesMapper, BlogImagesOutputModel } from "src/features/content/images/api/model/output.blog-image";
+import { blogImagesMapper, BlogImagesOutputModel } from "../../../../../../features/content/images/api/model/output.blog-image";
 import { Blog } from "../../../domain/blog.entity";
 import { ApiProperty } from "@nestjs/swagger";
 

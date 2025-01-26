@@ -56,6 +56,7 @@ export class BloggerController {
   ) { }
 
   @ApiResponse({ status: 201, description: 'The blog has been successfully created.', type: BlogOutputModel })
+  @ApiResponse({ status: 400, description: 'If the inputModel has incorrect values.' })
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/blogs')
