@@ -65,8 +65,6 @@ jobs:
             echo "❌ ERROR: Secrets are missing!"
             exit 1
           fi
-          ping -c 4 ${{ secrets.SERVER_HOST }}
-          mkdir -p ~/.ssh
           echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           cat ~/.ssh/id_rsa | head -c 50  # Выведет часть ключа для отладки
