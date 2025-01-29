@@ -71,7 +71,9 @@ jobs:
           
 
       - name: Test SSH Connection
-        run: sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_HOST }}
+        run: |
+          ping ${{ secrets.SERVER_HOST }}
+          sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no deployer@${{ secrets.SERVER_HOST }}
 
       # - name: Deploy Application
       #   run: |
