@@ -61,9 +61,11 @@ jobs:
       - name: Setup SSH
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          ls -lah ~/.ssh
           echo "Deploying application..."
           cd /home/${{ secrets.SERVER_USER }}/app
           git pull origin main
+          EOF
 
       # - name: Deploy to server
       #   run: |
