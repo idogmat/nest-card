@@ -67,6 +67,8 @@ jobs:
           echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           cat ~/.ssh/id_rsa | head -c 50  # Выведет часть ключа для отладки
+          sudo apt update
+          sudo apt install --only-upgrade openssh-client
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
           
 
