@@ -65,9 +65,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           echo "Host *" > ~/.ssh/config
           echo "    StrictHostKeyChecking no" >> ~/.ssh/config
-      - name: Setup SSH
-        run: |
-
+          
       - name: Deploy to server
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
