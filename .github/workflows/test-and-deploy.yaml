@@ -55,6 +55,9 @@ jobs:
     # needs: Tests
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
@@ -62,7 +65,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to Server
+      - name: Debug SSH Key
+        run: ls -lah ~/.ssh
+
+      - name: Deploy Application
         run: |
           ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
           echo "Deploying application..."
