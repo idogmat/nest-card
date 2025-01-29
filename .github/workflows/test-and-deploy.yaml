@@ -53,6 +53,7 @@ jobs:
   Deploy:
     name: Deploy
     # needs: Tests
+    environment: docker.env
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
