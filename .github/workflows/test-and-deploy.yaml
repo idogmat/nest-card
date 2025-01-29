@@ -57,27 +57,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # - name: Setup SSH Key
-      #   run: |
-      #     if [ -z "${{ secrets.SERVER_PRIVATE_KEY }}" ] || [ -z "${{ secrets.SERVER_HOST }}" ]; then
-      #       echo "❌ ERROR: Secrets are missing!"
-      #       exit 1
-      #     fi
-      #     mkdir -p ~/.ssh
-      #     echo "${{ secrets.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-      #     chmod 600 ~/.ssh/id_rsa
-      #     cat ~/.ssh/id_rsa | head -c 50  # Выведет часть ключа для отладки
-      #     ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Setup SSH Key
+        run: |
+          sudo apt install sshpass
           
 
-      - name: Test SSH Connection
-        run: |
-          sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no -T deployer@${{ secrets.SERVER_HOST }}
-
-      # - name: Deploy Application
+      # - name: Test SSH Connection
       #   run: |
-      #     ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-      #     cd /home/${{ secrets.SERVER_USER }}/app
-      #     git pull origin main
-      #     docker compose up -d --build
-      #     EOF
+      #     sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no -T deployer@${{ secrets.SERVER_HOST }}
+
+      - name: Deploy Application
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+          cd /home/${{ secrets.SERVER_USER }}/app
+          git pull origin main
+          docker compose up -d --build
+          EOF
