@@ -63,6 +63,7 @@ jobs:
           username: deployer
           key: ${{ secrets.SERVER_PRIVATE_KEY }}
           port: 22
+          protocol: tcp6
           script: |
             ls -al
 
