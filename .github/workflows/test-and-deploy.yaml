@@ -69,7 +69,5 @@ jobs:
       - name: Deploy Application
         run: |
           sshpass -p ${{ secrets.SERVER_PASSWORD }} ssh -o StrictHostKeyChecking=no -T ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}<< 'EOF'
-          cd /home/${{ secrets.SERVER_USER }}/app
-          git pull origin main
-          docker compose up -d --build
+          sh deploy.sh
           EOF
