@@ -26,6 +26,7 @@ export class TestingController {
       "blog",
       "blog_image",
       "blog_block",
+      "subscribe_blog",
       "post",
       "post_like",
       "post_image",

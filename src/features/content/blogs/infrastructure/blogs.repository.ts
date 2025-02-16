@@ -30,6 +30,10 @@ export class BlogsRepository {
     return savedBlog.id;
   }
 
+  async save(model: Blog) {
+    return await this.blogRepo.save(model)
+  }
+
   async update(id: string, newModel: Blog) {
     const updated = await this.blogRepo.createQueryBuilder()
       .update(Blog)

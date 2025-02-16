@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UsersRepository } from '../infrastructure/users.repository';
 import bcrypt from 'bcrypt';
 import { UserAuthInput } from './../../../features/auth/api/model/input/auth.input.model';
+import { User } from '../domain/user.entity';
 
 // Для провайдера всегда необходимо применять декоратор @Injectable() и регистрировать в модуле
 @Injectable()
@@ -47,7 +48,19 @@ export class UsersService {
     return await this.usersRepository.getById(id);
   }
 
+  async getUsersByIds(ids: string[]) {
+    const users = await this.usersRepository.getUsersByIds(ids);
+    return users.reduce((acc, u) => {
+      if (u.tgId) acc.push(u.tgId)
+      return acc
+    }, [])
+  }
+
   async findByLoginOrEmail(loginOrEmail: string) {
     return await this.usersRepository.findByLoginOrEmail(loginOrEmail);
+  }
+
+  async saveModel(user: User) {
+    return await this.usersRepository.save(user);
   }
 }

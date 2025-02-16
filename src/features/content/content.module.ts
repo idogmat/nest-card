@@ -36,13 +36,27 @@ import { InsertBlogImageUseCase } from "../blogger/application/use-cases/insert-
 import { PostImage } from "./images/domain/post-image.entity";
 import { InsertPostImageUseCase } from "../blogger/application/use-cases/insert-post-image";
 import { S3Module } from "../s3/s3.module";
+import { IntegrationsController } from "./integrations/api/integration.controller";
+import { IntegrationService } from "./integrations/applications/integration.service";
+import { SubscribeBlog } from "./integrations/domain/integration.entity";
+import { SendNotifyHandler } from "./integrations/applications/event-cases/send-notify.event";
 
 @Module({
   imports: [
     AuthModule,
     CqrsModule,
     S3Module,
-    TypeOrmModule.forFeature([Blog, BlogBlock, Post, PostLike, Comment, CommentLike, BlogImage, PostImage])
+    TypeOrmModule.forFeature([
+      Blog,
+      BlogBlock,
+      Post,
+      PostLike,
+      Comment,
+      CommentLike,
+      BlogImage,
+      PostImage,
+      SubscribeBlog
+    ])
   ],
   controllers: [
     BlogsController,
@@ -50,6 +64,7 @@ import { S3Module } from "../s3/s3.module";
     CommentsController,
     SuperAdminController,
     BloggerController,
+    IntegrationsController
   ],
   providers: [
     BlogsService,
@@ -71,7 +86,9 @@ import { S3Module } from "../s3/s3.module";
     ImageService,
     TransactionManager,
     InsertBlogImageUseCase,
-    InsertPostImageUseCase
+    InsertPostImageUseCase,
+    IntegrationService,
+    SendNotifyHandler
   ],
   exports: []
 })

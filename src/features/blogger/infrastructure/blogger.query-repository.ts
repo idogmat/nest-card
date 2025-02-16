@@ -27,12 +27,13 @@ export class BloggerQueryRepository {
     @InjectDataSource()
     private readonly dataSource: DataSource,
   ) { }
-  async getBlogById(id: string): Promise<BlogOutputModel> {
+  async getBlogById(id: string, userId: string): Promise<BlogOutputModel> {
     const blog = await this.blogRepo.createQueryBuilder("b")
       .leftJoinAndSelect(`b.images`, `i`)
+      .leftJoinAndSelect(`b.subscribers`, `s`, `s.blogId IS NOT NULL AND b.id = s.blogId`)
       .where(`b.id = :id`, { id })
       .getOne()
-    return BlogOutputModelMapper(blog);
+    return BlogOutputModelMapper(blog, userId);
   }
 
   async getAll(
@@ -48,6 +49,7 @@ export class BloggerQueryRepository {
 
     const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
       .leftJoinAndSelect(`b.images`, `i`)
+      .leftJoinAndSelect(`b.subscribers`, `s`, `s.blogId IS NOT NULL AND b.id = s.blogId`)
       .where(`b."bannedByAdmin" != :banned`, { banned: true })
       .andWhere(`b."userId" = :userId`, { userId })
       .andWhere(qb => {
@@ -70,8 +72,8 @@ export class BloggerQueryRepository {
       .take(pagination.pageSize)
       .skip((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
-    // console.log(blogs, 'blogs');
-    const mappedBlogs = blogs.map(BlogOutputModelMapper);
+    console.log(blogs, 'blogs');
+    const mappedBlogs = blogs.map((b) => BlogOutputModelMapper(b, userId));
 
     return new PaginationOutput<BlogOutputModel>(
       mappedBlogs,

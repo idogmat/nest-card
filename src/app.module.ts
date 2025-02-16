@@ -15,7 +15,6 @@ import { S3Module } from './features/s3/s3.module';
 
 const env = getConfiguration();
 @Module({
-  // Регистрация модулей
   imports: [
     AuthModule,
     UserModule,
@@ -24,17 +23,6 @@ const env = getConfiguration();
     ContentModule,
     S3Module,
     TestModule,
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: '127.0.0.1',
-    //   port: 5433,
-    //   username: 'postgres',
-    //   password: 'postgres',
-    //   database: 'test',
-    //   autoLoadEntities: true,
-    //   synchronize: true,
-    //   logging: true
-    // }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
         return configService.get('DB');
