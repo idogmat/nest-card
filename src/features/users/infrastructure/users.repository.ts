@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAuthInput } from './../../../features/auth/api/model/input/auth.input.model';
 import { User } from '../domain/user.entity';
@@ -28,6 +28,11 @@ export class UsersRepository {
     return savedUser.id;
   }
 
+  async save(user: User): Promise<User> {
+    const savedUser = await this.usersRepo.save(user);
+    return savedUser;
+  }
+
   async getById(id: string): Promise<User | null> {
     const user = await this.usersRepo.findOneBy({ id: id });
     return user;
@@ -52,6 +57,11 @@ export class UsersRepository {
       .andWhere("u.email = :email", { email })
       .getOne();
 
+    return user;
+  }
+
+  async getUsersByIds(ids: string[]) {
+    const user = await this.usersRepo.findBy({ id: In(ids) })
     return user;
   }
 

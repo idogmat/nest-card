@@ -69,7 +69,7 @@ export class BloggerController {
     );
     console.log(createdBlogId);
     const createdBlog: BlogOutputModel | null =
-      await this.bloggerQueryRepository.getBlogById(createdBlogId);
+      await this.bloggerQueryRepository.getBlogById(createdBlogId, req?.user?.userId);
 
     return createdBlog;
   }

@@ -1,8 +1,9 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Post } from '../../posts/domain/post.entity';
 import { User } from 'src/features/users/domain/user.entity';
 import { BlogBlock } from './blog.ban.entity';
 import { BlogImage } from '../../images/domain/blog-image.entity';
+import { SubscribeBlog } from '../../integrations/domain/integration.entity';
 
 @Entity()
 export class Blog {
@@ -45,6 +46,8 @@ export class Blog {
   @OneToMany(() => BlogBlock, (blogBlock) => blogBlock.blog)
   blogBlocks: BlogBlock[];
 
+  @OneToMany(() => SubscribeBlog, (sub) => sub.blog)
+  subscribers: SubscribeBlog[];
 
   static createBlog(name: string, description: string, websiteUrl: string) {
     const blog = new this();
@@ -57,7 +60,5 @@ export class Blog {
 
     return blog;
   }
-
-
 }
 

@@ -12,6 +12,9 @@ import { BanUserForBlogInputModel } from "../model/input/banBlogForUser.input.mo
 import { BlogBlock } from "src/features/content/blogs/domain/blog.ban.entity";
 import { UsersRepository } from "src/features/users/infrastructure/users.repository";
 import { PostImage } from "src/features/content/images/domain/post-image.entity";
+import { EventBus } from "@nestjs/cqrs";
+import { SendNotifyEvent } from "src/features/content/integrations/applications/event-cases/send-notify.event";
+import { SubscribeBlog, SubscribeStatus } from "src/features/content/integrations/domain/integration.entity";
 
 @Injectable()
 export class BloggerService {
@@ -23,6 +26,7 @@ export class BloggerService {
     @InjectRepository(Post)
     private readonly postRepo: Repository<Post>,
     private readonly userRepo: UsersRepository,
+    private readonly eventBus: EventBus
   ) { }
 
   async getById(id: string): Promise<Blog | null> {
@@ -33,7 +37,6 @@ export class BloggerService {
 
   async getPostById(id: string): Promise<Post | null> {
     const post = await this.postRepo.findOneBy({ id: id });
-    console.log(post, 'post');
     if (!post) {
       return null;
     }
@@ -103,12 +106,21 @@ export class BloggerService {
       createdAt: new Date()
     });
     const post = await this.postRepo.save(created);
-    const result = await this.postRepo.createQueryBuilder("p")
+    const result: Post & { blogName: string; subscribers: string[] } = await this.postRepo.createQueryBuilder("p")
       .leftJoinAndSelect("p.blog", "b")
       .select([
         postMap,
         "b.name AS \"blogName\"",
       ])
+      .addSelect((subQuery) => {
+        return subQuery.select("jsonb_agg(jsonb_build_object(" +
+          "'userId', s.userId, " +
+          "'status', s.status " +
+          "))"
+        )
+          .from(SubscribeBlog, "s")
+          .where('b.id = s."blogId"')
+      }, "subscribers")
       .addSelect((subQuery) => {
         return subQuery.select("jsonb_agg(jsonb_build_object(" +
           "'userId', pl.userId, " +
@@ -132,7 +144,11 @@ export class BloggerService {
       }, "images")
       .where("p.id = :postId", { postId: post.id })
       .getRawOne();
-    console.log(result);
+    const notify = result.subscribers.reduce<string[]>((acc, s: any) => {
+      if (s.status === SubscribeStatus.Subscribed) acc.push(s.userId)
+      return acc
+    }, [])
+    this.eventBus.publish(new SendNotifyEvent(result.blogName, notify));
     return PostOutputModelMapper(result as Post & { blogName: string; });
   }
 

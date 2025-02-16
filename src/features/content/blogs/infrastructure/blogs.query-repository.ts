@@ -12,20 +12,22 @@ export class BlogsQueryRepository {
     private readonly blogRepo: Repository<Blog>,
   ) { }
 
-  async getById(id: string): Promise<BlogOutputModel | null> {
+  async getById(id: string, userId?: string): Promise<BlogOutputModel | null> {
     const blog = await this.blogRepo.createQueryBuilder("b")
       .leftJoinAndSelect(`b.images`, `i`)
+      .leftJoinAndSelect(`b.subscribers`, `s`, `s.blogId IS NOT NULL AND b.id = s.blogId`)
       .where(`b.id = :id`, { id })
       .getOne()
     console.log(blog)
     if (!blog || blog?.bannedByAdmin) {
       throw new NotFoundException();
     }
-    return BlogOutputModelMapper(blog);
+    return BlogOutputModelMapper(blog, userId);
   }
 
   async getAll(
     pagination: PaginationWithSearchBlogNameTerm,
+    userId?: string
   ): Promise<PaginationOutput<BlogOutputModel>> {
     const conditions = [];
     const params = [];
@@ -36,12 +38,12 @@ export class BlogsQueryRepository {
 
     const blogQueryBuilder = this.blogRepo.createQueryBuilder("b")
       .leftJoinAndSelect(`b.images`, `i`)
+      .leftJoinAndSelect(`b.subscribers`, `s`, `s.blogId IS NOT NULL AND b.id = s.blogId`)
       .where(`b."bannedByAdmin" != :banned`, { banned: true });
 
     if (conditions.length > 0) {
       conditions.forEach((condition, i) => blogQueryBuilder.andWhere(condition, params[i]));
     }
-    // const sql = blogsQueryBuilder.getSql();
 
     const totalCount = await blogQueryBuilder.getCount();
 
@@ -50,8 +52,7 @@ export class BlogsQueryRepository {
       .take(pagination.pageSize)
       .skip((pagination.pageNumber - 1) * pagination.pageSize)
       .getMany();
-
-    const mappedBlogs = blogs.map(BlogOutputModelMapper);
+    const mappedBlogs = blogs.map((b) => BlogOutputModelMapper(b, userId));
     return new PaginationOutput<BlogOutputModel>(
       mappedBlogs,
       pagination.pageNumber,
