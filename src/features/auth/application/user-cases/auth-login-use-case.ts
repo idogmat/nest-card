@@ -2,6 +2,7 @@ import { AuthService } from "../auth.service";
 import { CommandHandler, ICommandHandler } from "@nestjs/cqrs";
 import { DevicesService } from "./../../../../features/devices/application/devices.service";
 import { UsersService } from "./../../../../features/users/application/users.service";
+import { WebsocketGateway } from "src/features/content/integrations/applications/web-socket.servece";
 
 export class AuthLoginCommand {
   constructor(
@@ -17,6 +18,7 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
     private readonly devicesService: DevicesService,
+    private readonly websocketGateway: WebsocketGateway,
   ) { }
 
   async execute(command: AuthLoginCommand): Promise<boolean | { accessToken: string, refreshToken: string; }> {
@@ -44,6 +46,12 @@ export class AuthLoginUseCase implements ICommandHandler<AuthLoginCommand> {
       deviceId: device.id,
       lastActiveDate: lastActiveDate
     });
+    // setTimeout(() => {
+    //   this.websocketGateway.sendToUser(user.id, { field: 'yo' })
+
+    // }, 3000)
+
+
     return { accessToken, refreshToken };
   }
 }

@@ -10,6 +10,7 @@ import { DeviceModule } from "../devices/device.module";
 import { CqrsModule } from "@nestjs/cqrs";
 import { AuthLoginUseCase } from "./application/user-cases/auth-login-use-case";
 import { PassportModule } from "@nestjs/passport";
+import { WebsocketGateway } from "../content/integrations/applications/web-socket.servece";
 
 
 export interface AuthUser {
@@ -28,7 +29,8 @@ export interface AuthUser {
     LocalStrategy,
     EmailService,
     AuthLoginUseCase,
+    WebsocketGateway,
   ],
-  exports: [AuthService, JwtService, UserModule]
+  exports: [AuthService, JwtService, UserModule, WebsocketGateway]
 })
 export class AuthModule { }
